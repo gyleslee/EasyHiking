@@ -1,0 +1,15 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {OfflineRegionSelection} from '../../src/HikingGuide.App/Map/Web/offline-region.js';
+globalThis.window={addEventListener(){},removeEventListener(){}};
+const element=()=>({style:{},children:[],appendChild(v){this.children.push(v);},addEventListener(){},remove(){this.removed=true;}});
+globalThis.document={createElement:element};
+function setup(){const events={},sources=new Map(),layers=[],messages=[],canvas=element();let dbl=true;const jumps=[];const map={
+ on(type,fn){(events[type]??=[]).push(fn);},getCenter:()=>({lng:113.3,lat:24.4}),getZoom:()=>15,getBearing:()=>25,getPitch:()=>50,
+ doubleClickZoom:{isEnabled:()=>dbl,enable(){dbl=true;},disable(){dbl=false;}},jumpTo:v=>jumps.push(v),getCanvas:()=>canvas,getContainer:()=>element(),
+ getSource:id=>sources.get(id),addSource(id,s){sources.set(id,{setData:v=>s.data=v,data:()=>s.data});},addLayer:l=>layers.push(l)};
+ let begin=0,end=0;const selection=new OfflineRegionSelection(map,(type,value)=>messages.push({type,...value}),()=>begin++,()=>end++);return{map,events,sources,layers,messages,selection,jumps,begin:()=>begin,end:()=>end};}
+test('至少三点才可完成，多边形闭合与坐标消息准确',()=>{const s=setup();s.selection.begin();s.selection.add(113.3,24.4);s.selection.add(113.4,24.4);s.selection.finish();assert.equal(s.selection.active,true);s.selection.add(113.4,24.5);s.selection.finish();assert.equal(s.selection.active,false);assert.equal(s.messages[0].type,'OfflineRegionSelected');assert.equal(s.messages[0].points.length,3);assert.equal(s.begin(),1);assert.equal(s.end(),1);});
+test('开始选区保存角度并俯视，完成后恢复角度且解除业务交互锁',()=>{const s=setup();s.selection.begin();assert.equal(s.map.__hikingOfflineSelecting,true);assert.deepEqual(s.jumps[0],{pitch:0,bearing:0});for(const p of[[1,1],[2,1],[2,2]])s.selection.add(...p);s.selection.finish();assert.deepEqual(s.jumps.at(-1),{bearing:25,pitch:50});assert.equal(s.map.__hikingOfflineSelecting,false);assert.equal(s.map.doubleClickZoom.isEnabled(),true);});
+test('取消恢复上一次选区；撤销与重复单击不会增加无效顶点',()=>{const s=setup();s.selection.begin();for(const p of[[1,1],[2,1],[2,2]])s.selection.add(...p);s.selection.finish();s.selection.begin();s.selection.add(3,3);s.selection.add(3,3);assert.equal(s.selection.points.length,1);s.selection.undo();assert.equal(s.selection.points.length,0);s.selection.cancel();assert.equal(s.selection.points.length,3);assert.equal(s.messages.at(-1).type,'OfflineRegionCanceled');});
+test('跨日期线绘制按短边闭合，存储经度保持WGS84范围',()=>{const s=setup();s.selection.begin();for(const p of[[179.9,20],[-179.9,20],[-179.9,19]])s.selection.add(...p);const shape=s.sources.get('offline-region').data().features.find(f=>f.geometry.type==='Polygon');const xs=shape.geometry.coordinates[0].map(p=>p[0]);assert.ok(Math.max(...xs)-Math.min(...xs)<1);s.selection.finish();assert.ok(s.messages[0].points.every(p=>p.longitude>=-180&&p.longitude<=180));});
+test('清除选区不残留图形或选区状态',()=>{const s=setup();s.selection.begin();s.selection.add(1,1);s.selection.clear();assert.equal(s.selection.active,false);assert.equal(s.selection.points.length,0);assert.deepEqual(s.sources.get('offline-region').data().features,[]);});

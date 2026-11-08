@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="测试">
+  <trk><trkseg>
+    <trkpt lat="23.1" lon="113.2"><ele>1278.43</ele></trkpt>
+    <trkpt lat="23.2" lon="113.3"><ele>1280.125</ele></trkpt>
+  </trkseg></trk>
+</gpx>

@@ -1,0 +1,25 @@
+<Window x:Class="HikingGuide.App.BatchMarkerEditorWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="批量编辑标注或攻略节点" Width="500" Height="650" WindowStartupLocation="CenterOwner" ResizeMode="CanMinimize">
+ <DockPanel Margin="18">
+  <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+   <Button Content="取消" IsCancel="True" Width="90" Margin="0,0,8,0"/>
+   <Button x:Name="ConfirmButton" Content="应用修改" Width="90" IsDefault="True" Click="ConfirmClicked"/>
+  </StackPanel>
+  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+   <TextBlock x:Name="SelectionLabel" FontWeight="Bold" Margin="0,0,0,10"/>
+   <TextBlock Text="仅应用勾选的修改项目，未勾选项保持原值。名称、描述勾选后留空表示清空。图片与人工内容保留，可一次撤销。设为攻略节点时会吸附到主攻略轨迹。" TextWrapping="Wrap" Margin="0,0,0,12"/>
+   <CheckBox x:Name="ApplyName" Content="修改名称"/><TextBox x:Name="NameBox" Margin="0,5,0,10" IsEnabled="{Binding IsChecked, ElementName=ApplyName}"/>
+   <CheckBox x:Name="ApplyDescription" Content="修改描述"/><TextBox x:Name="DescriptionBox" Height="75" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,5,0,10" IsEnabled="{Binding IsChecked, ElementName=ApplyDescription}"/>
+   <CheckBox x:Name="ApplyType" Content="修改标注类型"/>
+   <ComboBox x:Name="TypeCombo" DisplayMemberPath="Name" SelectedValuePath="Code" Margin="0,5,0,10" IsEnabled="{Binding IsChecked, ElementName=ApplyType}"/>
+   <TextBlock Text="自定义类型名称（仅选择自定义类型时使用）"/><TextBox x:Name="CustomTypeBox" Margin="0,5,0,0" IsEnabled="{Binding IsChecked, ElementName=ApplyType}"/>
+   <CheckBox x:Name="ApplyGuideState" Content="修改节点身份" Margin="0,14,0,5" Checked="GuideStateChanged" Unchecked="GuideStateChanged"/>
+   <CheckBox x:Name="GuideCheck" Content="设为攻略节点（不勾选则转为普通标注）" IsEnabled="{Binding IsChecked, ElementName=ApplyGuideState}" Checked="GuideStateChanged" Unchecked="GuideStateChanged"/>
+   <CheckBox x:Name="ApplyTrack" Content="修改普通标注所属轨迹" Margin="0,14,0,5"/>
+   <TextBlock Text="普通标注所属轨迹"/>
+   <ComboBox x:Name="TrackCombo" DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,5,0,5" IsEnabled="{Binding IsChecked, ElementName=ApplyTrack}"/>
+   <TextBlock Text="所属轨迹只应用于修改后仍为普通标注的点，不移动坐标。攻略节点始终归属主攻略轨迹。" TextWrapping="Wrap" Foreground="#666666"/>
+  </StackPanel></ScrollViewer>
+ </DockPanel>
+</Window>

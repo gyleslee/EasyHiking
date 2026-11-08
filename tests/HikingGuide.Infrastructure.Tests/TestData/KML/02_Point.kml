@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+  <Placemark id="water-point"><name>水源</name><description><![CDATA[可靠<br/>水源]]></description><styleUrl>#water</styleUrl><TimeStamp><when>2026-09-24T08:30:00+08:00</when></TimeStamp><Point><coordinates>113.23456789,23.12345678,1278.43</coordinates></Point></Placemark>
+</Document></kml>

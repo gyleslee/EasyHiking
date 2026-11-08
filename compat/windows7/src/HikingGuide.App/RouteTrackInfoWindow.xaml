@@ -1,0 +1,25 @@
+<Window x:Class="HikingGuide.App.RouteTrackInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="完成路线规划" Width="430" Height="250" MinWidth="380"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="18">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="轨迹名称" />
+        <TextBox x:Name="NameInput" Grid.Row="1" Margin="0,5,0,12" />
+        <StackPanel Grid.Row="2">
+            <TextBlock Text="说明（可选）" />
+            <TextBox x:Name="DescriptionInput" Margin="0,5,0,0" Height="58"
+                     TextWrapping="Wrap" AcceptsReturn="True" />
+        </StackPanel>
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="取消" Width="82" Margin="0,0,8,0" IsCancel="True" />
+            <Button x:Name="SaveButton" Content="创建普通轨迹" Width="110" IsDefault="True" Click="OnSave" />
+        </StackPanel>
+    </Grid>
+</Window>

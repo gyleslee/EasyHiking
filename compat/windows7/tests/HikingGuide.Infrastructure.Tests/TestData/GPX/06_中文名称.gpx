@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="徒步攻略制作工具">
+  <wpt lat="24.1" lon="114.1"><name>下撤点</name><desc>联山农庄民宿</desc></wpt>
+  <trk><name>环船百大纵走</name><desc>后山村—帽子峰—船底顶</desc><trkseg>
+    <trkpt lat="24.1" lon="114.1"/><trkpt lat="24.2" lon="114.2"/>
+  </trkseg></trk>
+</gpx>

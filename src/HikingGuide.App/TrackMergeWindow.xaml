@@ -1,0 +1,91 @@
+<Window x:Class="HikingGuide.App.TrackMergeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="创建合并轨迹" Width="630" Height="540" MinWidth="540" MinHeight="440"
+        WindowStartupLocation="CenterOwner">
+    <Window.Resources><BooleanToVisibilityConverter x:Key="OrderVisibility" /></Window.Resources>
+    <DockPanel Margin="16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Content="取消" Width="86" Margin="0,0,8,0" IsCancel="True" />
+            <Button x:Name="CreateButton" Content="创建合并轨迹" Width="126" IsDefault="True" Click="OnCreate" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top">
+            <TextBlock x:Name="IntroText" Text="选择轨迹后可调整顺序，并分别设置正向或反向。源轨迹和标注不会被修改。"
+                       TextWrapping="Wrap" Margin="0,0,0,10" />
+            <StackPanel x:Name="NamePanel">
+                <TextBlock Text="新轨迹名称" FontWeight="SemiBold" />
+                <TextBox x:Name="NameBox" Margin="0,5,0,12" />
+            </StackPanel>
+            <CheckBox x:Name="DeleteOriginalCheck" Content="删除原有轨迹" IsChecked="True" Margin="0,0,0,6" />
+            <TextBlock x:Name="DeleteExplanation" Text="默认删除所选来源：选整轨删除整轨，选部分分段仅删除这些分段，其余保留。所属普通标注转到新轨迹；部分分段按原轨迹最近位置判断。取消勾选则来源与标注归属不变。图片和人工内容保留，原始文件不删除，可撤销。"
+                       TextWrapping="Wrap" Margin="0,0,0,10" />
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="96" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="130" />
+            </Grid.RowDefinitions>
+            <DockPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,10">
+                <Border DockPanel.Dock="Top" Background="#EDF2F6" BorderBrush="#A9B3BD" BorderThickness="1" Padding="7,5">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="64" />
+                            <ColumnDefinition x:Name="OrderHeaderColumn" Width="110" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="IncludeHeader" Text="是否合并" Margin="0,0,10,0" />
+                        <TextBlock x:Name="OrderHeader" Grid.Column="1" Text="连接顺序（必填）" Margin="0,0,10,0" />
+                        <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock Text="轨迹名称" Margin="0,0,10,0" />
+                            <TextBlock Text="是否反向" />
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            <ListBox x:Name="TrackList"
+                     SelectionChanged="OnSelectionChanged">
+                <ListBox.ItemContainerStyle><Style TargetType="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Stretch" /></Style></ListBox.ItemContainerStyle>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Margin="4,4,0,4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="64" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox IsChecked="{Binding IsIncluded, Mode=TwoWay}" HorizontalAlignment="Center" Margin="0,0,10,0" VerticalAlignment="Center" />
+                            <Grid Grid.Column="1" Width="110" Visibility="{Binding ShowOrder, Converter={StaticResource OrderVisibility}}">
+                            <TextBox Width="60" HorizontalAlignment="Center" Margin="0,0,10,0" VerticalContentAlignment="Center" TextAlignment="Center"
+                                     Text="{Binding OrderText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsIncluded}"
+                                     Visibility="{Binding ShowOrder, Converter={StaticResource OrderVisibility}}" ToolTip="连接顺序：从1开始连续填写且不能重复，例如1、2、3。" />
+                            </Grid>
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+                            <TextBlock Text="{Binding DisplayName}" ToolTip="{Binding DisplayName}" TextTrimming="CharacterEllipsis" MaxWidth="260" Margin="0,0,10,0"
+                                       VerticalAlignment="Center" />
+                            <CheckBox Content="反向" IsChecked="{Binding IsReversed, Mode=TwoWay}"
+                                      VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            </DockPanel>
+            <StackPanel Grid.Row="0" Grid.Column="1">
+                <Button Content="上移" Margin="0,0,0,8" Click="OnMoveUp" />
+                <Button Content="下移" Margin="0,0,0,8" Click="OnMoveDown" />
+                <Button x:Name="StartButton" Content="到起点" IsEnabled="False" Margin="0,0,0,8" Click="OnToStart" />
+                <Button x:Name="EndButton" Content="到终点" IsEnabled="False" Click="OnToEnd" />
+            </StackPanel>
+            <GroupBox Grid.Row="1" Grid.ColumnSpan="2" Header="连接预览" Margin="0,0,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <TextBlock x:Name="PreviewText" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</Window>

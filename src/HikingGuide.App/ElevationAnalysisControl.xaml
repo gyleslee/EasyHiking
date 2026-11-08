@@ -1,0 +1,75 @@
+<UserControl x:Class="HikingGuide.App.ElevationAnalysisControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sp="clr-namespace:ScottPlot.WPF;assembly=ScottPlot.WPF">
+    <DockPanel Margin="6">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,5">
+            <TextBlock x:Name="TargetLabel" Text="轨迹：请选择轨迹或拆分分段" VerticalAlignment="Center" Margin="0,0,12,0" />
+            <TextBlock Text="显示模式：" VerticalAlignment="Center" Margin="0,0,4,0" />
+            <ComboBox x:Name="ModeBox" Width="130" SelectionChanged="OnModeChanged" Margin="0,0,5,0">
+                <ComboBoxItem Content="单数据" IsSelected="True" />
+                <ComboBoxItem Content="GPS vs DEM" />
+                <ComboBoxItem Content="DEM vs DEM" />
+            </ComboBox>
+            <ComboBox x:Name="LeftSource" Width="170" DisplayMemberPath="Name" SelectionChanged="OnSourceChanged" Margin="0,0,5,0" />
+            <ComboBox x:Name="RightSource" Width="170" DisplayMemberPath="Name" SelectionChanged="OnSourceChanged" Margin="0,0,5,0" />
+            <Button x:Name="AnalyzeButton" Content="分析 / 更新" Click="OnAnalyze" Margin="0,0,5,0" Padding="9,3" />
+            <Button x:Name="CancelButton" Content="取消" Click="OnCancel" Margin="0,0,5,0" Padding="9,3" IsEnabled="False" />
+            <Button Content="适应全轨迹" Click="OnFitAll" Margin="0,0,5,0" Padding="9,3" />
+            <Button Content="DEM 管理…" Click="OnOpenDatabases" Padding="9,3" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,5">
+            <TextBlock Text="图表采样间隔" VerticalAlignment="Center" Margin="0,0,4,0" />
+            <TextBox x:Name="SpacingBox" Text="10" Width="48" Margin="0,0,10,0" />
+            <TextBlock Text="m" VerticalAlignment="Center" Margin="-7,0,10,0" />
+            <TextBlock Text="平滑曲线" VerticalAlignment="Center" Margin="0,0,4,0" />
+            <TextBox x:Name="SmoothingBox" Text="20" Width="48" Margin="0,0,10,0" />
+            <TextBlock Text="m" VerticalAlignment="Center" Margin="-7,0,10,0" />
+            <TextBlock Text="坡度计算" VerticalAlignment="Center" Margin="0,0,4,0" />
+            <TextBox x:Name="SlopeBox" Text="10" Width="48" Margin="0,0,10,0" />
+            <TextBlock Text="m" VerticalAlignment="Center" Margin="-7,0,10,0" />
+            <TextBlock Text="平路标准：±" VerticalAlignment="Center" />
+            <TextBox x:Name="FlatThresholdBox" Width="48" Margin="4,0" TextChanged="OnFlatThresholdChanged"
+                     ToolTip="坡度大于正阈值为爬升，小于负阈值为下降；等于边界仍为平路。修改只重算里程分类，不重新读取DEM。" />
+            <TextBlock Text="%" VerticalAlignment="Center" Margin="0,0,10,0" />
+            <TextBlock Text="里程：方案A（5/20/10米）；爬升、下降高度仍为P8基础统计。" Foreground="DarkSlateGray" VerticalAlignment="Center" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical">
+            <ProgressBar x:Name="AnalysisProgress" Height="5" Minimum="0" Maximum="100" Visibility="Collapsed" />
+            <TextBlock x:Name="AnalysisStatus" Text="请选择分析来源。" TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <TextBlock x:Name="LeftSummary" Text="暂无分析结果" TextWrapping="Wrap" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="26"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="海&#10;拔&#10;(m)" TextAlignment="Center" VerticalAlignment="Center" />
+                    <sp:WpfPlot x:Name="LeftPlot" Grid.Column="1" MouseMove="OnLeftHover" MouseLeave="OnPlotLeave"
+                                PreviewMouseWheel="OnPlotWheel" PreviewMouseLeftButtonDown="OnPlotPanStart"
+                                PreviewMouseLeftButtonUp="OnPlotPanEnd" PreviewMouseMove="OnPlotPanMove"
+                                LostMouseCapture="OnPlotLostMouseCapture" />
+                    <Canvas x:Name="LeftFillOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                    <Canvas x:Name="LeftGuideOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                    <Canvas x:Name="LeftHoverOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                </Grid>
+            </Grid>
+            <Grid x:Name="RightPanel" Grid.Column="1" Visibility="Collapsed" Margin="7,0,0,0">
+                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                <TextBlock x:Name="RightSummary" Text="暂无分析结果" TextWrapping="Wrap" />
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="26"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="海&#10;拔&#10;(m)" TextAlignment="Center" VerticalAlignment="Center" />
+                    <sp:WpfPlot x:Name="RightPlot" Grid.Column="1" MouseMove="OnRightHover" MouseLeave="OnPlotLeave"
+                                PreviewMouseWheel="OnPlotWheel" PreviewMouseLeftButtonDown="OnPlotPanStart"
+                                PreviewMouseLeftButtonUp="OnPlotPanEnd" PreviewMouseMove="OnPlotPanMove"
+                                LostMouseCapture="OnPlotLostMouseCapture" />
+                    <Canvas x:Name="RightFillOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                    <Canvas x:Name="RightGuideOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                    <Canvas x:Name="RightHoverOverlay" Grid.Column="1" IsHitTestVisible="False" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</UserControl>

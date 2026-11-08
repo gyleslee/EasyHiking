@@ -1,0 +1,40 @@
+<Window x:Class="HikingGuide.App.MapSourceEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="编辑 XYZ 图源" Width="820" Height="700" MinWidth="760" MinHeight="620"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False">
+    <Grid Margin="16">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="110"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="图源 ID" Margin="0,6"/><TextBox x:Name="IdText" Grid.Row="0" Grid.Column="1" IsReadOnly="True" Margin="0,3"/>
+        <TextBlock Grid.Row="1" Text="名称" Margin="0,6"/><TextBox x:Name="NameText" Grid.Row="1" Grid.Column="1" Margin="0,3"/>
+        <TextBlock Grid.Row="2" Text="网址模板" Margin="0,6"/><TextBox x:Name="UrlText" Grid.Row="2" Grid.Column="1" Margin="0,3" ToolTip="必须包含 {z} 或 {zoom}、{x}、{y}"/>
+        <TextBlock Grid.Row="3" Text="缩放范围" Margin="0,6"/>
+        <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal">
+            <TextBox x:Name="MinZoomText" Width="55" Margin="0,3"/><TextBlock Text=" 到 " VerticalAlignment="Center"/><TextBox x:Name="MaxZoomText" Width="55" Margin="0,3"/>
+            <TextBlock Text="图源坐标系：" Margin="18,0,0,0" VerticalAlignment="Center"/>
+            <ComboBox x:Name="CoordinateSystemBox" Width="270" Margin="0,3" ToolTip="选择图源本身的坐标系。GCJ-02/BD-09瓦片将自动纠偏到WGS-84，与轨迹和DEM对齐。仅支持标准Web Mercator XYZ瓦片，原生百度瓦片不是此格式。">
+                <ComboBoxItem Content="WGS-84（默认，不偏移）"/>
+                <ComboBoxItem Content="GCJ-02（高德／腾讯，自动纠偏）"/>
+                <ComboBoxItem Content="BD-09（标准XYZ，自动纠偏）"/>
+            </ComboBox>
+        </StackPanel>
+        <TextBlock Grid.Row="4" Text="历史透明度（%）" Margin="0,6"/>
+        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal"><TextBox x:Name="OpacityText" Width="100" Margin="0,3" ToolTip="兼容旧配置；当前透明度在图层槽位中设置。"/><TextBlock Text="缓存容量（MB）：" Margin="18,0,0,0" VerticalAlignment="Center"/><TextBox x:Name="CacheCapacityText" Width="100" Margin="0,3" ToolTip="每个图源独立容量，默认500MB；超额删除较早缓存，0关闭磁盘缓存。"/><TextBlock Text=" 默认500，0关闭磁盘缓存" VerticalAlignment="Center"/></StackPanel>
+        <TextBlock Grid.Row="5" Text="请求 User-Agent" Margin="0,6"/><TextBox x:Name="UserAgentText" Grid.Row="5" Grid.Column="1" Margin="0,3"/>
+        <TextBlock Grid.Row="6" Text="请求 Referer" Margin="0,6"/><TextBox x:Name="RefererText" Grid.Row="6" Grid.Column="1" Margin="0,3"/>
+        <TextBlock Grid.Row="7" Text="版权说明" Margin="0,6"/><TextBox x:Name="AttributionText" Grid.Row="7" Grid.Column="1" Margin="0,3"/>
+        <TextBlock Grid.Row="8" Text="选项" Margin="0,6"/>
+        <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal"><CheckBox x:Name="EnabledCheck" Content="启用" Margin="0,6,24,6"/><TextBlock Text="可用位置：" VerticalAlignment="Center"/><ComboBox x:Name="UsageBox" Width="160"><ComboBoxItem Content="底图"/><ComboBoxItem Content="叠加层"/><ComboBoxItem Content="底图及叠加层"/></ComboBox></StackPanel>
+        <TextBlock Grid.Row="9" Grid.ColumnSpan="2" Margin="0,8,0,4" TextWrapping="Wrap" Text="使用标准Web Mercator XYZ瓦片；GCJ-02、BD-09自动纠偏，项目坐标保持WGS-84。支持 {$s}（Google mt：0～3；其他图源：01～04）或 {switch:...} 自定义服务器。高级请求头（每行：名称: 值）："/>
+        <TextBox x:Name="HeadersText" Grid.Row="10" Grid.ColumnSpan="2" AcceptsReturn="True" VerticalScrollBarVisibility="Auto" FontFamily="Consolas"/>
+        <DockPanel Grid.Row="11" Grid.ColumnSpan="2" Margin="0,12,0,0">
+            <TextBlock Text="敏感内容以明文保存在全局设置中，不进入项目文件和日志。" VerticalAlignment="Center" Foreground="#A05A00"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="确定" Width="88" Margin="4" IsDefault="True" Click="OnAccept"/><Button Content="取消" Width="88" Margin="4" IsCancel="True"/></StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

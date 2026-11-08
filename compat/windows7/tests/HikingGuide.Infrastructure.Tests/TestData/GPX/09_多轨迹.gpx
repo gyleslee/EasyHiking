@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1" creator="测试">
+  <trk><name>轨迹A</name><trkseg><trkpt lat="23.1" lon="113.1"/></trkseg></trk>
+  <trk><name>轨迹B</name><trkseg><trkpt lat="24.1" lon="114.1"/></trkseg></trk>
+</gpx>

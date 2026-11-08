@@ -1,0 +1,14 @@
+using HikingGuide.Infrastructure.Elevation;
+using HikingGuide.Infrastructure.Projects;
+using HikingGuide.Core.Elevation;
+using System.Diagnostics;
+var catalog=new DemDatabaseCatalog(new ApplicationDataPaths(@"F:\Hiking Guide\易行徒步规划制作器\Data"));
+await catalog.LoadAsync();
+var id=catalog.Databases.Single(d=>d.Name.Contains("Osmand")).Id;
+using var provider=new DemElevationProvider(catalog,rasterWindowCacheCapacity:32);
+var sampler=new TerrainTileSampler(catalog,provider);var z=sampler.Describe(id)!.MaxNativeZoom;
+var x=(int)((113.25442+180)/360*(1<<z));var y=(int)((1-Math.Asinh(Math.Tan(24.483696*Math.PI/180))/Math.PI)/2*(1<<z));
+Console.WriteLine($"TIF Z{z}/{x}/{y}");
+var watch=Stopwatch.StartNew();var row=0;
+var pixels=sampler.Sample(id,z,x,y,checkViewport:()=>{if(row++%64==0)Console.WriteLine($"row={row-1}, seconds={watch.Elapsed.TotalSeconds:0.00}");});
+Console.WriteLine($"完成: {watch.Elapsed.TotalSeconds:0.00}s, {pixels.Length}bytes, {provider.CacheStatus}");

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>嵌套目录</name>
+  <Folder><name>第一层</name><Folder><name>第二层</name>
+    <Placemark><name>深层标注</name><Point><coordinates>113.2,23.1</coordinates></Point></Placemark>
+  </Folder></Folder>
+</Document></kml>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NetTopologySuite" Version="2.6.0" />
+    <PackageReference Include="System.Text.Json" Version="8.0.6" />
+    <PackageReference Include="Microsoft.Bcl.TimeProvider" Version="8.0.1" />
+  </ItemGroup>
+<ItemGroup><EmbeddedResource Include="Resources\OsmRoadDefaultStyles.json" /></ItemGroup></Project>

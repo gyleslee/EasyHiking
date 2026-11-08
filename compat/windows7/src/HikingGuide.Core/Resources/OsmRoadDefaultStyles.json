@@ -1,0 +1,6053 @@
+[
+  {
+    "Id": "theme-28",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|track|cycleway|bridleway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 28,
+    "Description": "tunnel=true|yes;highway=*;highway=footway|track|cycleway|bridleway|platform"
+  },
+  {
+    "Id": "theme-29",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|track|cycleway|bridleway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 29,
+    "Description": "tunnel=true|yes;highway=*;highway=footway|track|cycleway|bridleway|platform"
+  },
+  {
+    "Id": "theme-30",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps|path|pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 30,
+    "Description": "tunnel=true|yes;highway=*;highway=steps|path|pedestrian"
+  },
+  {
+    "Id": "theme-31",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps|path|pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 31,
+    "Description": "tunnel=true|yes;highway=*;highway=steps|path|pedestrian"
+  },
+  {
+    "Id": "theme-32",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.6,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 32,
+    "Description": "tunnel=true|yes;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-33",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 33,
+    "Description": "tunnel=true|yes;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-34",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.6,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 34,
+    "Description": "tunnel=true|yes;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-35",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 35,
+    "Description": "tunnel=true|yes;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-36",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.25,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 36,
+    "Description": "tunnel=true|yes;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-37",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.0,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 37,
+    "Description": "tunnel=true|yes;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-38",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 38,
+    "Description": "tunnel=true|yes;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-39",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 39,
+    "Description": "tunnel=true|yes;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-40",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 40,
+    "Description": "tunnel=true|yes;highway=*;highway=tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+  },
+  {
+    "Id": "theme-41",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 41,
+    "Description": "tunnel=true|yes;highway=*;highway=tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+  },
+  {
+    "Id": "theme-42",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 3.5,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 42,
+    "Description": "tunnel=true|yes;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-43",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "true|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.7,
+    "DashArray": "5.0,5.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 43,
+    "Description": "tunnel=true|yes;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-86",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway|railway|public_transport",
+        "Values": "platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#9b9b79",
+    "Alpha": 1.0,
+    "Width": 0.3,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 86,
+    "Description": "highway|railway|public_transport=platform"
+  },
+  {
+    "Id": "theme-158",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.8,
+    "DashArray": "1.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 158,
+    "Description": "embankment=emb_yes|yes;highway=footway"
+  },
+  {
+    "Id": "theme-159",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.45,
+    "DashArray": "1.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 159,
+    "Description": "embankment=emb_yes|yes;highway=path"
+  },
+  {
+    "Id": "theme-160",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.1,
+    "DashArray": "1.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 160,
+    "Description": "embankment=emb_yes|yes;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-161",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway|~"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.45,
+    "DashArray": "1.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 161,
+    "Description": "embankment=emb_yes|yes;highway=track;tracktype=grade3|grade4|grade5|bridleway|~"
+  },
+  {
+    "Id": "theme-162",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.6,
+    "DashArray": "1.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 162,
+    "Description": "embankment=emb_yes|yes;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-163",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.6,
+    "DashArray": "1.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 163,
+    "Description": "embankment=emb_yes|yes;highway=service"
+  },
+  {
+    "Id": "theme-164",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.75,
+    "DashArray": "1.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 164,
+    "Description": "embankment=emb_yes|yes;highway=tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+  },
+  {
+    "Id": "theme-165",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 4.5,
+    "DashArray": "1.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 165,
+    "Description": "embankment=emb_yes|yes;highway=motorway"
+  },
+  {
+    "Id": "theme-166",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "embankment",
+        "Values": "emb_yes|yes"
+      },
+      {
+        "Key": "highway",
+        "Values": "cycleway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.8,
+    "DashArray": "1.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 166,
+    "Description": "embankment=emb_yes|yes;highway=cycleway"
+  },
+  {
+    "Id": "theme-169",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 169,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=footway|platform"
+  },
+  {
+    "Id": "theme-170",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 170,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=pedestrian"
+  },
+  {
+    "Id": "theme-171",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.45,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 171,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-172",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.4,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 172,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-173",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.35,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 173,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-174",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.3,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 174,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-175",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "5.0,8.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 175,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-176",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "7.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 176,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-177",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 17,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "9.0,12.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 177,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-178",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 18,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "12.0,17.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 178,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-179",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.45,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 179,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-180",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.4,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 180,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-181",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.35,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 181,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-182",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 0.5647058823529412,
+    "Width": 0.3,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 182,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-183",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.25,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 183,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=construction"
+  },
+  {
+    "Id": "theme-184",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 184,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=steps"
+  },
+  {
+    "Id": "theme-185",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      },
+      {
+        "Key": "surface",
+        "Values": "raw|unpaved|compacted|ground|fine_gravel|gravel|pebblestone|dirt|earth|grass|grass_paver|mud|sand|woodchips"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.8,
+    "DashArray": "9.0,4.4",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 185,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=unclassified|residential|living_street|road;surface=raw|unpaved|compacted|ground|fine_gravel|gravel|pebblestone|dirt|earth|grass|grass_paver|mud|sand|woodchips"
+  },
+  {
+    "Id": "theme-186",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      },
+      {
+        "Key": "surface",
+        "Values": "~|no|false|smooth_paved|paved|asphalt|concrete|concrete:lanes|concrete:plates|paving_stones|sett|unhewn_cobblestone|cobblestone"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.72,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 186,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=unclassified|residential|living_street|road;surface=~|no|false|smooth_paved|paved|asphalt|concrete|concrete:lanes|concrete:plates|paving_stones|sett|unhewn_cobblestone|cobblestone"
+  },
+  {
+    "Id": "theme-187",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      },
+      {
+        "Key": "surface",
+        "Values": "raw|unpaved|compacted|ground|fine_gravel|gravel|pebblestone|dirt|earth|grass|grass_paver|mud|sand|woodchips"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.8,
+    "DashArray": "9.0,4.4",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 187,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=service;surface=raw|unpaved|compacted|ground|fine_gravel|gravel|pebblestone|dirt|earth|grass|grass_paver|mud|sand|woodchips"
+  },
+  {
+    "Id": "theme-188",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      },
+      {
+        "Key": "surface",
+        "Values": "~|no|false|smooth_paved|paved|asphalt|concrete|concrete:lanes|concrete:plates|paving_stones|sett|unhewn_cobblestone|cobblestone"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.72,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 188,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=service;surface=~|no|false|smooth_paved|paved|asphalt|concrete|concrete:lanes|concrete:plates|paving_stones|sett|unhewn_cobblestone|cobblestone"
+  },
+  {
+    "Id": "theme-189",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "7.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 189,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=byway"
+  },
+  {
+    "Id": "theme-190",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 190,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=tertiary"
+  },
+  {
+    "Id": "theme-191",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 191,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+  },
+  {
+    "Id": "theme-192",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "secondary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 192,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=secondary"
+  },
+  {
+    "Id": "theme-193",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 193,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=primary|trunk"
+  },
+  {
+    "Id": "theme-194",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ff7700",
+    "Alpha": 1.0,
+    "Width": 3.5,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 194,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=motorway"
+  },
+  {
+    "Id": "theme-195",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "cycleway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 195,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=cycleway"
+  },
+  {
+    "Id": "theme-196",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "bridleway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#AB7846",
+    "Alpha": 1.0,
+    "Width": 0.55,
+    "DashArray": "0.5,4",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 196,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=bridleway"
+  },
+  {
+    "Id": "theme-197",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "bus_guideway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#707070",
+    "Alpha": 1.0,
+    "Width": 1.2,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 197,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=bus_guideway"
+  },
+  {
+    "Id": "theme-198",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "bus_guideway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#F8F8F8",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "4,6",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 198,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=bus_guideway"
+  },
+  {
+    "Id": "theme-199",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "raceway"
+      }
+    ],
+    "MinZoom": 12,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.4,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 199,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=raceway"
+  },
+  {
+    "Id": "theme-200",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "raceway"
+      }
+    ],
+    "MinZoom": 12,
+    "MaxZoom": 22,
+    "Color": "#DD0000",
+    "Alpha": 1.0,
+    "Width": 1.4,
+    "DashArray": "10,10",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 200,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=raceway"
+  },
+  {
+    "Id": "theme-201",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "raceway"
+      }
+    ],
+    "MinZoom": 12,
+    "MaxZoom": 22,
+    "Color": "#CCCCCC",
+    "Alpha": 1.0,
+    "Width": 1.0,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 201,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=raceway"
+  },
+  {
+    "Id": "theme-202",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#707070",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "6.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 202,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=footway|platform"
+  },
+  {
+    "Id": "theme-203",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#707070",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "6.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 203,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=pedestrian"
+  },
+  {
+    "Id": "theme-204",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.45,
+    "DashArray": "2.0,3.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 204,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-205",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.4,
+    "DashArray": "3.0,4.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 205,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-206",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "4.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 206,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-207",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.3,
+    "DashArray": "4.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 207,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=path"
+  },
+  {
+    "Id": "theme-208",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 15,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 208,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-209",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 209,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-210",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 17,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 210,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-211",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 18,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 211,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-212",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.45,
+    "DashArray": "8.0,5.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 212,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-213",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.4,
+    "DashArray": "9.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 213,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-214",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "9.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 214,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-215",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.3,
+    "DashArray": "10.0,7.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 215,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-216",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "~|no|false"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#111111",
+    "Alpha": 1.0,
+    "Width": 0.38,
+    "DashArray": "1.2,1.2",
+    "LineCap": "round",
+    "ScaleMode": "all",
+    "CasingEnabled": false,
+    "Order": 216,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=track;tracktype=~|no|false"
+  },
+  {
+    "Id": "theme-217",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#d0d0d0",
+    "Alpha": 1.0,
+    "Width": 1.0,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 217,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=construction"
+  },
+  {
+    "Id": "theme-218",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 218,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=steps"
+  },
+  {
+    "Id": "theme-219",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.6,
+    "DashArray": "2.0,3.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 219,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=steps"
+  },
+  {
+    "Id": "theme-220",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 220,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-221",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 221,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=service"
+  },
+  {
+    "Id": "theme-222",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 222,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=byway"
+  },
+  {
+    "Id": "theme-223",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffff90",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 223,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=tertiary"
+  },
+  {
+    "Id": "theme-224",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 224,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+  },
+  {
+    "Id": "theme-225",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "secondary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 225,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=secondary"
+  },
+  {
+    "Id": "theme-226",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#fa9e25",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 226,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=primary|trunk"
+  },
+  {
+    "Id": "theme-227",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.7,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 227,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=motorway"
+  },
+  {
+    "Id": "theme-228",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "cycleway"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "4.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 228,
+    "Description": "highway=*;tunnel=~|no|false;bridge=~|no|false;area=~|no|false;highway=cycleway"
+  },
+  {
+    "Id": "theme-291",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|track|cycleway|bridleway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 291,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=footway|track|cycleway|bridleway|platform"
+  },
+  {
+    "Id": "theme-292",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|track|cycleway|bridleway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 292,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=footway|track|cycleway|bridleway|platform"
+  },
+  {
+    "Id": "theme-293",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps|path|pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 293,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=steps|path|pedestrian"
+  },
+  {
+    "Id": "theme-294",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps|path|pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 294,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=steps|path|pedestrian"
+  },
+  {
+    "Id": "theme-295",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.65,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 295,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-296",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 2.2,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 296,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-297",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.65,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 297,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-298",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 2.2,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 298,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-299",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.25,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 299,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-300",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.85,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 300,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-301",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.15,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 301,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-302",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 1.7,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 302,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-303",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 2.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 303,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+  },
+  {
+    "Id": "theme-304",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 2.35,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 304,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=tertiary|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|secondary|primary|trunk"
+  },
+  {
+    "Id": "theme-305",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 4.55,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 305,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-306",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 4.1,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 306,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-307",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 307,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=footway|platform"
+  },
+  {
+    "Id": "theme-308",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 308,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=pedestrian"
+  },
+  {
+    "Id": "theme-309",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "cycleway"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 309,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=cycleway"
+  },
+  {
+    "Id": "theme-310",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "5.0,8.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 310,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-311",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "7.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 311,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-312",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 17,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "9.0,12.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 312,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-313",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 18,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "12.0,17.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 313,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-314",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.25,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 314,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-315",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 315,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=steps"
+  },
+  {
+    "Id": "theme-316",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.6,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 316,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-317",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.6,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 317,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-318",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 1.1,
+    "DashArray": "7.0,10.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 318,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-319",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 319,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=tertiary"
+  },
+  {
+    "Id": "theme-320",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 320,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+  },
+  {
+    "Id": "theme-321",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "secondary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 321,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=secondary"
+  },
+  {
+    "Id": "theme-322",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#121212",
+    "Alpha": 1.0,
+    "Width": 1.75,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 322,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=primary|trunk"
+  },
+  {
+    "Id": "theme-323",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ff7700",
+    "Alpha": 1.0,
+    "Width": 3.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 323,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-324",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "footway|platform"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#707070",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "6.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 324,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=footway|platform"
+  },
+  {
+    "Id": "theme-325",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "pedestrian"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#707070",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "6.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 325,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=pedestrian"
+  },
+  {
+    "Id": "theme-326",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "cycleway"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.2,
+    "DashArray": "4.0,6.0",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 326,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=cycleway"
+  },
+  {
+    "Id": "theme-327",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.45,
+    "DashArray": "2.0,3.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 327,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=path"
+  },
+  {
+    "Id": "theme-328",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.4,
+    "DashArray": "3.0,4.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 328,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=path"
+  },
+  {
+    "Id": "theme-329",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "4.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 329,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=path"
+  },
+  {
+    "Id": "theme-330",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "path"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.3,
+    "DashArray": "4.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 330,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=path"
+  },
+  {
+    "Id": "theme-331",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 15,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 331,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-332",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 332,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-333",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 17,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 333,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-334",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 18,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 334,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-335",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 14,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.45,
+    "DashArray": "8.0,5.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 335,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-336",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 15,
+    "MaxZoom": 15,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.4,
+    "DashArray": "9.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 336,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-337",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 16,
+    "MaxZoom": 16,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "9.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 337,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-338",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3|grade4|grade5|bridleway"
+      }
+    ],
+    "MinZoom": 17,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.3,
+    "DashArray": "10.0,7.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 338,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=grade3|grade4|grade5|bridleway"
+  },
+  {
+    "Id": "theme-339",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "~|no|false"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "9.0,6.0",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 339,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=track;tracktype=~|no|false"
+  },
+  {
+    "Id": "theme-340",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "construction"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#d0d0d0",
+    "Alpha": 1.0,
+    "Width": 1.0,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 340,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=construction"
+  },
+  {
+    "Id": "theme-341",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#FFFFFF",
+    "Alpha": 1.0,
+    "Width": 0.8,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 341,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=steps"
+  },
+  {
+    "Id": "theme-342",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "steps"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.6,
+    "DashArray": "2.0,3.0",
+    "LineCap": "butt",
+    "ScaleMode": "all",
+    "CasingEnabled": false,
+    "Order": 342,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=steps"
+  },
+  {
+    "Id": "theme-343",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "unclassified|residential|living_street|road"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 343,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=unclassified|residential|living_street|road"
+  },
+  {
+    "Id": "theme-344",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "service"
+      }
+    ],
+    "MinZoom": 13,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 1.35,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 344,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=service"
+  },
+  {
+    "Id": "theme-345",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "byway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffffff",
+    "Alpha": 1.0,
+    "Width": 0.65,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 345,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=byway"
+  },
+  {
+    "Id": "theme-346",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "tertiary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffff90",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 346,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=tertiary"
+  },
+  {
+    "Id": "theme-347",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 347,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway_link|trunk_link|primary_link|secondary_link|tertiary_link"
+  },
+  {
+    "Id": "theme-348",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "secondary"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 348,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=secondary"
+  },
+  {
+    "Id": "theme-349",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "primary|trunk"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#fa9e25",
+    "Alpha": 1.0,
+    "Width": 1.5,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 349,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=primary|trunk"
+  },
+  {
+    "Id": "theme-350",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "tunnel",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "bridge",
+        "Values": "yes|true"
+      },
+      {
+        "Key": "area",
+        "Values": "~|no|false"
+      },
+      {
+        "Key": "highway",
+        "Values": "*"
+      },
+      {
+        "Key": "highway",
+        "Values": "motorway"
+      }
+    ],
+    "MinZoom": 0,
+    "MaxZoom": 22,
+    "Color": "#ffe168",
+    "Alpha": 1.0,
+    "Width": 1.7,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 350,
+    "Description": "tunnel=~|no|false;bridge=yes|true;area=~|no|false;highway=*;highway=motorway"
+  },
+  {
+    "Id": "theme-365",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1"
+      }
+    ],
+    "MinZoom": 12,
+    "MaxZoom": 13,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 1.4,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 365,
+    "Description": "highway=track;tracktype=grade1"
+  },
+  {
+    "Id": "theme-366",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade2|grade3|grade4|grade5|~"
+      }
+    ],
+    "MinZoom": 12,
+    "MaxZoom": 13,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 1.2,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 366,
+    "Description": "highway=track;tracktype=grade2|grade3|grade4|grade5|~"
+  },
+  {
+    "Id": "theme-367",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade1|grade2"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 0.95,
+    "DashArray": "",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 367,
+    "Description": "highway=track;tracktype=grade1|grade2"
+  },
+  {
+    "Id": "theme-368",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade3"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 0.95,
+    "DashArray": "21,5",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 368,
+    "Description": "highway=track;tracktype=grade3"
+  },
+  {
+    "Id": "theme-369",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade4"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 0.95,
+    "DashArray": "21,5,8,5",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 369,
+    "Description": "highway=track;tracktype=grade4"
+  },
+  {
+    "Id": "theme-370",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "grade5"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 0.95,
+    "DashArray": "8,5",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 370,
+    "Description": "highway=track;tracktype=grade5"
+  },
+  {
+    "Id": "theme-371",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "highway",
+        "Values": "track"
+      },
+      {
+        "Key": "tracktype",
+        "Values": "~"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#925D3A",
+    "Alpha": 1.0,
+    "Width": 0.95,
+    "DashArray": "4,1,11,1,4,5",
+    "LineCap": "butt",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 371,
+    "Description": "highway=track;tracktype=~"
+  },
+  {
+    "Id": "theme-372",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "strolling|hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 372,
+    "Description": "sac_scale=strolling|hiking"
+  },
+  {
+    "Id": "theme-373",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "strolling|hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,3",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 373,
+    "Description": "sac_scale=strolling|hiking"
+  },
+  {
+    "Id": "theme-374",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "mountain_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 374,
+    "Description": "sac_scale=mountain_hiking"
+  },
+  {
+    "Id": "theme-375",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "mountain_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,5",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 375,
+    "Description": "sac_scale=mountain_hiking"
+  },
+  {
+    "Id": "theme-376",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "demanding_mountain_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 376,
+    "Description": "sac_scale=demanding_mountain_hiking"
+  },
+  {
+    "Id": "theme-377",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "demanding_mountain_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,8",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 377,
+    "Description": "sac_scale=demanding_mountain_hiking"
+  },
+  {
+    "Id": "theme-378",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 378,
+    "Description": "sac_scale=alpine_hiking"
+  },
+  {
+    "Id": "theme-379",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,12",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 379,
+    "Description": "sac_scale=alpine_hiking"
+  },
+  {
+    "Id": "theme-380",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "demanding_alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 380,
+    "Description": "sac_scale=demanding_alpine_hiking"
+  },
+  {
+    "Id": "theme-381",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "demanding_alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,18",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 381,
+    "Description": "sac_scale=demanding_alpine_hiking"
+  },
+  {
+    "Id": "theme-382",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "difficult_alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#8E24AA",
+    "Alpha": 1.0,
+    "Width": 0.42,
+    "DashArray": "",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 382,
+    "Description": "sac_scale=difficult_alpine_hiking"
+  },
+  {
+    "Id": "theme-383",
+    "Name": "主题道路线条",
+    "Group": "主题内部规则",
+    "Enabled": true,
+    "Conditions": [
+      {
+        "Key": "sac_scale",
+        "Values": "difficult_alpine_hiking"
+      }
+    ],
+    "MinZoom": 14,
+    "MaxZoom": 22,
+    "Color": "#000000",
+    "Alpha": 1.0,
+    "Width": 0.35,
+    "DashArray": "0,26",
+    "LineCap": "round",
+    "ScaleMode": "stroke",
+    "CasingEnabled": false,
+    "Order": 383,
+    "Description": "sac_scale=difficult_alpine_hiking"
+  }
+]

@@ -1,0 +1,34 @@
+html, body, #map { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+body { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; background: #eef1f4; }
+#loading {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 12px 18px;
+  border-radius: 4px;
+  color: #333;
+  background: rgba(255, 255, 255, .94);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .16);
+  pointer-events: none;
+}
+#loading.hidden { display: none; }
+.maplibregl-ctrl-attrib { font-size: 11px; }
+/* 右下角从上到下：缩放、向北/3D导航、地图署名；不依赖控件插入顺序。 */
+.maplibregl-ctrl-bottom-right { display: flex; flex-direction: column; align-items: flex-end; }
+.maplibregl-ctrl-bottom-right > .maplibregl-ctrl { float: none; margin: 0 10px 10px 0; }
+.maplibregl-ctrl-bottom-right > .terrain-navigation { order: 20; }
+.maplibregl-ctrl-bottom-right > .maplibregl-ctrl-attrib { order: 30; }
+.terrain-navigation { box-sizing: border-box; width: 81px; padding: 4px; border-radius: 5px; background: rgba(255,255,255,.94); color: #243647; box-shadow: 0 1px 5px #0004; }
+.terrain-navigation button { font: inherit; color: #243647; background: #f4f7f9; border: 1px solid #aab8c4; border-radius: 3px; padding: 4px 0; cursor: pointer; }
+.terrain-navigation button:hover { background: #deedf9; border-color: #4086ba; }
+.terrain-navigation button:focus-visible { outline: 2px solid #237cc2; outline-offset: 1px; }
+.terrain-navigation .terrain-north { width: 100%; font-size: 11px; font-weight: 600; }
+.terrain-camera-readout { white-space: pre-line; text-align: center; font-size: 9px; line-height: 1.4; padding: 4px 0; }
+.terrain-orbit-controls { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 3px; font-size: 10px; }
+.terrain-orbit-hint { white-space: pre-line; overflow-wrap: anywhere; font-size: 9px; text-align: center; line-height: 1.4; padding-top: 4px; }
+.terrain-navigation [hidden] { display: none; }
+.offline-region-controls{position:absolute;top:10px;left:10px;z-index:20;background:#fffffff0;padding:10px;border-radius:6px;box-shadow:0 1px 6px #0006;max-width:calc(100% - 40px);font:13px/1.5 "Microsoft YaHei",sans-serif;color:#183450}.offline-region-controls button{margin:6px 8px 0 0;padding:4px 10px;cursor:pointer}
+.zoom-navigation{display:flex;align-items:flex-end;gap:5px;order:10}
+.zoom-navigation>.maplibregl-ctrl{margin:0;float:none}
+.map-zoom-level{font:600 12px/20px "Segoe UI",sans-serif;color:#243647;background:#fffffff0;border:1px solid #c7d2da;border-radius:3px;padding:1px 5px;margin-bottom:1px;min-width:25px;text-align:center;box-shadow:0 1px 3px #0003}

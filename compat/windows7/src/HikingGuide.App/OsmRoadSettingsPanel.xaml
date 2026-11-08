@@ -1,0 +1,43 @@
+<UserControl x:Class="HikingGuide.App.OsmRoadSettingsPanel"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:HikingGuide.App">
+ <DockPanel Margin="12">
+  <StackPanel DockPanel.Dock="Top">
+   <TextBlock Text="OSM离线路网（独立叠加，不占用在线图源位置）" FontSize="16" FontWeight="Bold"/>
+   <WrapPanel Margin="0,6">
+    <CheckBox x:Name="ShowRoads" Content="显示OSM路网" VerticalAlignment="Center" Click="OnLiveChanged" Margin="0,0,22,0"/>
+    <TextBlock Text="整体透明度：" VerticalAlignment="Center"/><Slider x:Name="OpacitySlider" Width="160" Minimum="0" Maximum="100" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="OnOpacityChanged"/>
+    <TextBlock Text="{Binding ElementName=OpacitySlider,Path=Value,StringFormat={}{0:F0}%}" Width="50" VerticalAlignment="Center"/>
+    <TextBlock Text="起显层级：" VerticalAlignment="Center"/><ComboBox x:Name="MinimumZoomBox" Width="65" Margin="4,0"/>
+   </WrapPanel>
+   <TextBlock x:Name="DataInfo" TextWrapping="Wrap" Margin="0,4"/>
+   <WrapPanel Margin="0,5"><TextBlock Text="路网缓存：" VerticalAlignment="Center"/><TextBox x:Name="CacheSize" Width="85" VerticalContentAlignment="Center"/><TextBlock Text=" MB（默认2048；0为不保留）" VerticalAlignment="Center"/>
+    <Button x:Name="ClearButton" Content="清空路网缓存" Click="OnClear" Margin="8,0" Padding="8,4"/><Button Content="刷新数据状态" Click="OnRefresh" Padding="8,4"/>
+   </WrapPanel>
+   <WrapPanel Margin="0,6"><TextBlock Text="筛选道路：" VerticalAlignment="Center"/><TextBox x:Name="SearchBox" Width="210" TextChanged="OnSearch" VerticalContentAlignment="Center"/>
+
+   </WrapPanel>
+   <TextBlock Text="可修改道路显示的最小层级和最大层级。" TextWrapping="Wrap" Margin="0,4"/>
+  </StackPanel>
+  <StackPanel DockPanel.Dock="Bottom">
+   <WrapPanel Margin="0,8"><Button x:Name="ApplyButton" Content="应用并保存路网设置" Click="OnApply" Padding="12,5"/>
+    <Button x:Name="RestoreButton" Content="恢复默认层级" Click="OnRestore" Margin="10,0" Padding="12,5" ToolTip="恢复最近保存的默认道路层级，撤销未保存的层级改动；主题样式固定，不提供外观修改。"/>
+   </WrapPanel><TextBlock x:Name="StatusText" TextWrapping="Wrap"/>
+  </StackPanel>
+  <DataGrid x:Name="StylesGrid" RowHeight="24" ColumnHeaderHeight="24" FontSize="12" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single" EnableRowVirtualization="True" EnableColumnVirtualization="True">
+   <DataGrid.Resources>
+    <Style x:Key="RoadCellText" TargetType="TextBlock"><Setter Property="VerticalAlignment" Value="Center"/><Setter Property="FontSize" Value="12"/><Setter Property="Margin" Value="4,0"/></Style>
+    <Style x:Key="RoadCellEditor" TargetType="TextBox"><Setter Property="VerticalContentAlignment" Value="Center"/><Setter Property="FontSize" Value="12"/><Setter Property="Padding" Value="2,0"/></Style>
+   </DataGrid.Resources>
+   <DataGrid.CellStyle><Style TargetType="DataGridCell"><Setter Property="VerticalContentAlignment" Value="Center"/></Style></DataGrid.CellStyle>
+   <DataGrid.Columns>
+    <DataGridTextColumn ElementStyle="{StaticResource RoadCellText}" Header="道路类型" Binding="{Binding Name}" IsReadOnly="True" Width="160" MinWidth="130"/>
+    <DataGridTemplateColumn Header="样式示例（Z16）" IsReadOnly="True" Width="200"><DataGridTemplateColumn.CellTemplate><DataTemplate><local:OsmRoadStylePreview RoadTypeId="{Binding Id}" Width="170" Height="20" Margin="8,1" HorizontalAlignment="Left" ToolTip="主题Z16普通路段示例；地图随层级、路面、桥隧及徒步难度自动切换样式。"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
+    <DataGridTextColumn ElementStyle="{StaticResource RoadCellText}" EditingElementStyle="{StaticResource RoadCellEditor}" Header="最小层级" Binding="{Binding MinZoom}" Width="100"/>
+    <DataGridTextColumn ElementStyle="{StaticResource RoadCellText}" EditingElementStyle="{StaticResource RoadCellEditor}" Header="最大层级" Binding="{Binding MaxZoom}" Width="100"/>
+   </DataGrid.Columns>
+  </DataGrid>
+ </DockPanel>
+</UserControl>
+
+
+

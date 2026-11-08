@@ -1,0 +1,67 @@
+<UserControl x:Class="HikingGuide.App.MapView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <ToolBar Grid.Row="0" Background="#F5F5F5">
+            <Button Content="{Binding TerrainToggleLabel}" Click="OnToggleTerrain" ToolTip="切换2D／3D地形；DEM在地图菜单的3D地图设置中选择。3D中右键拖动或Shift＋左键拖动可旋转和调整俯仰；地图右下角“向北”只恢复方向，保留俯仰和缩放。"/>
+            <Button Content="轨迹编辑"
+                    Command="{Binding DataContext.EnterTrackEditCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    ToolTip="进入一次即可点选并编辑当前项目内的各条轨迹；地图点选保持视角不变。" />
+            <Button Content="退出编辑"
+                    Command="{Binding DataContext.ExitTrackEditCommand, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <Separator />
+            <TextBlock Text="底图：" VerticalAlignment="Center" Margin="4,0" />
+            <ComboBox x:Name="BaseMapSourceBox" Width="210"
+                      ItemsSource="{Binding MapSources}"
+                      SelectedValuePath="Id"
+                      SelectedValue="{Binding SelectedMapSourceId,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                      DisplayMemberPath="Name" />
+            <Separator />
+            <Button Content="适应当前轨迹" Command="{Binding FitCurrentTrackCommand}" />
+            <Button Content="适应全部" Command="{Binding FitAllCommand}" />
+            <Separator />
+            <Button Content="重新加载地图" Command="{Binding ReloadCommand}" />
+            <Separator />
+            <TextBlock Text="Ctrl 多选" VerticalAlignment="Center" Margin="4,0"
+                       ToolTip="Ctrl+左击加选或取消轨迹/拆分分段；Alt+左击选整轨，可与Ctrl组合。右击已选项保留多选。" />
+            <Separator />
+            <TextBlock Text="{Binding TrackEditingHint}" VerticalAlignment="Center"
+                       MaxWidth="320" TextTrimming="CharacterEllipsis" Foreground="#9A5D0A"
+                       ToolTip="{Binding TrackEditingHint}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsTrackEditing}" Value="True">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <Separator />
+            <Button x:Name="OpenMapManagerButton" Content="地图管理" Click="OnOpenMapManager"/>
+            <StackPanel Orientation="Horizontal">
+            <CheckBox x:Name="QuickContoursBox" Content="DEM等高线" IsChecked="{Binding DemContoursVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center" ToolTip="与等高线生成器共用显示设置，2D/3D同时生效。"/>
+            <CheckBox x:Name="QuickHillshadeBox" Content="地形阴影" IsChecked="{Binding TerrainHillshadeVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center"/>
+            <CheckBox x:Name="QuickOsmRoadsBox" Content="OSM路网" IsChecked="{Binding OsmRoadsVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center"/>
+            </StackPanel>
+        </ToolBar>
+        <Grid Grid.Row="1">
+            <wv2:WebView2 x:Name="MapWebView" />
+            <Border Background="#EFFFFFFF"
+                    Padding="12"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="8">
+                <TextBlock Text="{Binding MapStatusText}" TextWrapping="Wrap" MaxWidth="520" />
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

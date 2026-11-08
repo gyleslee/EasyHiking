@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2"><Document>
+  <Placemark><name>复合对象</name><MultiGeometry>
+    <LineString><coordinates>113.1,23.1,10 113.2,23.2,20</coordinates></LineString>
+    <LineString><coordinates>114.1,24.1,30 114.2,24.2,40</coordinates></LineString>
+    <Point><coordinates>113.5,23.5,50</coordinates></Point>
+  </MultiGeometry></Placemark>
+</Document></kml>

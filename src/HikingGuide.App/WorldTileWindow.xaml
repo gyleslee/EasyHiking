@@ -1,0 +1,20 @@
+<Window x:Class="HikingGuide.App.WorldTileWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="BRouter世界路由数据下载地图" Width="1120" Height="760"
+        MinWidth="780" MinHeight="560" WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="8">
+            <Button x:Name="BoxButton" Content="框选瓦片" Click="OnToggleBox" Padding="10,4" Margin="0,0,6,0" />
+            <Button Content="清空选择" Click="OnClear" Padding="10,4" Margin="0,0,6,0" />
+            <Button x:Name="DownloadButton" Content="下载所选数据" Click="OnDownload" Padding="10,4" Margin="0,0,6,0" />
+            <Button Content="取消下载" Click="OnCancelDownload" Padding="10,4" Margin="0,0,10,0" />
+            <TextBlock x:Name="SummaryText" VerticalAlignment="Center" Text="正在加载官方瓦片地图……" />
+        </WrapPanel>
+        <TextBlock DockPanel.Dock="Bottom" Margin="8"
+                   Text="底图：© OpenStreetMap contributors。黄色可选、蓝色已选、紫色下载中、青色已完成、红色失败、绿色当前已安装。单击切换选择；框选模式下拖动选取，按住 Ctrl 拖动可减选。每次下载成功后只保留本次选择的数据。"
+                   TextWrapping="Wrap" />
+        <wv2:WebView2 x:Name="WorldWebView" />
+    </DockPanel>
+</Window>

@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BRouter世界路由数据</title>
+  <link rel="stylesheet" href="./vendor/maplibre-gl.css">
+  <link rel="stylesheet" href="./map.css">
+  <style>
+    #tile-selection-box { position:absolute; border:2px dashed #1767d2; background:#1767d233;
+      pointer-events:none; display:none; z-index:10; }
+  </style>
+</head>
+<body>
+  <main id="map" aria-label="世界BRouter路由瓦片地图"></main>
+  <div id="tile-selection-box"></div>
+  <script type="module" src="./world-tiles.js"></script>
+</body>
+</html>

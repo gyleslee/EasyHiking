@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>易行徒步规划制作器</AssemblyName>
+    <Product>易行徒步规划制作器</Product>
+    <AssemblyTitle>易行徒步规划制作器</AssemblyTitle>
+    <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
+    <!-- ScottPlot.WPF 的 SkiaSharp.Views.WPF 传递包只声明 .NET Framework；WPF 运行时需单独验证。 -->
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\AppLogo.png" />
+    <ProjectReference Include="..\HikingGuide.Application\HikingGuide.Application.csproj" />
+    <ProjectReference Include="..\HikingGuide.Infrastructure\HikingGuide.Infrastructure.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.4191.47" />
+    <PackageReference Include="ScottPlot.WPF" Version="5.1.59" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Map\Web\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="RoadNetworkRuntime\OsmRoadReader.jar" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\ThirdPartyNotices\coordtransform-LICENSE.txt" Link="ThirdPartyNotices\coordtransform-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="Resources\Routing\ChinaRd5Tiles.txt" />
+    <Content Include="BRouterRuntime\**\*">
+      <Link>BRouter\runtime\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <!-- WPF桌面程序不会加载非Windows原生库；保留win-*、any及全部托管依赖。
+       只影响发布文件，不启用程序集裁剪，不改变目标架构或开发/测试输出。 -->
+  <Target Name="ExcludeNonWindowsPublishAssets" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.RelativePath)', '^runtimes[\\/](linux[^\\/]*|osx[^\\/]*|maccatalyst[^\\/]*|browser-wasm)[\\/]'))" />
+    </ItemGroup>
+  </Target>
+</Project>

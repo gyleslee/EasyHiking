@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:test="urn:test" version="1.1" creator="测试">
+  <wpt lat="23.12345678" lon="113.23456789">
+    <ele>1278.43</ele><time>2026-09-24T08:30:00+08:00</time>
+    <name>水源</name><desc>可靠水源</desc><cmt>人工检查</cmt><src>实测</src><sym>Water</sym><type>Water</type>
+    <extensions><test:quality>good</test:quality></extensions>
+  </wpt>
+  <trk><name>带标注轨迹</name><trkseg><trkpt lat="23.1" lon="113.2"/></trkseg></trk>
+</gpx>
