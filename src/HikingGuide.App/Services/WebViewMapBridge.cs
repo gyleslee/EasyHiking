@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using HikingGuide.Application.Logging;
 using HikingGuide.Application.Maps;
 using HikingGuide.Core.Models;
@@ -7,14 +7,16 @@ using Microsoft.Web.WebView2.Wpf;
 
 namespace HikingGuide.App.Services;
 
-public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, string webRoot) : IMapBridge, IMediaMapBridge
+public sealed partial class WebViewMapBridge(WebView2 webView, ILoggingService log, string webRoot) : IMapBridge, IMediaMapBridge
 {
     private readonly Dictionary<string, byte[]> _mediaThumbnails = new(StringComparer.Ordinal);
     private MapSourceDefinition? _activeSource;
     private string? _activeTileHost;
     private readonly MapTileRequestRegistry _tileRequests=new();
     private readonly System.Net.Http.HttpClient _tileClient=HikingGuide.Infrastructure.Maps.MapTileHttpTransport.CreateClient();
-    private readonly SemaphoreSlim _tileGate=new(8,8);
+    private readonly Dictionary<string,CancellationTokenSource> _tileProfiles=new(StringComparer.Ordinal);
+    private readonly SemaphoreSlim _baseTileGate=new(6,6);
+    private readonly SemaphoreSlim _overlayTileGate=new(2,2);
     private TaskCompletionSource<HikingGuide.Core.Maps.OfflineMapRegion?>? _offlineSelection;
     public async Task<HikingGuide.Core.Maps.OfflineMapRegion?> SelectOfflineRegionAsync(CancellationToken token=default)
     {
@@ -47,8 +49,14 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
     public IReadOnlyList<RasterLayerSlot> ConfigureRasterLayers(IReadOnlyList<RasterLayerSlot> slots)
     {
         foreach(var slot in slots)if(slot.Source is {} source)_tileCache.Configure(source.Id,(long)source.CacheCapacityMb*1024*1024);
-        return _tileRequests.Register(slots);
+        var registered=_tileRequests.Register(slots);
+        var active=registered.SelectMany(s=>s.Templates).Select(t=>new Uri(t).AbsolutePath.Split('/')[1]).ToHashSet(StringComparer.Ordinal);
+        foreach(var key in _tileProfiles.Keys.Where(k=>!active.Contains(k)).ToArray())
+        {var old=_tileProfiles[key];_tileProfiles.Remove(key);old.Cancel();old.Dispose();}
+        foreach(var key in active)if(!_tileProfiles.ContainsKey(key))_tileProfiles.Add(key,new());
+        return registered;
     }
+    internal Func<System.Net.Http.HttpRequestMessage,CancellationToken,Task<System.Net.Http.HttpResponseMessage>>? TileFetchForTest {get;set;}
     private bool _initialized;
     private CancellationTokenSource? _readyTimeout;
 
@@ -77,6 +85,7 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping("hikingguide.local", webRoot, CoreWebView2HostResourceAccessKind.Allow);
             webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+            webView.PreviewKeyDown += OnMapPreviewKeyDown;
             webView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
             webView.CoreWebView2.ProcessFailed += OnProcessFailed;
             webView.CoreWebView2.AddWebResourceRequestedFilter("*", CoreWebView2WebResourceContext.All);
@@ -152,6 +161,12 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
         try
         {
             using var packet=System.Text.Json.JsonDocument.Parse(args.WebMessageAsJson);
+            if(packet.RootElement.TryGetProperty("type",out var keyboardType)&&keyboardType.GetString()=="MapKeyboardFocus")
+            {
+                _mapKeyboardActive=packet.RootElement.TryGetProperty("active",out var active)&&active.ValueKind==System.Text.Json.JsonValueKind.True;
+                System.Windows.Input.InputMethod.SetIsInputMethodEnabled(webView,!_mapKeyboardActive);
+                return;
+            }
             if(packet.RootElement.TryGetProperty("type",out var diagnosticType)&&diagnosticType.GetString()=="TerrainRenderDiagnostic")
             {
                 if(packet.RootElement.TryGetProperty("message",out var diagnosticMessage))log.Warning("[地图][3D恢复] "+diagnosticMessage.GetString());
@@ -310,15 +325,23 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
 
     private async Task ServeTileAsync(CoreWebView2WebResourceRequestedEventArgs args,System.Net.Http.HttpRequestMessage request,CoreWebView2Deferral deferral)
     {
-        await _tileGate.WaitAsync();
+        var tileUri=new Uri(args.Request.Uri);
+        var profileKey=tileUri.AbsolutePath.Split('/')[1];
+        var profileToken=_tileProfiles.TryGetValue(profileKey,out var profile)?profile.Token:CancellationToken.None;
+        var baseRequest=tileUri.AbsolutePath.StartsWith("/base-",StringComparison.Ordinal);
         try
         {
-            using var timeout=new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            using var timeout=CancellationTokenSource.CreateLinkedTokenSource(profileToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(20));
             using(request)
             {
                 async Task<HikingGuide.Infrastructure.Maps.CachedMapTile> Download(System.Net.Http.HttpRequestMessage message)
                 {
-                    using var response=await HikingGuide.Infrastructure.Maps.MapTileHttpTransport.SendAsync(_tileClient,message,timeout.Token).ConfigureAwait(false);
+                    // 缓存及PMTiles读取不占网络名额；慢叠加图源不能占满底图的下载通道。
+                    var gate=baseRequest?_baseTileGate:_overlayTileGate;
+                    await gate.WaitAsync(timeout.Token).ConfigureAwait(false);
+                    try {
+                    using var response=await (TileFetchForTest is {} testFetch?testFetch(message,timeout.Token):HikingGuide.Infrastructure.Maps.MapTileHttpTransport.SendAsync(_tileClient,message,timeout.Token)).ConfigureAwait(false);
                     if(!response.IsSuccessStatusCode)throw new System.Net.Http.HttpRequestException("瓦片下载失败",null,response.StatusCode);
                     await using var input=await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);using var output=new MemoryStream();var buffer=new byte[65536];
                     while(true){var count=await input.ReadAsync(buffer,timeout.Token).ConfigureAwait(false);if(count==0)break;if(output.Length+count>8*1024*1024)throw new InvalidDataException("瓦片超过大小限制。");await output.WriteAsync(buffer.AsMemory(0,count),timeout.Token).ConfigureAwait(false);}
@@ -328,16 +351,20 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
                         : response.Content.Headers.Expires ?? now.AddHours(24);
                     var cacheable=control?.NoStore!=true && control?.NoCache!=true && type.StartsWith("image/",StringComparison.OrdinalIgnoreCase);
                     return new(output.ToArray(),type,expires,cacheable);
+                    }finally{gate.Release();}
                 }
                 Task<HikingGuide.Infrastructure.Maps.CachedMapTile> Fetch()=>Download(request);
                 var hasCache=request.Options.TryGetValue(MapTileRequestRegistry.CacheRequestKey,out var info);
-                HikingGuide.Application.Maps.OfflineTileData? offline=null;
-                if(request.Options.TryGetValue(MapTileRequestRegistry.OfflineRequestKey,out var lookup))
-                    offline=await ((App)System.Windows.Application.Current).OfflineMaps.ReadTileAsync(lookup.Fingerprint,new(lookup.Zoom,lookup.X,lookup.Y),timeout.Token);
+                var library=((App)System.Windows.Application.Current).OfflineMaps;
                 _reprojection??=new(_tileCache);
-                var tile=offline is not null?new HikingGuide.Infrastructure.Maps.CachedMapTile(offline.Bytes,offline.ContentType,DateTimeOffset.MaxValue):await Task.Run(()=>request.Options.TryGetValue(MapTileRequestRegistry.ReprojectionRequestKey,out var correction)
-                    ?_reprojection.GetAsync(correction,Download,timeout.Token)
-                    :hasCache?_tileCache.GetAsync(info!.SourceId,info.Key,info.CapacityBytes,Fetch):Fetch());
+                var tile=await Task.Run(async()=>{
+                    HikingGuide.Application.Maps.OfflineTileData? offline=null;
+                    if(request.Options.TryGetValue(MapTileRequestRegistry.OfflineRequestKey,out var lookup))
+                        offline=await library.ReadTileAsync(lookup.Fingerprint,new(lookup.Zoom,lookup.X,lookup.Y),timeout.Token).ConfigureAwait(false);
+                    return offline is not null?new HikingGuide.Infrastructure.Maps.CachedMapTile(offline.Bytes,offline.ContentType,DateTimeOffset.MaxValue):await (request.Options.TryGetValue(MapTileRequestRegistry.ReprojectionRequestKey,out var correction)
+                        ?_reprojection.GetAsync(correction,Download,timeout.Token)
+                        :hasCache?_tileCache.GetAsync(info!.SourceId,info.Key,info.CapacityBytes,Fetch):Fetch()).ConfigureAwait(false);
+                });
                 var age=Math.Max(0,Math.Min(300,(int)(tile.ExpiresAt-DateTimeOffset.UtcNow).TotalSeconds));
                 // 已由按图源计费的磁盘缓存管理的瓦片不再另存浏览器缓存，避免清空后绕过所选图源缓存。
                 // MapLibre当前视野内存图块仍保留，不触发额外下载或强制刷新。
@@ -353,7 +380,7 @@ public sealed class WebViewMapBridge(WebView2 webView, ILoggingService log, stri
         {
             args.Response=webView.CoreWebView2.Environment.CreateWebResourceResponse(new MemoryStream(),502,"Tile network error","Content-Type: text/plain");
         }
-        finally {_tileGate.Release();deferral.Complete();}
+        finally {deferral.Complete();}
     }
 
     private async Task WatchReadyAsync(CancellationToken cancellationToken)

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
@@ -37,7 +37,7 @@
   <Target Name="ExcludeNonWindowsPublishAssets" AfterTargets="ComputeFilesToPublish">
     <ItemGroup>
       <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
-        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.RelativePath)', '^runtimes[\\/](linux[^\\/]*|osx[^\\/]*|maccatalyst[^\\/]*|browser-wasm)[\\/]'))" />
+        Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(ResolvedFileToPublish.RelativePath)', '^runtimes[\\/](linux[^\\/]*|osx[^\\/]*|maccatalyst[^\\/]*|android[^\\/]*|ios[^\\/]*|tvos[^\\/]*|browser-wasm)[\\/]'))" />
     </ItemGroup>
   </Target>
 <ItemGroup><Compile Include="..\HikingGuide.Core\Compatibility\RequiredMembers.cs" Link="Compatibility\RequiredMembers.cs" /></ItemGroup><ItemGroup><FrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms" /></ItemGroup><ItemGroup><Content Include="RoadNetworkRuntime\OsmRoadReader.jar" CopyToOutputDirectory="PreserveNewest" /></ItemGroup></Project>

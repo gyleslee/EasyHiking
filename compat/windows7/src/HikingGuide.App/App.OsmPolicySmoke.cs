@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Windows.Controls;
 using HikingGuide.App.ViewModels;
@@ -19,7 +19,7 @@ public partial class App
             checks["离线下载列表排除官方OSM"]=sources.All(s=>OfflineMapSourceIdentity.DownloadRestriction(s) is null)&&sources.Length==1;
             checks["其他图源仍可选择"]=sources.Single().Name=="用户自建OSM服务器";
             checks["官方OSM仍保留为在线图源"]=GlobalSettingsService.Current.MapSources.Any(s=>s.Name=="OpenStreetMap"&&s.Enabled);
-            checks["版本保持T1.9.1"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="T1.9.1";
+            checks["版本保持V1.9.1"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="V1.9.1";
             GlobalSettingsService.Current.MapSources=[GlobalSettingsService.Current.MapSources.First()];panel.Initialize(GlobalSettingsService);await T10ManualLayoutAsync(manager);
             checks["仅官方OSM时不能估算或开始下载"]=T10ManualField<ComboBox>(panel,"SourceBox").Items.Count==0&&!T10ManualField<Button>(panel,"EstimateButton").IsEnabled&&!T10ManualField<Button>(panel,"StartButton").IsEnabled;
             await CaptureT10ClientAsync(manager,Path.Combine(Path.GetDirectoryName(output)!,"OSM离线下载限制.png"));manager.Close();

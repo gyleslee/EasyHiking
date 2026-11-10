@@ -39,7 +39,7 @@ public partial class App
             await CaptureT10ClientAsync(window,Path.Combine(folder,"拆分分段编号.png"));
             var rawAfter=await File.ReadAllBytesAsync(raw);
             checks["原始GPX未覆盖"]=rawHash.SequenceEqual(SHA256.HashData(rawAfter));
-            checks["版本仍为T192"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="T1.9.2";
+            checks["版本仍为T192"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="V1.9.2";
         }
         catch(Exception e){error=e.ToString();}
         var passed=error is null&&checks.Values.All(v=>v);

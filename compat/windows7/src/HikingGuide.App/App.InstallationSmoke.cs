@@ -33,8 +33,8 @@ public partial class App
             checks["新配置等高线和30%阴影默认启用"]=GlobalSettingsService.Current.OfflineTerrain is{ContoursVisible:true,HillshadeVisible:true,HillshadeOpacity:.3};
             checks["首次设置状态初始未完成"]=!GlobalSettingsService.Current.FirstRunSetupCompleted;
             var seed=JsonSerializer.Deserialize<JsonElement>(await File.ReadAllTextAsync(Path.Combine(app,"Defaults","settings.json")));
-            checks["T180程序集与窗口版本一致"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="T1.9.2"&&window.Title.Contains("T1.9.2",StringComparison.Ordinal)
-                &&System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(app,"易行徒步规划制作器.dll")).FileVersion=="1.9.2.0";
+            checks["T180程序集与窗口版本一致"]=HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion=="V1.9.5"&&window.Title.Contains("V1.9.5",StringComparison.Ordinal)
+                &&System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(app,"易行徒步规划制作器.dll")).FileVersion=="1.9.5.0";
             checks["新配置地形夸张默认1.5且不携带个人DEM"]=GlobalSettingsService.Current.Terrain3D is{Exaggeration:1.5,TerrainDemDatabaseId:null,Enabled:false};
             var layout=GlobalSettingsService.Current.PanelLayout!;
             checks["预置布局与用户指定F盘布局一致"]=Math.Abs(layout.BottomFraction-seed.GetProperty("panelLayout").GetProperty("bottomFraction").GetDouble())<.000001
@@ -51,12 +51,12 @@ public partial class App
             if(!map.IsReady)throw new InvalidOperationException("地图尚未就绪，停止默认布局截图。");
             await CaptureT10ClientAsync(window,Path.Combine(folder,"T180-默认布局.png"));
             var about=new AboutWindow{Owner=window};about.Show();await T10ManualLayoutAsync(about);
-            checks["关于窗口显示T180"]=about.VersionLabel.Text=="软件版本：T1.9.2";
+            checks["关于窗口显示T180"]=about.VersionLabel.Text=="软件版本：V1.9.5";
             await CaptureT10ClientAsync(about,Path.Combine(folder,"T180-关于.png"));about.Close();
             var terrain=new Terrain3DWindow(map){Owner=window};terrain.Show();await T10ManualLayoutAsync(terrain);
             checks["3D设置实际控件回显1.5"]=terrain.Exaggeration.Value==1.5&&terrain.ExaggerationInput.Text==1.5.ToString("F1",System.Globalization.CultureInfo.CurrentCulture);
             await CaptureT10ClientAsync(terrain,Path.Combine(folder,"T180-3D默认设置.png"));terrain.Close();
-            var manual=new WebView2();var manualWindow=new Window{Title="T1.9.2操作说明验证",Content=manual,Width=1280,Height=800,Owner=window};manualWindow.Show();
+            var manual=new WebView2();var manualWindow=new Window{Title="V1.9.5操作说明验证",Content=manual,Width=1280,Height=800,Owner=window};manualWindow.Show();
             var env=await CoreWebView2Environment.CreateAsync(null,Path.Combine(folder,"ManualWebView2"));
             await manual.EnsureCoreWebView2Async(env);
             manual.CoreWebView2.SetVirtualHostNameToFolderMapping("hikingguide-manual.local",Path.Combine(app,"docs"),CoreWebView2HostResourceAccessKind.Allow);

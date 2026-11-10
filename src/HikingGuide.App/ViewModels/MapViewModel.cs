@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text.Json;
 using System.Windows.Input;
@@ -137,6 +137,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
     public event EventHandler<MapMarkerEditRequest>? MarkerEditRequested;
     public event EventHandler<MapEventMessage>? TrackEditRequested;
     public event EventHandler<MapEventMessage>? RoutePlanningPointPicked;
+    public event EventHandler<MapEventMessage>? RoutePlanningUndoRequested;
     public event EventHandler<MapSnapLocationPick>? SnapLocationPicked;
     public event EventHandler<string>? UserMessage;
     public event EventHandler<double>? RenderCompleted;
@@ -666,8 +667,8 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
             _lastZoomBucket = _profile.GetCacheZoomBucket(zoom);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetTracks", new { geoJson = ParseJson(payload.TracksGeoJson) }, project.Id, expectedRevision), token);
             var overlays = await Task.Run(() => (
-                Sections: new SplitSectionMapGeoJsonBuilder().Build(project, data),
-                Arrows: new DirectionArrowGeoJsonBuilder(_arrowCache).Build(project, _temporaryVisibleTrackId, token)), token);
+                Sections: "{\"type\":\"FeatureCollection\",\"features\":[]}",
+                Arrows: "{\"type\":\"FeatureCollection\",\"features\":[]}"), token);
             if (token.IsCancellationRequested || project != _project || !_revisionGate.IsCurrent(project.Id, expectedRevision)) return;
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetSplitSections",
                 new { geoJson = ParseJson(overlays.Sections) }, project.Id, expectedRevision), token);
@@ -675,7 +676,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
                 new { geoJson = ParseJson(overlays.Arrows) }, project.Id, expectedRevision), token);
             await SetSplitSectionSelectionAsync(_selectedSplitSectionIds);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetWaypoints", new { geoJson = ParseJson(payload.WaypointsGeoJson) }, project.Id, expectedRevision), token);
-            var guides = await Task.Run(() => new GuideMapGeoJsonBuilder().Build(project), token);
+            var guides = await Task.Run(() => new GuideMapGeoJsonBuilder().Build(project,includeGeometry:false), token);
             if (token.IsCancellationRequested || project != _project || !_revisionGate.IsCurrent(project.Id, expectedRevision)) return;
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetGuideNodes", new { geoJson = guides.Nodes }, project.Id, expectedRevision), token);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetGuideSegments", new { geoJson = guides.Segments }, project.Id, expectedRevision), token);
@@ -890,6 +891,9 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
                 break;
             case "RoutePlanningPointPicked":
                 RoutePlanningPointPicked?.Invoke(this, value);
+                break;
+            case "RoutePlanningUndoRequested":
+                RoutePlanningUndoRequested?.Invoke(this,value);
                 break;
             case "SplitSectionClicked":
             case "SplitSectionContextMenuRequested":

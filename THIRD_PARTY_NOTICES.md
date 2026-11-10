@@ -10,7 +10,7 @@
 | ScottPlot / ScottPlot.WPF | 高程图表，MIT；精确版本以对应 csproj / NuGet 元数据为准。 |
 | NetTopologySuite | 几何运算，BSD-3-Clause；保留 NuGet 包许可。 |
 | Serilog / Serilog.Sinks.File | 日志，Apache-2.0；保留 NuGet 包许可。 |
-| Microsoft.Data.Sqlite / SQLitePCLRaw / SQLite | 收藏点等持久化；分别适用其 NuGet 包及 SQLite 上游许可；已知安全问题另见 SECURITY.md。 |
+| Microsoft.Data.Sqlite / SQLitePCLRaw / SQLite | 收藏点等持久化；分别适用其 NuGet 包及 SQLite 上游许可；V1.9.5 固定 SQLitePCLRaw 原生库 3.53.3；安全修复和旧版风险见 SECURITY.md。 |
 | MaxRev.Gdal / GDAL 及原生依赖 | DEM 读取，封装与原生库许可分别适用；MaxRev 封装为 MIT，GDAL 含多项第三方依赖，分发须保留包内许可。 |
 | Microsoft WebView2 | SDK 与运行时适用微软随组件提供的许可；不包含在项目 GPL 授权范围。 |
 | .NET | .NET 项目及桌面运行库适用其官方许可；安装包环境组件单独分发，不作为项目自有代码。 |

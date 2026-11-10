@@ -4,7 +4,8 @@ namespace HikingGuide.Application.Maps;
 
 public sealed class MapDisplayDataService(ITrackDisplaySimplifier simplifier)
 {
-    public void InvalidateTrack(Guid trackId) => simplifier.Invalidate(trackId);
+    private readonly SharedTrackDisplayGeometry _shared = new();
+    public void InvalidateTrack(Guid trackId) {simplifier.Invalidate(trackId);_shared.Invalidate(trackId);}
     public MapDisplayData Create(
         HikingProject project,
         double zoom,
@@ -19,8 +20,7 @@ public sealed class MapDisplayDataService(ITrackDisplaySimplifier simplifier)
             cancellationToken.ThrowIfCancellationRequested();
             if (!MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id) &&
                 track.Id != temporarilyVisibleTrackId) continue;
-            tracks.Add(simplifier.Simplify(track, track.Id == project.MainGuideTrackId, zoom, cancellationToken)
-                with { GeometryRevision = track.GeometryRevision });
+            tracks.Add(_shared.Build(project, track, zoom, cancellationToken));
         }
         var waypoints = project.Waypoints.Where(waypoint => waypoint.AssociatedTrackId is not Guid owner ||
             MapLayerVisibility.IsTrackVisible(project.Settings.Map, owner)).Select(waypoint => new MapWaypointFeature(

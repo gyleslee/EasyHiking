@@ -169,6 +169,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         Map.MarkerEditRequested += OnMapMarkerEditRequested;
         Map.TrackEditRequested += OnMapTrackEditRequested;
         Map.RoutePlanningPointPicked += OnRoutePlanningPointPicked;
+        Map.RoutePlanningUndoRequested += async(_,e)=>await UndoRoutePointFromMapAsync(e.ProjectId);
         Map.SnapLocationPicked += OnSnapLocationPicked;
         Map.UserMessage += (_, message) => StatusText = message;
         _uiContext = SynchronizationContext.Current;

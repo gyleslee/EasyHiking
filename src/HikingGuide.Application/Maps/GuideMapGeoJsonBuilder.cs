@@ -6,7 +6,7 @@ namespace HikingGuide.Application.Maps;
 
 public sealed class GuideMapGeoJsonBuilder
 {
-    public (JsonElement Nodes, JsonElement Segments) Build(HikingProject project)
+    public (JsonElement Nodes, JsonElement Segments) Build(HikingProject project,bool includeGeometry=true)
     {
         var order = project.GuideNodes.Where(node => node.TrackId == project.MainGuideTrackId && !node.IsOrphaned)
             .OrderBy(node => node.ExactPosition?.DistanceFromTrackStart ?? double.PositiveInfinity)
@@ -46,7 +46,7 @@ public sealed class GuideMapGeoJsonBuilder
             var end = project.GuideNodes.FirstOrDefault(node => node.Id == segment.EndNodeId);
             var track = project.Tracks.FirstOrDefault(t => t.Id == segment.TrackId);
             if (start?.ExactPosition is null || end?.ExactPosition is null || track is null || start.IsOrphaned || end.IsOrphaned) continue;
-            var pieces = extractor.ExtractRange(track, start.ExactPosition, end.ExactPosition);
+            var pieces = includeGeometry?extractor.ExtractRange(track, start.ExactPosition, end.ExactPosition):Array.Empty<IReadOnlyList<HikingGuide.Core.Geometry.GeoCoordinate>>();
             segments.Add(new
             {
                 type = "Feature",

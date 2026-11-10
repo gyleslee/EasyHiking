@@ -13,6 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.36" />
+    <!-- 独立锁定原生引擎；CVE-2025-6965 在 SQLite 3.50.2 修复。保留现有托管 API 与数据库格式。 -->
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
     <PackageReference Include="Serilog" Version="4.3.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
     <PackageReference Include="MaxRev.Gdal.Core" Version="3.13.3.557" />

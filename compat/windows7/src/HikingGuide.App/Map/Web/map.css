@@ -32,3 +32,6 @@ body { font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; background: #e
 .zoom-navigation{display:flex;align-items:flex-end;gap:5px;order:10}
 .zoom-navigation>.maplibregl-ctrl{margin:0;float:none}
 .map-zoom-level{font:600 12px/20px "Segoe UI",sans-serif;color:#243647;background:#fffffff0;border:1px solid #c7d2da;border-radius:3px;padding:1px 5px;margin-bottom:1px;min-width:25px;text-align:center;box-shadow:0 1px 3px #0003}
+
+/* 规划期间光标由模式决定，不被切换分段、悬停或旋转结束时的内联重置覆盖。 */
+#map.route-planning .maplibregl-canvas { cursor: crosshair !important; }

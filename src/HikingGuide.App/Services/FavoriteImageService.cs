@@ -8,6 +8,16 @@ namespace HikingGuide.App.Services;
 
 public static class FavoriteImageService
 {
+    public static async Task<FavoriteMediaInput> DownloadAsync(string url, CancellationToken token = default)
+    {
+        var downloader=((App)System.Windows.Application.Current).FavoriteImageDownloader;
+        var result=await Task.Run(()=>downloader.DownloadAsync(url,cancellationToken:token),token);
+        var name=Uri.UnescapeDataString(new Uri(url).AbsolutePath.Split('/').LastOrDefault()??"");
+        name=Path.GetFileName(name);if(string.IsNullOrWhiteSpace(name))name="网络图片"+result.Extension;
+        else if(!Path.GetExtension(name).Equals(result.Extension,StringComparison.OrdinalIgnoreCase))name=Path.GetFileNameWithoutExtension(name)+result.Extension;
+        var bytes=await File.ReadAllBytesAsync(result.CachePath,token);
+        return await Task.Run(()=>FromBytes(bytes,name) with {ExternalUrl=url},token);
+    }
     public static Task<FavoriteMediaInput> LoadAsync(string path) => Task.Run(() =>
         FromBytes(File.ReadAllBytes(path), Path.GetFileName(path)));
     public static FavoriteMediaInput FromBytes(byte[] bytes, string name)

@@ -17,6 +17,9 @@ public sealed partial class MainViewModel
     private bool _routePlanningBusy;
     private readonly CancellationTokenSource _routeLifetime = new();
     private CancellationTokenSource? _routeRequest;
+    private Task? _routeAddition;
+    private int _routeAdditionBaseCount;
+    private bool _routeMapUndoBusy;
     private RelayCommand _startBRouterPlanCommand = null!;
     private RelayCommand _startManualPlanCommand = null!;
     private RelayCommand _startMixedPlanCommand = null!;
@@ -106,7 +109,23 @@ public sealed partial class MainViewModel
             value.ProjectId != _routePlan.Plan.ProjectId ||
             value.Latitude is not double latitude || value.Longitude is not double longitude ||
             _routePlanningBusy) return;
-        _ = AddRoutePointAsync(_routePlan, new GeoCoordinate(latitude, longitude));
+        _routeAdditionBaseCount=_routePlan.Plan.ControlPoints.Count;
+        _routeAddition = AddRoutePointAsync(_routePlan, new GeoCoordinate(latitude, longitude));
+    }
+
+    private async Task UndoRoutePointFromMapAsync(Guid? projectId)
+    {
+        var service=_routePlan;
+        if(service is null||projectId!=service.Plan.ProjectId||CurrentProject?.Id!=projectId||_routeMapUndoBusy)return;
+        _routeMapUndoBusy=true;
+        try{
+            if(_routePlanningBusy&&_routeAddition is{} pending){
+                var before=_routeAdditionBaseCount;_routeRequest?.Cancel();await pending;
+                if(!ReferenceEquals(service,_routePlan)||CurrentProject?.Id!=projectId)return;
+                if(service.Plan.ControlPoints.Count>before)ChangeLastPoint(false);
+                else RoutePlanningStatus="已取消正在添加的规划点，之前的规划保持不变。";
+            }else if(UndoPlanningPointCommand.CanExecute(null))UndoPlanningPointCommand.Execute(null);
+        }finally{_routeMapUndoBusy=false;}
     }
 
     private async Task AddRoutePointAsync(RoutePlanService service, GeoCoordinate coordinate)

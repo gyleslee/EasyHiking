@@ -14,7 +14,10 @@ public sealed record MapTrackFeature(
     string? DisplayColor = null)
 {
     public long GeometryRevision { get; init; }
+    public IReadOnlyList<MapRenderPiece>? RenderPieces { get; init; }
 }
+
+public sealed record MapRenderPiece(Guid SplitSectionId, Guid? GuideSegmentId, IReadOnlyList<MapCoordinate> Coordinates);
 
 public sealed record MapWaypointFeature(
     Guid WaypointId,

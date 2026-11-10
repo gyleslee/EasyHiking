@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -48,7 +48,7 @@ public partial class App
         static Dictionary<string,string> DiskHashes(Guid id)
         {
             var root=Path.Combine(DemTerrainTiles.CacheRoot,id.ToString("N"));
-            return Directory.Exists(root)?Directory.GetFiles(root,"*.tile").ToDictionary(p=>p,p=>Convert.ToHexString(System.Security.Cryptography.LegacySha256.HashData(File.ReadAllBytes(p)))):[];
+            return Directory.Exists(root)?Directory.GetFiles(root,"*.tile").ToDictionary(p=>p,p=>Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(p)))):[];
         }
         var shadeHashes=DiskHashes(DemTerrainTiles.HillshadeCacheId);var generatedBeforeClear=service.GeneratedTiles;
         await service.ClearCacheAsync(true);
@@ -84,7 +84,7 @@ public partial class App
         await T10ManualLayoutAsync(manager);await CaptureT10ClientAsync(manager,Path.Combine(folder,"离线地图库.png"));
         var about=new AboutWindow{Owner=manager};about.Show();await T10ManualLayoutAsync(about);
         checks["关于窗口与程序集版本一致"]=about.VersionLabel.Text=="软件版本："+HikingGuide.Core.Software.SoftwareIdentity.DisplayVersion;
-        await CaptureT10ClientAsync(about,Path.Combine(folder,"关于-T1.6.0.png"));about.Close();
+        await CaptureT10ClientAsync(about,Path.Combine(folder,"关于-V1.6.0.png"));about.Close();
         manager.TerrainContourCache.Text="12";manager.TerrainShadeCache.Text="7";
         options=options with{ContourCacheMb=12,HillshadeCacheMb=7};
         FavoritesPanel.Descendants<Button>(manager).Single(b=>b.Content?.ToString()=="应用并保存等高线生成设置").RaiseEvent(new RoutedEventArgs(Button.ClickEvent));

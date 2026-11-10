@@ -42,7 +42,7 @@ public sealed class DouglasPeuckerTrackDisplaySimplifier(MapDisplayProfile? prof
         return result;
     }
 
-    private static IReadOnlyList<MapCoordinate> SimplifySegment(
+    public static IReadOnlyList<MapCoordinate> SimplifySegment(
         IReadOnlyList<MapCoordinate> points,
         double toleranceMeters,
         CancellationToken cancellationToken)

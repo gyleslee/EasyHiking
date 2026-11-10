@@ -10,9 +10,9 @@ public sealed record MapGeoJsonPayload(string TracksGeoJson, string WaypointsGeo
 public sealed class MapGeoJsonBuilder
 {
     public MapGeoJsonPayload Build(MapDisplayData data, HikingProject? project = null) =>
-        new(BuildTracks(data), BuildWaypoints(data, project));
+        new(BuildTracks(data,project), BuildWaypoints(data, project));
 
-    public string BuildTracks(MapDisplayData data)
+    public string BuildTracks(MapDisplayData data,HikingProject? projectForVisibility=null)
     {
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
@@ -23,25 +23,33 @@ public sealed class MapGeoJsonBuilder
             writer.WriteStartArray();
             foreach (var track in data.Tracks)
             {
+              var chunkIndex=0;
+              foreach(var piece in track.RenderPieces ?? new[]{new MapRenderPiece(Guid.Empty,null,Array.Empty<MapCoordinate>())})
+              {
                 writer.WriteStartObject();
                 writer.WriteString("type", "Feature");
-                writer.WriteString("id", track.TrackId);
+                writer.WriteString("id",track.RenderPieces is null?track.TrackId.ToString():$"{track.TrackId}:{chunkIndex}");
                 writer.WritePropertyName("properties");
                 writer.WriteStartObject();
                 writer.WriteString("trackId", track.TrackId);
+                writer.WriteString("chunkId",$"{track.TrackId}:{chunkIndex++}");
                 writer.WriteNumber("geometryRevision", track.GeometryRevision);
                 writer.WriteString("name", track.Name);
                 writer.WriteBoolean("isActive", track.IsActive);
                 writer.WriteString("color", TrackDisplayColor.IsValid(track.DisplayColor) ? track.DisplayColor : "#2877C7");
                 writer.WriteNumber("originalPointCount", track.OriginalPointCount);
                 writer.WriteNumber("displayPointCount", track.DisplayPointCount);
+                writer.WriteString("splitSectionId",piece.SplitSectionId);
+                writer.WriteBoolean("hasSplitSections",track.Segments.Count>1);
+                if(piece.GuideSegmentId is Guid guideId)writer.WriteString("guideSegmentId",guideId);
+                writer.WriteBoolean("guideVisible",piece.GuideSegmentId is Guid visibleId && (projectForVisibility is null || MapLayerVisibility.IsGuideSegmentVisible(projectForVisibility.Settings.Map,visibleId)));
                 writer.WriteEndObject();
                 writer.WritePropertyName("geometry");
                 writer.WriteStartObject();
                 writer.WriteString("type", "MultiLineString");
                 writer.WritePropertyName("coordinates");
                 writer.WriteStartArray();
-                foreach (var segment in track.Segments)
+                foreach (var segment in track.RenderPieces is null ? track.Segments : new[]{piece.Coordinates})
                 {
                     writer.WriteStartArray();
                     foreach (var point in segment)
@@ -56,6 +64,7 @@ public sealed class MapGeoJsonBuilder
                 writer.WriteEndArray();
                 writer.WriteEndObject();
                 writer.WriteEndObject();
+              }
             }
             writer.WriteEndArray();
             writer.WriteString("projectId", data.ProjectId);

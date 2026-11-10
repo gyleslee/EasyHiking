@@ -392,6 +392,7 @@
                         <TextBlock Text="{Binding CurrentRouteLegModeLabel}" Margin="0,0,14,0" />
                         <Button Content="下一段：BRouter" Command="{Binding NextBRouterLegCommand}" Margin="0,0,5,0" />
                         <Button Content="下一段：手绘" Command="{Binding NextManualLegCommand}" />
+                        <TextBlock Text="右击撤销最后一个点" Margin="12,0,0,0" VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
                         <Button Content="撤销最后一个点" Command="{Binding UndoPlanningPointCommand}" Margin="0,0,5,0" />

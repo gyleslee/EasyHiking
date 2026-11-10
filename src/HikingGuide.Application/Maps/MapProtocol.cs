@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace HikingGuide.Application.Maps;
 
@@ -55,13 +55,14 @@ public static class MapProtocol
 
     public static IReadOnlySet<string> KnownCommandTypes { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
-        "SetTerrainState", "TerrainHealthResult", "SetTerrainCamera", "PauseTerrain", "SetOfflineTerrain", "SetOsmRoads", "BeginOfflineRegion", "CancelOfflineRegion", "ClearOfflineRegion", "SetMapLayerStack",
+        "SetTerrainState", "TerrainHealthResult", "SetTerrainCamera", "PauseTerrain", "SetOfflineTerrain", "SetOsmRoads", "BeginOfflineRegion", "CancelOfflineRegion", "ClearOfflineRegion", "SetMapLayerStack", "PanMapKey",
         "SetFavorites", "FlyToFavorite", "RunFavoritesSmoke", "SetSelectedFavorite", "ShowFavoriteHover", "CloseFavoritePopup", "EndFavoriteMove", "CancelFavoriteDrag",
         "Initialize", "SetMapSource", "SetTracks", "SetSplitSections", "SetSplitSectionSelection", "SetTrackDirectionArrows", "SetWaypoints", "SetGuideNodes", "SetGuideSegments", "SetSelection", "SetElevationHover", "SetMarkerPopupMedia", "SetMarkerPopupError", "FitBounds", "SetView", "FlyToWaypoint", "RunInteractionSmoke", "RunP5InteractionSmoke", "RunP51MediaSmoke", "RunP61SplitSectionSmoke", "RunP62TrackClickSmoke", "RunP62RightClickSmoke", "RunP7PlanningClickSmoke", "ClearProject", "BeginSnapLocationPick", "BeginMarkerAdd", "RunP5MarkerAddSmoke", "RunP5WaypointEditSmoke", "RunP5GuideEditSmoke", "BeginTrackEdit", "EndTrackEdit", "SetTrackEditHandles", "PreviewTrackRange", "RunP6TrackEditSmoke", "BeginRoutePlanning", "EndRoutePlanning", "SetRoutePreview"
     };
 
     public static IReadOnlySet<string> KnownEventTypes { get; } = new HashSet<string>(StringComparer.Ordinal)
     {
+        "RoutePlanningUndoRequested",
         "TerrainStateChanged", "TerrainUnavailable", "TerrainEditBlocked",
         "FavoriteClicked", "FavoriteRightClicked", "FavoritesSmokeCompleted", "FavoriteHoverEntered", "FavoriteHoverLeft", "FavoriteDragStarted", "FavoriteDragCompleted", "FavoriteDragCanceled", "FavoriteLinkRequested",
         "MapReady", "ViewChanged", "TrackClicked", "SplitSectionClicked", "SplitSectionContextMenuRequested", "TrackContextMenuRequested", "WaypointClicked", "GuideNodeClicked", "GuideSegmentClicked", "MediaOpenRequested", "MediaThumbnailRequested", "MediaThumbnailReady", "WaypointDragEnded", "GuideNodeDragEnded", "TrackSnapLocationPicked", "MarkerAddLocationPicked", "MapRightClicked", "MarkerRightClicked", "MouseMoved", "MouseLeft", "MapError", "TileError", "RenderMetrics", "InteractionSmokeCompleted", "TrackEditLineClicked", "TrackPointDragEnded", "TrackEditPreviewCancelled", "RoutePlanningPointPicked"

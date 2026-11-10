@@ -43,6 +43,7 @@ public partial class App : System.Windows.Application
     private MainViewModel? _viewModel;
     private HttpClient? _mapHttpClient;
     private HttpExternalMediaDownloadService? _externalMediaDownloadService;
+    internal HikingGuide.Application.Media.IExternalMediaDownloadService FavoriteImageDownloader => _externalMediaDownloadService ?? throw new InvalidOperationException("图片下载组件尚未初始化。");
     public BRouterController? BRouterController { get; private set; }
     private HikingGuide.Infrastructure.Maps.OsmRoadTileSource? _osmRoads;
     public HikingGuide.Infrastructure.Maps.OsmRoadTileSource OsmRoads=>_osmRoads??=CreateOsmRoads();

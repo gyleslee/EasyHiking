@@ -1,3 +1,6 @@
+import { TrackScene, trackArrowImages } from "./track-scene.js";
+import { mapPanKey } from "./map-keyboard.js";
+import { StartupMapLoad } from "./startup-map-load.js";
 import * as maplibregl from "./vendor/maplibre-gl.mjs";
 import { listen, post, setTerrainEditingLock } from "./bridge.js";
 import { Terrain3DController } from "./terrain3d.js";
@@ -18,6 +21,7 @@ let lastFavorites = emptyCollection;
 let favoriteImageReady = null;
 let selected = { kind: "none", objectId: null };
 let selectedTrackIds = [];
+let selectedSplitSectionIds = [];
 let lastMouseFrame = 0;
 let suppressNextViewPersistence = false;
 let lastTracks = emptyCollection;
@@ -43,10 +47,12 @@ const guideSelectedRadius = ["interpolate", ["linear"], ["zoom"], 5, 2.5, 10, 3.
 const markerStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 0.75, 10, 1, 14, 1.25, 19, 2];
 const selectedStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2, 19, 3];
 
+let trackScene;
 function loadFavoriteSymbol(style) { return loadFavoriteSymbols(map, style); }
 let terrain3D;
 let terrainNavigation;
 let requestedOfflineTerrain=null;
+let requestedTerrainState=null;
 
 let lastScriptError={message:"",time:0};
 window.addEventListener("error", event => {
@@ -69,7 +75,7 @@ const map = new maplibregl.Map({
     version: 8,
     sources: {
       favorites: { type: "geojson", data: emptyCollection },
-      tracks: { type: "geojson", data: emptyCollection },
+      tracks: { type: "geojson", data: emptyCollection, tolerance: 0, maxzoom: 22, buffer: 128 },
       splitSections: { type: "geojson", data: emptyCollection },
       directionArrows: { type: "geojson", data: emptyCollection },
       waypoints: { type: "geojson", data: emptyCollection },
@@ -88,21 +94,21 @@ const map = new maplibregl.Map({
       { id: "tracks-active", type: "line", source: "tracks", filter: ["==", ["get", "isActive"], true], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": ["get", "color"], "line-width": 4, "line-opacity": .94 } },
       { id: "tracks-selected", type: "line", source: "tracks", filter: ["==", ["get", "trackId"], "__none__"], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffcf33", "line-width": 8, "line-opacity": .9 } },
       { id: "tracks-hit", type: "line", source: "tracks", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": trackPickProfile.lineHitWidth, "line-opacity": .01 } },
-      { id: "split-sections-selected", type: "line", source: "splitSections", filter: ["==", ["get", "splitSectionId"], "__none__"], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#fff064", "line-width": 9, "line-opacity": .82 } },
-      { id: "split-sections-hit", type: "line", source: "splitSections", layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": 13, "line-opacity": .01 } },
+      { id: "split-sections-selected", type: "line", source: "tracks", filter: ["==", ["get", "splitSectionId"], "__none__"], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#fff064", "line-width": 9, "line-opacity": .82 } },
+      { id: "split-sections-hit", type: "line", source: "tracks", filter: ["==", ["get", "hasSplitSections"], true], layout: { "line-cap": "round", "line-join": "round" }, paint: { "line-color": "#ffffff", "line-width": 13, "line-opacity": .01 } },
       { id: "waypoints", type: "circle", source: "waypoints", paint: { "circle-radius": waypointRadius, "circle-color": "#28a745", "circle-stroke-color": "#ffffff", "circle-stroke-width": markerStrokeWidth } },
       { id: "waypoints-selected", type: "circle", source: "waypoints", filter: ["==", ["get", "waypointId"], "__none__"], paint: { "circle-radius": waypointSelectedRadius, "circle-color": "rgba(255,255,255,0)", "circle-stroke-color": "#ffcf33", "circle-stroke-width": selectedStrokeWidth } },
       { id: "waypoint-labels", type: "symbol", source: "waypoints", minzoom: 12, maxzoom: 15, layout: { "text-field": ["get", "name"], "text-size": 12, "text-offset": [0, 1.15], "text-anchor": "top", "text-allow-overlap": false }, paint: { "text-color": "#20252a", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } }
       ,{ id: "waypoint-media-badges", type: "symbol", source: "waypoints", filter: ["any", [">", ["get", "mediaInternalCount"], 0], [">", ["get", "mediaExternalCount"], 0]], layout: { "text-field": "📷", "text-size": 13, "text-offset": [0.9, -0.8], "text-allow-overlap": true }, paint: { "text-halo-color": "#ffffff", "text-halo-width": 2 } }
-      ,{ id: "guide-segments", type: "line", source: "guideSegments", paint: { "line-color": "#e6a900", "line-width": 5, "line-opacity": .72 } }
-      ,{ id: "guide-segments-selected", type: "line", source: "guideSegments", filter: ["==", ["get", "guideSegmentId"], "__none__"], paint: { "line-color": "#ffed72", "line-width": 9 } }
+      ,{ id: "guide-segments", type: "line", source: "tracks", filter: ["==", ["get", "guideVisible"], true], paint: { "line-color": "#e6a900", "line-width": 5, "line-opacity": .72 } }
+      ,{ id: "guide-segments-selected", type: "line", source: "tracks", filter: ["==", ["get", "guideSegmentId"], "__none__"], paint: { "line-color": "#ffed72", "line-width": 9 } }
       ,{ id: "guide-nodes", type: "circle", source: "guideNodes", paint: { "circle-radius": guideRadius, "circle-color": "#ffcf33", "circle-stroke-color": "#20252a", "circle-stroke-width": markerStrokeWidth } }
       ,{ id: "guide-nodes-selected", type: "circle", source: "guideNodes", filter: ["==", ["get", "guideNodeId"], "__none__"], paint: { "circle-radius": guideSelectedRadius, "circle-color": "rgba(255,255,255,0)", "circle-stroke-color": "#ffed72", "circle-stroke-width": selectedStrokeWidth } }
       ,{ id: "guide-node-labels", type: "symbol", source: "guideNodes", minzoom: 10, maxzoom: 15, layout: { "text-field": ["concat", ["to-string", ["get", "order"]], " ", ["get", "name"]], "text-size": 12, "text-offset": [0, 1.4], "text-anchor": "top" }, paint: { "text-color": "#302000", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } }
       ,{ id: "marker-label-z15", type: "symbol", source: "waypoints", minzoom: 15, filter: ["!=", ["get", "namedLabel"], ""], layout: { "text-field": ["get", "namedLabel"], "text-size": 12, "text-offset": [0, 1.4], "text-anchor": "top", "text-allow-overlap": true, "text-ignore-placement": true }, paint: { "text-color": "#20252a", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } }
       ,{ id: "guide-node-label-z15", type: "symbol", source: "guideNodes", minzoom: 15, filter: ["!=", ["get", "namedLabel"], ""], layout: { "text-field": ["get", "namedLabel"], "text-size": 12, "text-offset": [0, 1.5], "text-anchor": "top", "text-allow-overlap": true, "text-ignore-placement": true }, paint: { "text-color": "#302000", "text-halo-color": "#ffffff", "text-halo-width": 1.5 } }
       ,{ id: "guide-node-media-badges", type: "symbol", source: "guideNodes", filter: ["any", [">", ["get", "mediaInternalCount"], 0], [">", ["get", "mediaExternalCount"], 0]], layout: { "text-field": "📷", "text-size": 13, "text-offset": [0.9, -0.8], "text-allow-overlap": true }, paint: { "text-halo-color": "#ffffff", "text-halo-width": 2 } }
-      ,{ id: "track-direction-arrows", type: "symbol", source: "directionArrows", layout: { "text-field": "▲", "text-size": ["interpolate", ["linear"], ["zoom"], 5, 2, 12, 3, 16, 4, 18, 7, 20, 9], "text-rotate": ["get", "bearing"], "text-rotation-alignment": "map", "text-pitch-alignment": "map", "text-allow-overlap": false }, paint: { "text-color": "#ffffff", "text-halo-color": "#353535", "text-halo-width": .5 } }
+      ,{ id: "track-direction-arrows", type: "line", source: "tracks", filter: ["==",["get","arrowsAllowed"],true], layout: { "line-cap": "butt", "line-join": "round" }, paint: { "line-pattern": "track-chevron-dark-wide", "line-width": 4 } }
       ,{ id: "track-edit-handles-hit", type: "circle", source: "trackEditHandles", paint: { "circle-radius": trackPickProfile.handlePixels, "circle-color": "#ffffff", "circle-opacity": .01 } }
       ,{ id: "track-edit-handles", type: "circle", source: "trackEditHandles", paint: { "circle-radius": ["case", ["get", "selected"], 8, 6], "circle-color": ["case", ["get", "selected"], "#ff7b24", "#ffffff"], "circle-stroke-color": "#1b568c", "circle-stroke-width": 2 } }
       ,{ id: "track-edit-range", type: "line", source: "trackEditRange", paint: { "line-color": "#ff6933", "line-width": 7, "line-opacity": .9 } }
@@ -126,6 +132,8 @@ const map = new maplibregl.Map({
   }
 });
 
+const startupMapLoad = new StartupMapLoad(map, error => post("MapError", { message: error?.message || "加载地图图层失败" }));
+window.hikingGuideStartupTest = { inspect: () => startupMapLoad.inspect() };
 terrain3D=new Terrain3DController(map,post,enabled=>{setTerrainEditingLock(enabled);terrainNavigation?.setEnabled(enabled);},()=>{suppressNextViewPersistence=true;},ready=>{
   contourLabels.setPaused(!ready);
   if(ready&&requestedOfflineTerrain)setOfflineTerrain(requestedOfflineTerrain);
@@ -133,6 +141,7 @@ terrain3D=new Terrain3DController(map,post,enabled=>{setTerrainEditingLock(enabl
 terrainNavigation=new TerrainNavigation(map);
 const contourLabels=new ContourLabels(map);
 const osmRoads=new OsmRoadLayer(map,post);
+function setPlanningCursor(){map.getContainer().classList.toggle("route-planning",routePlanning);}
 let stationaryCamera;
 function roadBucketCoverage(){
   const manager=map.style.tileManagers['osm-road-source'],zoom=map.getZoom(),rows=[];if(!manager)return rows;
@@ -219,6 +228,13 @@ map.on("load", () => {
 map.on("moveend", () => {
   postTerrainViewport();
   const center = map.getCenter();
+  if (startupMapLoad.waiting && requestedTerrainState?.enabled && requestedTerrainState.camera) {
+    // 底图预览暂用俯视，不能把这个临时俯仰写回用户的3D视角。
+    // 如用户先平移/缩放，恢复3D时沿用新的中心与层级，不跳回旧位置。
+    requestedTerrainState = { ...requestedTerrainState, camera: { ...requestedTerrainState.camera,
+      longitude: center.lng, latitude: center.lat, zoom: map.getZoom(), bearing: map.getBearing() } };
+    return;
+  }
   post("ViewChanged", {
     projectId, revision,
     latitude: center.lat, longitude: center.lng,
@@ -256,7 +272,15 @@ map.on("mousemove", event => {
   post("MouseMoved", { projectId, revision, latitude: event.lngLat.lat, longitude: event.lngLat.lng, zoom: map.getZoom() });
 });
 map.getCanvas().addEventListener("mouseleave", () => post("MouseLeft", { projectId, revision }));
-map.getCanvas().addEventListener("keydown", event => {
+const mapCanvas=map.getCanvas();
+mapCanvas.tabIndex=0;
+const editable=target=>!!target?.closest?.('input,textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]');
+map.getContainer().addEventListener("pointerdown",event=>{if(event.target===mapCanvas){mapCanvas.focus({preventScroll:true});post("MapKeyboardFocus",{active:true});}},true);
+document.addEventListener("focusin",event=>post("MapKeyboardFocus",{active:map.getContainer().contains(event.target)&&!editable(event.target)}),true);
+window.hikingGuidePanKey=key=>{if(editable(document.activeElement)||draggingTrackHandle||draggingMarker)return false;const offset=mapPanKey({code:key,key});if(!offset)return false;map.panBy(offset,{duration:0});return true;};
+map.getContainer().addEventListener("keydown", event => {
+  const offset=mapPanKey(event);
+  if(offset&&!draggingTrackHandle&&!draggingMarker){event.preventDefault();event.stopPropagation();map.panBy(offset,{duration:0});return;}
   if (event.key === "Escape") {
     addMarkerKind = null; snapPickNodeId = null; map.getCanvas().style.cursor = "";
     if (draggingTrackHandle) {
@@ -272,7 +296,7 @@ map.getCanvas().addEventListener("keydown", event => {
       post("TrackEditPreviewCancelled", { projectId, revision, ...context });
     }
   }
-});
+}, true);
 map.on("click", event => {
   if(offlineSelection.active)return;
   if (event.originalEvent?.target?.closest?.(".favorite-map-popup")) return;
@@ -331,6 +355,7 @@ map.on("contextmenu", event => {
   if(offlineSelection.active)return;
   event.preventDefault();
   if (terrainNavigation.suppressContext()) return;
+  if(routePlanning){post("RoutePlanningUndoRequested",{projectId,revision});return;}
   if (event.originalEvent?.target?.closest?.(".favorite-map-popup")) return;
   if (map.getLayer("favorites-symbol-layer")) {
     const favorite = favoriteInteraction.hit(event.point);
@@ -532,7 +557,8 @@ function accepts(command) {
 function setGeoJson(sourceId, geoJson, command) {
   if (!accepts(command)) return;
   const started = performance.now();
-  map.getSource(sourceId)?.setData(geoJson || emptyCollection);
+  if(sourceId === "tracks") { trackScene ??= new TrackScene(map); trackScene.set(geoJson || emptyCollection); }
+  else map.getSource(sourceId)?.setData(geoJson || emptyCollection);
   if (sourceId === "tracks") lastTracks = geoJson || emptyCollection;
   if (sourceId === "waypoints") lastWaypoints = geoJson || emptyCollection;
   if (sourceId === "guideNodes") lastGuideNodes = geoJson || emptyCollection;
@@ -543,6 +569,16 @@ function setGeoJson(sourceId, geoJson, command) {
     durationMs: performance.now() - started
   }));
 }
+
+window.hikingGuideTrackSceneTest={
+  camera:(zoom,bearing=0,pitch=0,center=null)=>map.jumpTo({zoom,bearing,pitch,...(center?{center}:{})}),
+  inspect:()=>({zoom:map.getZoom(),center:map.getCenter(),pitch:map.getPitch(),terrain:!!map.getTerrain(),
+    totalChunks:trackScene?.features.length||0,visibleChunks:map.getStyle().sources.tracks?.data?.features?.length||0,
+    vertices:(trackScene?.features||[]).reduce((n,f)=>n+f.geometry.coordinates.reduce((a,s)=>a+s.length,0),0),
+    sources:["tracks-active","guide-segments","guide-segments-selected","split-sections-selected","track-direction-arrows"].map(id=>map.getLayer(id)?.source),
+    arrowType:map.getLayer("track-direction-arrows")?.type,arrowImage:trackArrowImages.every(id=>map.hasImage(id)),arrowPattern:map.getPaintProperty("track-direction-arrows","line-pattern"),arrowTones:[...new Set((trackScene?.features||[]).map(f=>f.properties.arrowTone))],tolerance:map.getStyle().sources.tracks?.tolerance,
+    loaded:map.isStyleLoaded()})
+};
 
 function setMapSource(payload) {
   setMapLayerStack({ settingsRevision: mapSettingsRevision + 1, base: { ...payload, sourceId: payload.id, templates: payload.tiles, visible: true }, overlay1: null, overlay2: null });
@@ -600,6 +636,13 @@ function setOfflineTerrain(value) {
   }
   ensureRasterLayerOrder();
 }
+let continuitySources=null;
+window.hikingGuideLayerContinuityTest={
+  remember:()=>{continuitySources=new Map(map.getStyle().layers.filter(l=>l.id.startsWith("raster-")||l.id.startsWith("dem-")||l.id.startsWith("osm-road-")).filter(l=>l.source).map(l=>[l.source,map.getSource(l.source)]));},
+  inspect:()=>({moving:map.isMoving()||!!terrainNavigation.gesture?.active,zoom:map.getZoom(),terrain:!!map.getTerrain(),effective:terrain3D.effective,
+    sameSources:!continuitySources||[...continuitySources].every(([id,source])=>map.getSource(id)===source),
+    layers:map.getStyle().layers.filter(l=>l.id.startsWith("raster-overlay-")||l.id.startsWith("dem-")||l.id.startsWith("osm-road-")).map(l=>({id:l.id,visible:l.layout?.visibility!=="none"})),roads:osmRoads.inspect().features})
+};
 window.hikingGuideTerrainTest = {
   camera: (zoom=15) => map.jumpTo({center:[113.32,24.42],zoom,bearing:0,pitch:0}),
   inspect: () => ({ signature: terrainSignature, labelOpacity:map.getLayer("dem-contour-labels")?map.getPaintProperty("dem-contour-labels","icon-opacity"):null, layers: ["dem-hillshade", "dem-contours-low", "dem-contours-high"].map(id => map.getLayer(id) ? {id, min: map.getLayer(id).minzoom, max: map.getLayer(id).maxzoom, visible:map.getLayoutProperty(id,"visibility")!=="none", opacity:map.getPaintProperty(id,"raster-opacity"), loaded:map.isSourceLoaded(id)} : null) })
@@ -608,7 +651,13 @@ function setMapLayerStack(payload) {
   const incoming = Number(payload.settingsRevision);
   if (!Number.isFinite(incoming) || incoming < mapSettingsRevision) return;
   mapSettingsRevision = incoming;
+  if (startupMapLoad.waiting) {
+    const base = payload.base;
+    startupMapLoad.start(!!base?.sourceId && base.visible && base.opacity > 0 && !!base.templates?.length);
+    if (startupMapLoad.waiting) startupMapLoad.run("overlays", () => setMapLayerStack(payload));
+  }
   for (const slot of rasterSlots) {
+    if (slot.slot !== "base" && startupMapLoad.waiting) continue;
     const value = payload[slot.slot];
     const signature = value?.sourceId ? JSON.stringify([value.sourceId, value.templates, value.minZoom, value.maxZoom]) : null;
     if (signature !== slot.signature || (signature && !map.getSource(slot.source))) {
@@ -648,6 +697,7 @@ function setSelection(payload) {
   map.setFilter("waypoints-selected", ["==", ["get", "waypointId"], selected.kind === "waypoint" ? id : "__none__"]);
   map.setFilter("guide-nodes-selected", ["==", ["get", "guideNodeId"], selected.kind === "guidenode" ? id : "__none__"]);
   map.setFilter("guide-segments-selected", ["==", ["get", "guideSegmentId"], selected.kind === "guidesegment" ? id : "__none__"]);
+  trackScene?.setArrowSelection({trackIds:selectedTrackIds.length?selectedTrackIds:selected.kind==="track"?[id]:[],sectionIds:selectedSplitSectionIds,guideSegmentId:selected.kind==="guidesegment"?id:null});
 }
 
 function clearTrackEdit() {
@@ -700,15 +750,15 @@ listen(async command => {
         revision = Number(command.revision || 0);
         break;
       case "ClearProject":
-        routePlanning = false;
+        routePlanning = false; setPlanningCursor();
         map.getSource("routePreviewLegs")?.setData(emptyCollection);
         map.getSource("routePreviewPoints")?.setData(emptyCollection);
         clearTrackEdit();
         projectId = null; revision = 0;
-        selectedTrackIds = [];
+        selectedTrackIds = []; selectedSplitSectionIds = [];
         activeMediaPopup?.popup.remove(); activeMediaPopup = null;
         map.getSource("tracks")?.setData(emptyCollection);
-        lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
+        trackScene?.set(emptyCollection); lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
         map.getSource("splitSections")?.setData(emptyCollection);
         lastSplitSections = emptyCollection;
         map.getSource("directionArrows")?.setData(emptyCollection);
@@ -720,15 +770,24 @@ listen(async command => {
         break;
       case "SetMapSource": setMapSource(payload); break;
       case "SetMapLayerStack": setMapLayerStack(payload); break;
-      case "SetOfflineTerrain": setOfflineTerrain(payload); break;
+      case "SetOfflineTerrain": startupMapLoad.run("derived", () => setOfflineTerrain(payload)); break;
       case "BeginOfflineRegion": offlineSelection.begin(); break;
       case "CancelOfflineRegion": offlineSelection.cancel(); break;
       case "ClearOfflineRegion": offlineSelection.clear(); break;
-      case "SetOsmRoads": osmRoads.configure(payload); ensureRasterLayerOrder(); break;
-      case "SetTerrainState": if(offlineSelection.active)offlineTerrainBefore=payload;else terrain3D.update(payload); break;
+      case "SetOsmRoads": startupMapLoad.run("roads", () => { osmRoads.configure(payload); ensureRasterLayerOrder(); }); break;
+      case "SetTerrainState":
+        requestedTerrainState=payload;
+        if(startupMapLoad.waiting&&payload.enabled&&payload.camera&&!offlineSelection.active){
+          suppressNextViewPersistence=true;
+          map.jumpTo({center:[payload.camera.longitude,payload.camera.latitude],zoom:payload.camera.zoom,bearing:payload.camera.bearing,pitch:0});
+        }
+        startupMapLoad.run("terrain",()=>{if(offlineSelection.active)offlineTerrainBefore=requestedTerrainState;else terrain3D.update(requestedTerrainState);});
+        break;
       case "TerrainHealthResult": terrain3D.health(payload); break;
       case "SetTerrainCamera": terrain3D.resetCamera(payload.northUp,payload.pitch);break;
-      case "PauseTerrain": terrain3D.update({...terrain3D.state,enabled:false});break;
+      case "PauseTerrain":
+        requestedTerrainState={...(requestedTerrainState||terrain3D.state),enabled:false};
+        startupMapLoad.run("terrain",()=>terrain3D.update(requestedTerrainState));break;
       case "SetTracks": setGeoJson("tracks", payload.geoJson, command); break;
       case "SetSplitSections":
         if (accepts(command)) lastSplitSections = payload.geoJson || emptyCollection;
@@ -738,6 +797,7 @@ listen(async command => {
       case "SetSplitSectionSelection":
         if (accepts(command)) {
           selectedTrackIds = payload.trackIds || [];
+          selectedSplitSectionIds = payload.ids || [];
           map.setFilter("split-sections-selected", ["in", ["get", "splitSectionId"], ["literal", payload.ids || []]]);
           setSelection(selected);
         }
@@ -752,12 +812,13 @@ listen(async command => {
             ? { type: "FeatureCollection", features: [{ type: "Feature", geometry: { type: "Point", coordinates: [payload.longitude, payload.latitude] }, properties: {} }] }
             : emptyCollection);
         break;
+      case "PanMapKey": window.hikingGuidePanKey(payload.code); break;
       case "BeginRoutePlanning":
-        if (accepts(command)) { routePlanning = true; map.getCanvas().style.cursor = "crosshair"; }
+        if (accepts(command)) { routePlanning = true; setPlanningCursor(); map.getCanvas().style.cursor = "crosshair"; }
         break;
       case "EndRoutePlanning":
         if (accepts(command)) {
-          routePlanning = false; map.getCanvas().style.cursor = "";
+          routePlanning = false; setPlanningCursor(); map.getCanvas().style.cursor = "";
           map.getSource("routePreviewLegs")?.setData(emptyCollection);
           map.getSource("routePreviewPoints")?.setData(emptyCollection);
         }
@@ -862,14 +923,15 @@ listen(async command => {
         break;
       case "SetView":
         if (accepts(command)) {
-          if(terrain3D.state.enabled&&!payload.restoreTerrainCamera&&!payload.terrainUserIntent)break;
+          const terrainRequested=startupMapLoad.waiting?requestedTerrainState?.enabled:terrain3D.state.enabled;
+          if(terrainRequested&&!payload.restoreTerrainCamera&&!payload.terrainUserIntent)break;
           suppressNextViewPersistence = payload.suppressPersistence === true;
           const options = { duration: 250 };
           if (Number.isFinite(payload.longitude) && Number.isFinite(payload.latitude)) options.center = [payload.longitude, payload.latitude];
           if (Number.isFinite(payload.zoom)) options.zoom = payload.zoom;
           if (Number.isFinite(payload.bearing)) options.bearing = payload.bearing;
-          if (Number.isFinite(payload.pitch)) options.pitch = terrain3D.state.enabled&&!payload.restoreTerrainCamera?map.getPitch():payload.pitch;
-          map.easeTo(options);
+          if (Number.isFinite(payload.pitch)) options.pitch = terrainRequested&&!payload.restoreTerrainCamera?map.getPitch():payload.pitch;
+          if(startupMapLoad.waiting)map.jumpTo(options);else map.easeTo(options);
         }
         break;
       case "FlyToWaypoint":

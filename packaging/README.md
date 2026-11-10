@@ -1,6 +1,6 @@
 # 安装器源码
 
-`Common.iss` 与 `TargetSystem.iss`、`UserDataPolicy.iss` 是现有 T1.9.2 安装器的程序安装、系统判断和同盘用户数据管理逻辑。Windows 7 与 Windows 10/11 入口分别为 `Windows7.iss`、`Windows10-11.iss`。
+`Common.iss` 与 `TargetSystem.iss`、`UserDataPolicy.iss` 是现有 V1.9.5 安装器的程序安装、系统判断和同盘用户数据管理逻辑。Windows 7 与 Windows 10/11 入口分别为 `Windows7.iss`、`Windows10-11.iss`。
 
 不包含运行环境安装程序、开发者个人 Defaults/settings.json 或任何 API Key。公开源码保留应用内置的公开 OSM 示例；历史安装包由维护者按原文件另行上传，公开重建包不需要其个人图源配置。
 
@@ -15,15 +15,17 @@
 ```ini
 [Installation]
 AppId=EasyHiking-Installed-0EE343F3-212F-4B44-ABBF-7FF0B80AB4E7
-PackageVersion=1.9.2
+PackageVersion=1.9.5
 DataMode=InstallDriveCurrentUser
 ```
 
-6. 将操作说明放在 `ManualBase` 指定的目录，编译：
+6. 现代载荷先运行 `./packaging/Build-Launcher.ps1 -PayloadDirectory "你的载荷父目录\PayloadModern" -Version 1.9.5`，Win7 不替换启动入口。
+
+7. 将操作说明放在 `ManualBase` 指定的目录，编译：
 
 ```powershell
-iscc /DProductVersion=1.9.2 /DPayloadBase="你的载荷父目录" /DManualBase="你的源码目录\docs" packaging/Windows10-11.iss
-iscc /DProductVersion=1.9.2 /DPayloadBase="你的载荷父目录" /DManualBase="你的源码目录\docs" packaging/Windows7.iss
+iscc /DProductVersion=1.9.5 /DPayloadBase="你的载荷父目录" /DManualBase="你的源码目录\docs" packaging/Windows10-11.iss
+iscc /DProductVersion=1.9.5 /DPayloadBase="你的载荷父目录" /DManualBase="你的源码目录\docs" packaging/Windows7.iss
 ```
 
 安装包在 packaging/output 生成。源码仓库不提交这些载荷和安装包二进制文件。Win10 1803 的已验证启动修复必须保留；不要把默认MinVersion恢复为10.0.17763，具体许可由TargetSystem.iss判断。

@@ -23,11 +23,11 @@ dotnet build HikingGuide.sln -c Release --no-restore
 dotnet test HikingGuide.sln -c Release --no-restore
 ```
 
-现代版当前传递依赖 SQLitePCLRaw.lib.e_sqlite3 2.1.11 有公开安全警告，见 SECURITY.md。默认构建把警告作为错误处理，因此新环境还原可能被安全检查阻止。不要全局关闭 NuGet 审计；正式维护应先评估并修复依赖。本次为核对现有版本的功能，测试命令临时仅将 NU1900/NU1903 保留为可见警告，未修改项目默认策略，也未宣称漏洞已修复。
+V1.9.5 已固定 SQLite 原生库 3.53.3，安全修复及验证见 SECURITY.md。保留默认依赖审计；不要为通过构建而关闭审计或忽略新的 NU1903。若所在网络无法读取 NuGet 漏洞服务，NU1900 应作为网络问题单独处理，不能当作审计通过。
+
+Windows 7 分支可单独测试：
 
 ```powershell
-# 仅用于复核既有版本，保留警告；不代表适合生产发布。
-dotnet test HikingGuide.sln -c Release '-p:WarningsNotAsErrors=NU1900%3BNU1903'
 dotnet test compat/windows7/HikingGuide.sln -c Release
 ```
 
@@ -38,10 +38,22 @@ dotnet test compat/windows7/HikingGuide.sln -c Release
 dotnet publish src/HikingGuide.App/HikingGuide.App.csproj -c Release -r win-x64 --self-contained false -o artifacts/modern
 
 # Windows 7 兼容分支，自包含 .NET 6。
-dotnet publish compat/windows7/src/HikingGuide.App/HikingGuide.App.csproj -c Release -r win-x64 --self-contained true -o artifacts/windows7
+dotnet publish compat/windows7/src/HikingGuide.App/HikingGuide.App.csproj -c Release -r win-x64 --self-contained true -p:RuntimeFrameworkVersion=6.0.36 -o artifacts/windows7
 ```
 
 Excel 模板随 Infrastructure 项目发布到 `Templates/攻略数据模板.xlsx`。不要修改模板结构来规避导出问题。
+
+Windows 10/11 的正式安装载荷还需生成中文无控制台启动器：
+
+```powershell
+./packaging/Build-Launcher.ps1 -PayloadDirectory artifacts/modern -Version 1.9.5
+```
+
+该入口调用系统 x64 dotnet.exe 加载原程序集，不增加 GPU 禁用参数。命令行直接运行程序集也使用同一标准机制：
+
+```powershell
+dotnet exec artifacts/modern/易行徒步规划制作器.dll
+```
 
 ## 路由与运行环境
 

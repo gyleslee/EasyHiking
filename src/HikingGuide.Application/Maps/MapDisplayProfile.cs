@@ -6,12 +6,11 @@ public sealed class MapDisplayProfile
 
     public IReadOnlyList<MapZoomTolerance> ZoomTolerances { get; init; } =
     [
-        new(6, 500),
-        new(10, 120),
-        new(14, 25),
-        new(17, 5),
-        new(19, 1.5),
-        new(24, 0.4)
+        new(6, 25),
+        new(10, 8),
+        new(12, 3),
+        new(14.999999999999998, 0.75),
+        new(24, 0)
     ];
 
     public double GetToleranceMeters(double zoom)

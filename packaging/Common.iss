@@ -5,16 +5,16 @@
   #define ProductVersion "1.8.0"
 #endif
 #ifndef PayloadBase
-  #define PayloadBase "..\packaging-t180-drive-data\build"
+  #define PayloadBase "build\payload"
 #endif
 #ifndef ManualBase
-  #define ManualBase "manual"
+  #define ManualBase "..\docs"
 #endif
 [Setup]
 AppId={#TestAppId}
 AppName={#ProductName}
 AppVersion={#ProductVersion}
-AppVerName={#ProductName} T{#ProductVersion}
+AppVerName={#ProductName} V{#ProductVersion}
 VersionInfoVersion={#ProductVersion}.0
 VersionInfoDescription=易行徒步规划制作器Program Files安装包
 DefaultDirName={autopf}\EasyHiking
@@ -319,7 +319,7 @@ begin
   if CurPageID = RuntimePage.ID then RefreshRuntimeStatus;
   if CurPageID = wpFinished then begin
     if not PrerequisitesReady then WizardForm.FinishedLabel.Caption := '程序文件已安装。运行环境尚未满足或需要重启，请通过微软官方下载页面补齐后，再从软件快捷方式启动。'
-    else WizardForm.FinishedLabel.Caption := '安装完成。首次启动会依次打开DEM挂载和BRouter导入/下载设置。等高线默认开启，阴影叠加为20%。用户配置沿用原目录结构，盘符跟随程序安装盘。卸载时默认保留，也可勾选删除。';
+    else WizardForm.FinishedLabel.Caption := '安装完成。首次启动会依次打开DEM挂载和BRouter导入/下载设置。等高线默认开启，阴影叠加为30%。用户配置沿用原目录结构，盘符跟随程序安装盘。卸载时默认保留，也可勾选删除。';
   end;
 end;
 

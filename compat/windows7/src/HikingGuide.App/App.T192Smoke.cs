@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
@@ -93,7 +93,7 @@ public partial class App
             GlobalSettingsService.Current.OfflineTerrain=GlobalSettingsService.Current.OfflineTerrain with{HillshadeOpacity=.2};await GlobalSettingsService.SaveAsync();await GlobalSettingsService.LoadAsync();
             checks["既有20%自定义阴影不被覆盖"]=GlobalSettingsService.Current.OfflineTerrain.HillshadeOpacity==.2;
             checks["主攻略与原始几何未被编辑"]=project.MainGuideTrackId==main.Id&&project.Tracks.Count==4&&project.Tracks.All(t=>t.Segments.Count==2);
-            var about=new AboutWindow{Owner=window};about.Show();await T10ManualLayoutAsync(about);checks["版本为T192"]=about.VersionLabel.Text=="软件版本：T1.9.2";await CaptureT10ClientAsync(about,Path.Combine(folder,"关于.png"));about.Close();
+            var about=new AboutWindow{Owner=window};about.Show();await T10ManualLayoutAsync(about);checks["版本为T192"]=about.VersionLabel.Text=="软件版本：V1.9.2";await CaptureT10ClientAsync(about,Path.Combine(folder,"关于.png"));about.Close();
         }
         catch(Exception e){error=e.ToString();}
         var passed=error is null&&checks.Values.All(v=>v);

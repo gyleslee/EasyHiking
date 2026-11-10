@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -15,6 +15,7 @@ public partial class MapView : UserControl
 {
     private readonly ILoggingService _log;
     private WebViewMapBridge? _bridge;
+    internal WebViewMapBridge? BridgeForAutomation => _bridge;
     private long _trackMenuRequestVersion;
     internal ContextMenu? ActiveFavoriteMenu { get; private set; }
     internal ContextMenu? ActiveTrackMenuForAutomation { get; private set; }
