@@ -79,7 +79,7 @@ public partial class App
         checks["地图管理具有等高线生成器标签"]=tabs.Items.OfType<TabItem>().Any(t=>t.Header?.ToString()=="等高线生成器");
         checks["离线缓存默认2GB与1GB"]=manager.TerrainContourCache.Text=="2048"&&manager.TerrainShadeCache.Text=="1024";
         checks["主等高线默认启用50米倍数"]=manager.TerrainMajorContours.IsChecked==true&&manager.TerrainMajorInterval.Text=="50";
-        checks["等高线与阴影各有清除按钮"]=manager.ClearContoursButton.Content?.ToString()=="清除等高线缓存"&&manager.ClearShadeButton.Content?.ToString()=="清除阴影缓存";
+        checks["等高线与阴影各有清除按钮"]=manager.ClearContoursButton.Content?.ToString()=="清除高程采样缓存"&&manager.ClearShadeButton.Content?.ToString()=="清除阴影缓存";
         manager.TerrainDem.SelectedValue=options.DemDatabaseId;manager.TerrainContours.IsChecked=true;manager.TerrainHillshade.IsChecked=true;
         await T10ManualLayoutAsync(manager);await CaptureT10ClientAsync(manager,Path.Combine(folder,"离线地图库.png"));
         var about=new AboutWindow{Owner=manager};about.Show();await T10ManualLayoutAsync(about);

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Windows.Input;
@@ -320,6 +320,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _history.Changed += (_, _) => { ((RelayCommand)UndoCommand).RaiseCanExecuteChanged(); ((RelayCommand)RedoCommand).RaiseCanExecuteChanged(); };
         OpenRecentCommand = new RelayCommand<RecentProjectEntry>(entry => _ = OpenRecentAsync(entry), entry => !IsBusy && entry is not null);
         ExitCommand = new RelayCommand(() => CloseRequested?.Invoke(this, EventArgs.Empty), () => !IsBusy);
+        InitializeKilometerCommands();
         InitializeRoutingCommands();
         Map.PropertyChanged+=(_,e)=>{if(e.PropertyName==nameof(MapViewModel.TerrainCoordinateEditingBlocked))RaiseCommandStates();};
     }
@@ -589,12 +590,14 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     internal void RunMapMarkerSelectionForAutomation(Guid markerId) =>
         OnMapSelectionRequested(this, new MapSelection(MapSelectionKind.Waypoint, markerId));
 
+    private long _navigationSelectionRequestVersion;
     public void SelectNavigationNode(NavigationNode? node, bool focusOnMap = true,
         bool preserveMultiSelection = false)
     {
+        if (_suppressTreeSelection || _isRefreshingTree) return;
         if (GuideEditsCommit?.Invoke() == false) return;
-        if (_suppressTreeSelection || _isRefreshingTree && node is null) return;
         if (node is not null && node.SelectionKey == _cancelledPrimaryKey) return;
+        var selectionRequestVersion=++_navigationSelectionRequestVersion;
         // 地图点选同步树节点可能再次触发 WPF SelectedItemChanged，不允许该回调适应全轨迹。
         focusOnMap &= !_isMapSelectionInProgress && !_isRefreshingTree && !_suppressTreeRebuildFocus;
         var switchedProject = false;
@@ -609,6 +612,13 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 context.Project.Tracks.SelectMany(track => track.Segments).Any(item => ReferenceEquals(item, model)));
             if (owner is not null && !ReferenceEquals(CurrentProject, owner.Project))
             {
+                // Rebuild restores selection from the owning context. Record the user's
+                // target first, rather than restoring that project's previous selection.
+                owner.SelectedObjectId=model switch
+                {
+                    HikingProject p=>p.Id,Track t=>t.Id,Waypoint w=>w.Id,GuideNode g=>g.Id,
+                    GuideSegment g=>g.Id,SplitSection part=>part.Id,_=>null
+                };
                 _projects.Activate(owner.ContextId);
                 RefreshProjectView();
                 switchedProject = true;
@@ -722,7 +732,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         {
             var selected = node?.Model;
             var expectedProject = CurrentProject;
-            _ = SelectAfterProjectSwitchAsync(selected, expectedProject, focusOnMap);
+            _ = SelectAfterProjectSwitchAsync(selected, expectedProject, focusOnMap,selectionRequestVersion);
         }
         else _ = Map.SelectObjectAsync(node?.Model, focusOnMap);
         if (!switchedProject && !_suppressTrackEditTargetSynchronization &&
@@ -802,10 +812,9 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         }
     }
 
-    private async Task SelectAfterProjectSwitchAsync(object? selected, HikingProject? expectedProject, bool focus)
+    private async Task SelectAfterProjectSwitchAsync(object? selected, HikingProject? expectedProject, bool focus,long selectionVersion)
     {
-        await _mapRefreshTask;
-        if (!ReferenceEquals(CurrentProject, expectedProject)) return;
+        if (!ReferenceEquals(CurrentProject, expectedProject)||selectionVersion!=_navigationSelectionRequestVersion) return;
         var path = FindNavigationPath(selected);
         if (path.Count > 0)
         {
@@ -817,6 +826,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             }
             finally { _suppressTreeSelection = false; }
         }
+        await _mapRefreshTask;
+        if (!ReferenceEquals(CurrentProject, expectedProject)||selectionVersion!=_navigationSelectionRequestVersion) return;
         await Map.SelectObjectAsync(selected, focus);
     }
 
@@ -1431,15 +1442,18 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 _dialogs.ShowWarning("颜色已被使用", "项目内另一条轨迹已使用该颜色，请选择不同颜色。");
                 return;
             }
-            var old = (targetTrack.Name, targetTrack.Description, targetTrack.DisplayColor);
-            var next = (window.EditedName, window.EditedDescription, (string?)window.EditedColor);
+            var old = (targetTrack.Name, targetTrack.Description, targetTrack.DisplayColor, HikingGuide.Core.Services.TrackKilometerService.IsEnabled(targetTrack),targetTrack.Metadata.GetValueOrDefault(HikingGuide.Core.Services.KilometerRouteDirections.Key),targetTrack.Metadata.GetValueOrDefault(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey));
+            var next = (window.EditedName, window.EditedDescription, (string?)window.EditedColor, window.EditedKilometers??HikingGuide.Core.Services.TrackKilometerService.IsEnabled(targetTrack),window.EditedKilometerDirections??targetTrack.Metadata.GetValueOrDefault(HikingGuide.Core.Services.KilometerRouteDirections.Key),window.EditedKilometerKind??targetTrack.Metadata.GetValueOrDefault(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey));
             if (old == next) return;
             _history.Execute("编辑轨迹属性", () => Apply(next), () => Apply(old));
-            void Apply((string? Name, string? Description, string? Color) state) => project.ExecuteAtomicUpdate(p =>
+            void Apply((string? Name, string? Description, string? Color, bool Kilometers,string? Directions,string? Kind) state) => project.ExecuteAtomicUpdate(p =>
             {
                 targetTrack.Name = state.Name;
                 targetTrack.Description = state.Description;
                 targetTrack.DisplayColor = state.Color;
+                HikingGuide.Core.Services.TrackKilometerService.SetEnabled(targetTrack,state.Kilometers);
+                if(state.Kind is {} kind)targetTrack.Metadata[HikingGuide.Core.Services.TrackKilometerService.RouteKindKey]=kind;else targetTrack.Metadata.Remove(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey);
+                if(state.Directions is {} direction)targetTrack.Metadata[HikingGuide.Core.Services.KilometerRouteDirections.Key]=direction;else targetTrack.Metadata.Remove(HikingGuide.Core.Services.KilometerRouteDirections.Key);
                 p.MarkDirty();
             });
             RefreshProjectView();
@@ -1702,251 +1716,258 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         }
     }
 
+    internal bool IsProjectTreeRefreshActive=>_isRefreshingTree||_suppressTreeSelection;
     private void RefreshProjectView(bool refreshMap = true)
     {
-        CheckRoutePlanProjectSwitch();
-        // 撤销/重做或提交编辑重建树时，WPF 可能在稍后的 DataBind/Loaded 阶段恢复选中项。
-        // 该事件不是用户主动定位；保护到本轮布局绑定完成，避免自动适应整条轨迹。
-        if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+        if(_isRefreshingTree)return;
+        _isRefreshingTree=true;
+        try
         {
-            _suppressTreeRebuildFocus = true;
-            var focusVersion = ++_treeRebuildFocusVersion;
-            dispatcher.BeginInvoke(() =>
+            if(_markerThumbnailProject!=CurrentProject?.Id)_markerThumbnailLifetime.Cancel();
+            CheckRoutePlanProjectSwitch();
+            // 撤销/重做或提交编辑重建树时，WPF 可能在稍后的 DataBind/Loaded 阶段恢复选中项。
+            // 该事件不是用户主动定位；保护到本轮布局绑定完成，避免自动适应整条轨迹。
+            if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
             {
-                if (_treeRebuildFocusVersion == focusVersion) _suppressTreeRebuildFocus = false;
-            }, System.Windows.Threading.DispatcherPriority.ContextIdle);
-        }
-        var expanded = CaptureExpandedNodes();
-        var switched = !ReferenceEquals(_historyProject, CurrentProject);
-        if (switched)
-        {
-            _cancelledPrimaryKey = null; _primaryCandidateKeys.Clear();
-            _trackEditState.End();
-            _trackEditContextChangeTask = Task.CompletedTask;
-            _trackEditPick = null;
-            _trackRangeStart = null;
-            _trackRangeEnd = null;
-            _trackClickMode = TrackClickMode.SelectPoint;
-            _selectedProjectItems.Clear();
-            _selectedNavigationKeys.Clear();
-            _selectionAnchorKey = null;
-            _historyProject = CurrentProject;
-            if (CurrentProject is { } current)
-            {
-                var contextId = _projects.OpenProjects.First(item => ReferenceEquals(item.Project, current)).ContextId;
-                if (!_histories.TryGetValue(contextId, out var history))
+                _suppressTreeRebuildFocus = true;
+                var focusVersion = ++_treeRebuildFocusVersion;
+                dispatcher.BeginInvoke(() =>
                 {
-                    history = new ProjectEditHistory { Project = current };
-                    history.Changed += (_, _) =>
-                    {
-                        ((RelayCommand)UndoCommand).RaiseCanExecuteChanged();
-                        ((RelayCommand)RedoCommand).RaiseCanExecuteChanged();
-                    };
-                    _histories.Add(contextId, history);
-                }
-                _history = history;
+                    if (_treeRebuildFocusVersion == focusVersion) _suppressTreeRebuildFocus = false;
+                }, System.Windows.Threading.DispatcherPriority.ContextIdle);
             }
-            _guideStructure.ClearSnapCache();
-        }
-        _isRefreshingTree = true;
-        NavigationNodes.Clear();
-        GuideRows.Clear();
-        _selectedModel = null;
-        _mapNodes.Clear();
-        SelectedProperties.Clear();
-        var project = CurrentProject;
-        foreach (var context in _projects.OpenProjects)
-        {
-            var itemProject = context.Project;
-            var activeProject = ReferenceEquals(itemProject, project);
-            var root = new NavigationNode($"{(activeProject ? "● " : "")}{itemProject.Name}{(itemProject.IsDirty ? " *" : "")}",
-                itemProject, isActiveProject: activeProject);
-            root.IsExpanded = activeProject;
-            NavigationNodes.Add(root);
-            if (!activeProject)
+            var expanded = CaptureExpandedNodes();
+            var switched = !ReferenceEquals(_historyProject, CurrentProject);
+            if (switched)
             {
-                foreach (var track in itemProject.Tracks)
-                {
-                    var trackNode = new NavigationNode((track.Id == itemProject.MainGuideTrackId ? "★ " : "") +
-                        (track.Name ?? "（未命名轨迹）"), track);
-                    if (track.Id == itemProject.MainGuideTrackId)
-                    {
-                        var guides = itemProject.GuideNodes.Where(marker => marker.TrackId == track.Id && !marker.IsOrphaned)
-                            .OrderBy(marker => marker.DistanceFromStart).ThenBy(marker => marker.StableOrder).ToArray();
-                        var guideGroup = new NavigationNode($"攻略节点（{guides.Length}）");
-                        for (var index = 0; index < guides.Length; index++)
-                            guideGroup.Children.Add(new NavigationNode($"{index + 1} {guides[index].Name ?? "未命名攻略节点"}", guides[index]));
-                        trackNode.Children.Add(guideGroup);
-                        var segmentGroup = new NavigationNode($"攻略分段（{itemProject.GuideSegments.Count}）");
-                        foreach (var segment in itemProject.GuideSegments.Where(segment => segment.TrackId == track.Id))
-                            segmentGroup.Children.Add(new NavigationNode(GuideSegmentDisplayFormatter.Format(itemProject, segment), segment));
-                        trackNode.Children.Add(segmentGroup);
-                    }
-                    var owned = itemProject.Waypoints.Where(marker => marker.AssociatedTrackId == track.Id).ToArray();
-                    var waypointGroup = new NavigationNode($"普通标注（{owned.Length}）");
-                    foreach (var marker in owned)
-                        waypointGroup.Children.Add(new NavigationNode(marker.Name ?? "未命名标注", marker));
-                    trackNode.Children.Add(waypointGroup);
-                    var splitSections = track.GetSplitSections();
-                    var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
-                    foreach (var section in splitSections)
-                    {
-                        geometryGroup.Children.Add(new NavigationNode(section.Name, section));
-                    }
-                    trackNode.Children.Add(geometryGroup);
-                    root.Children.Add(trackNode);
-                }
-                var otherOrphans = itemProject.GuideNodes.Where(marker => marker.IsOrphaned || itemProject.MainGuideTrackId is null).ToArray();
-                if (otherOrphans.Length > 0)
-                {
-                    var group = new NavigationNode($"未关联攻略节点（{otherOrphans.Length}）");
-                    foreach (var marker in otherOrphans) group.Children.Add(new NavigationNode(marker.Name ?? "未命名攻略节点", marker));
-                    root.Children.Add(group);
-                }
-                var otherUnassociated = itemProject.Waypoints.Where(marker => marker.AssociatedTrackId is null).ToArray();
-                if (otherUnassociated.Length > 0)
-                {
-                    var group = new NavigationNode($"未关联标注（{otherUnassociated.Length}）");
-                    foreach (var marker in otherUnassociated) group.Children.Add(new NavigationNode(marker.Name ?? "未命名标注", marker));
-                    root.Children.Add(group);
-                }
-                continue;
-            }
-            if (project is null) continue;
-            foreach (var track in project.Tracks)
-            {
-                var label = (track.Id == project.MainGuideTrackId ? "★ " : "") + (track.Name ?? "（未命名轨迹）");
-                var node = new NavigationNode(label, track,
-                    MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id),
-                    visible => SetMapLayerVisibility(track.Id, false, visible));
-                _mapNodes[track.Id] = node;
-                if (track.Id == project.MainGuideTrackId)
-                {
-                    var guides = project.GuideNodes.Where(marker => marker.TrackId == track.Id && !marker.IsOrphaned)
-                        .OrderBy(marker => marker.DistanceFromStart).ThenBy(marker => marker.StableOrder).ToArray();
-                    var guideGroup = new NavigationNode($"攻略节点（{guides.Length}）");
-                    for (var index = 0; index < guides.Length; index++)
-                    {
-                        var marker = guides[index];
-                        var markerNode = new NavigationNode($"{index + 1} {marker.Name ?? "未命名攻略节点"}", marker);
-                        _mapNodes[marker.Id] = markerNode;
-                        guideGroup.Children.Add(markerNode);
-                        var incoming = index == 0 ? null : project.GuideSegments.FirstOrDefault(segment =>
-                            segment.StartNodeId == guides[index - 1].Id && segment.EndNodeId == marker.Id);
-                        GuideRows.Add(new GuideTableRow(index + 1, marker, incoming,
-                            project.Settings.GuideSnap.AutoSnapWarningDistanceMeters));
-                    }
-                    node.Children.Add(guideGroup);
-                    var segments = new NavigationNode($"攻略分段（{project.GuideSegments.Count}）");
-                    foreach (var segment in project.GuideSegments.Where(segment => segment.TrackId == track.Id))
-                    {
-                        var segmentNode = new NavigationNode(GuideSegmentDisplayFormatter.Format(project, segment), segment,
-                            MapLayerVisibility.IsGuideSegmentVisible(project.Settings.Map, segment.Id),
-                            visible => SetMapLayerVisibility(segment.Id, true, visible));
-                        _mapNodes[segment.Id] = segmentNode;
-                        segments.Children.Add(segmentNode);
-                    }
-                    node.Children.Add(segments);
-                }
-                var owned = project.Waypoints.Where(marker => marker.AssociatedTrackId == track.Id).ToArray();
-                var waypointGroup = new NavigationNode($"普通标注（{owned.Length}）");
-                foreach (var marker in owned)
-                {
-                    var markerNode = new NavigationNode(marker.Name ?? "未命名标注", marker);
-                    _mapNodes[marker.Id] = markerNode;
-                    waypointGroup.Children.Add(markerNode);
-                }
-                node.Children.Add(waypointGroup);
-                var splitSections = track.GetSplitSections();
-                var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
-                foreach (var section in splitSections)
-                {
-                    var segmentNode = new NavigationNode(section.Name, section);
-                    _mapNodes[section.Id] = segmentNode;
-                    geometryGroup.Children.Add(segmentNode);
-                }
-                node.Children.Add(geometryGroup);
-                root.Children.Add(node);
-            }
-            var orphaned = project.GuideNodes.Where(marker => marker.IsOrphaned || project.MainGuideTrackId is null).ToArray();
-            if (orphaned.Length > 0)
-            {
-                var group = new NavigationNode($"未关联攻略节点（{orphaned.Length}）");
-                foreach (var marker in orphaned)
-                {
-                    var nav = new NavigationNode(marker.Name ?? "未命名攻略节点", marker);
-                    _mapNodes[marker.Id] = nav;
-                    group.Children.Add(nav);
-                }
-                root.Children.Add(group);
-            }
-            var unassociated = project.Waypoints.Where(marker => marker.AssociatedTrackId is null).ToArray();
-            if (unassociated.Length > 0)
-            {
-                var group = new NavigationNode($"未关联标注（{unassociated.Length}）");
-                foreach (var marker in unassociated)
-                {
-                    var nav = new NavigationNode(marker.Name ?? "未命名标注", marker);
-                    _mapNodes[marker.Id] = nav;
-                    group.Children.Add(nav);
-                }
-                root.Children.Add(group);
-            }
-            var points = project.Tracks.Sum(track => track.GetPointCount());
-            StatusText = $"项目：{project.Name} | 轨迹：{project.Tracks.Count}条 | 轨迹点：{points} | 标注点：{project.Waypoints.Count}";
-        }
-        RestoreExpandedNodes(expanded);
-        SyncNavigationSelection();
-        if (switched)
-            foreach (var root in NavigationNodes.Where(node => ReferenceEquals(node.Model, project)))
-                root.IsExpanded = true;
-        _isRefreshingTree = false;
-        if (project is not null)
-        {
-            var context = _projects.OpenProjects.First(c => ReferenceEquals(c.Project, project));
-            if (context.SelectedTrackId.HasValue && !project.Tracks.Any(t => t.Id == context.SelectedTrackId)) context.SelectedTrackId = null;
-            project.ActiveTrackId = context.SelectedTrackId;
-            if (context.SelectedObjectId is Guid objectId && _mapNodes.TryGetValue(objectId, out var selectedNode))
-            {
-                _selectedModel = selectedNode.Model; _selectedNavigationKeys.Add(selectedNode.SelectionKey);
-                _suppressTreeSelection = true; try { selectedNode.IsSelected = true; } finally { _suppressTreeSelection = false; }
-                SyncNavigationSelection();
-            }
-        }
-        NotifyPrimaryTrack();
-        AnalysisSelectionChanged?.Invoke(this, EventArgs.Empty);
-        OnPropertyChanged(nameof(WindowTitle));
-        OnPropertyChanged(nameof(ProjectName));
-        RaiseCommandStates();
-        if (refreshMap)
-        {
-            // 删除当前目标后仍在项目编辑模式中，改选剩余轨迹；空项目才退出。
-            if (project is not null && ReferenceEquals(project, _trackEditProject) &&
-                (_trackEditTrack is null || !project.Tracks.Contains(_trackEditTrack)))
-            {
-                if ((project.ActiveTrack ?? project.Tracks.FirstOrDefault()) is { } remaining)
-                    _trackEditState.SelectTarget(project, remaining, renewSession: true);
-                else _trackEditState.End();
-            }
-            _mapRefreshTask = Map.SetProjectAsync(project);
-            if (project is not null && ReferenceEquals(project, _trackEditProject) &&
-                _trackEditTrack is { } editing)
-            {
-                // 撤销/重做可将 GeometryRevision 回退，故重建时也必须轮换会话。
-                _trackEditState.SelectTarget(project, editing, renewSession: true);
+                _cancelledPrimaryKey = null; _primaryCandidateKeys.Clear();
+                _trackEditState.End();
+                _trackEditContextChangeTask = Task.CompletedTask;
                 _trackEditPick = null;
                 _trackRangeStart = null;
                 _trackRangeEnd = null;
                 _trackClickMode = TrackClickMode.SelectPoint;
-                var session = _trackEditSessionId!.Value;
-                _mapRefreshTask = RestoreTrackEditAfterMapRefreshAsync(_mapRefreshTask,
-                    project, editing, session);
-                _trackEditContextChangeTask = _mapRefreshTask;
+                _selectedProjectItems.Clear();
+                _selectedNavigationKeys.Clear();
+                _selectionAnchorKey = null;
+                _historyProject = CurrentProject;
+                if (CurrentProject is { } current)
+                {
+                    var contextId = _projects.OpenProjects.First(item => ReferenceEquals(item.Project, current)).ContextId;
+                    if (!_histories.TryGetValue(contextId, out var history))
+                    {
+                        history = new ProjectEditHistory { Project = current };
+                        history.Changed += (_, _) =>
+                        {
+                            ((RelayCommand)UndoCommand).RaiseCanExecuteChanged();
+                            ((RelayCommand)RedoCommand).RaiseCanExecuteChanged();
+                        };
+                        _histories.Add(contextId, history);
+                    }
+                    _history = history;
+                }
+                _guideStructure.ClearSnapCache();
             }
-            OnPropertyChanged(nameof(IsTrackEditActive));
-            OnPropertyChanged(nameof(SelectedTrackEditPointId));
+            NavigationNodes.Clear();
+            GuideRows.Clear();
+            _selectedModel = null;
+            _mapNodes.Clear();
+            SelectedProperties.Clear();
+            var project = CurrentProject;
+            foreach (var context in _projects.OpenProjects)
+            {
+                var itemProject = context.Project;
+                var activeProject = ReferenceEquals(itemProject, project);
+                var root = new NavigationNode($"{(activeProject ? "● " : "")}{itemProject.Name}{(itemProject.IsDirty ? " *" : "")}",
+                    itemProject, isActiveProject: activeProject);
+                root.IsExpanded = activeProject;
+                NavigationNodes.Add(root);
+                if (!activeProject)
+                {
+                    foreach (var track in itemProject.Tracks)
+                    {
+                        var trackNode = new NavigationNode((track.Id == itemProject.MainGuideTrackId ? "★ " : "") +
+                            (track.Name ?? "（未命名轨迹）"), track);
+                        if (track.Id == itemProject.MainGuideTrackId)
+                        {
+                            var guides = itemProject.GuideNodes.Where(marker => marker.TrackId == track.Id && !marker.IsOrphaned)
+                                .OrderBy(marker => marker.DistanceFromStart).ThenBy(marker => marker.StableOrder).ToArray();
+                            var guideGroup = new NavigationNode($"攻略节点（{guides.Length}）");
+                            for (var index = 0; index < guides.Length; index++)
+                                guideGroup.Children.Add(new NavigationNode($"{index + 1} {guides[index].Name ?? "未命名攻略节点"}", guides[index]));
+                            trackNode.Children.Add(guideGroup);
+                            var segmentGroup = new NavigationNode($"攻略分段（{itemProject.GuideSegments.Count}）");
+                            foreach (var segment in itemProject.GuideSegments.Where(segment => segment.TrackId == track.Id))
+                                segmentGroup.Children.Add(new NavigationNode(GuideSegmentDisplayFormatter.Format(itemProject, segment), segment));
+                            trackNode.Children.Add(segmentGroup);
+                        }
+                        var owned = itemProject.Waypoints.Where(marker => marker.AssociatedTrackId == track.Id).ToArray();
+                        var waypointGroup = new NavigationNode($"普通标注（{owned.Length}）");
+                        foreach (var marker in owned)
+                            waypointGroup.Children.Add(new NavigationNode(marker.Name ?? "未命名标注", marker));
+                        trackNode.Children.Add(waypointGroup);
+                        var splitSections = track.GetSplitSections();
+                        var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
+                        foreach (var section in splitSections)
+                        {
+                            geometryGroup.Children.Add(new NavigationNode(section.Name, section));
+                        }
+                        trackNode.Children.Add(geometryGroup);
+                        root.Children.Add(trackNode);
+                    }
+                    var otherOrphans = itemProject.GuideNodes.Where(marker => marker.IsOrphaned || itemProject.MainGuideTrackId is null).ToArray();
+                    if (otherOrphans.Length > 0)
+                    {
+                        var group = new NavigationNode($"未关联攻略节点（{otherOrphans.Length}）");
+                        foreach (var marker in otherOrphans) group.Children.Add(new NavigationNode(marker.Name ?? "未命名攻略节点", marker));
+                        root.Children.Add(group);
+                    }
+                    var otherUnassociated = itemProject.Waypoints.Where(marker => marker.AssociatedTrackId is null).ToArray();
+                    if (otherUnassociated.Length > 0)
+                    {
+                        var group = new NavigationNode($"未关联标注（{otherUnassociated.Length}）");
+                        foreach (var marker in otherUnassociated) group.Children.Add(new NavigationNode(marker.Name ?? "未命名标注", marker));
+                        root.Children.Add(group);
+                    }
+                    continue;
+                }
+                if (project is null) continue;
+                foreach (var track in project.Tracks)
+                {
+                    var label = (track.Id == project.MainGuideTrackId ? "★ " : "") + (track.Name ?? "（未命名轨迹）");
+                    var node = new NavigationNode(label, track,
+                        MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id),
+                        visible => SetMapLayerVisibility(track.Id, false, visible));
+                    _mapNodes[track.Id] = node;
+                    if (track.Id == project.MainGuideTrackId)
+                    {
+                        var guides = project.GuideNodes.Where(marker => marker.TrackId == track.Id && !marker.IsOrphaned)
+                            .OrderBy(marker => marker.DistanceFromStart).ThenBy(marker => marker.StableOrder).ToArray();
+                        var guideGroup = new NavigationNode($"攻略节点（{guides.Length}）");
+                        for (var index = 0; index < guides.Length; index++)
+                        {
+                            var marker = guides[index];
+                            var markerNode = new NavigationNode($"{index + 1} {marker.Name ?? "未命名攻略节点"}", marker);
+                            _mapNodes[marker.Id] = markerNode;
+                            guideGroup.Children.Add(markerNode);
+                            var incoming = index == 0 ? null : project.GuideSegments.FirstOrDefault(segment =>
+                                segment.StartNodeId == guides[index - 1].Id && segment.EndNodeId == marker.Id);
+                            GuideRows.Add(new GuideTableRow(index + 1, marker, incoming,
+                                project.Settings.GuideSnap.AutoSnapWarningDistanceMeters));
+                        }
+                        node.Children.Add(guideGroup);
+                        var segments = new NavigationNode($"攻略分段（{project.GuideSegments.Count}）");
+                        foreach (var segment in project.GuideSegments.Where(segment => segment.TrackId == track.Id))
+                        {
+                            var segmentNode = new NavigationNode(GuideSegmentDisplayFormatter.Format(project, segment), segment,
+                                MapLayerVisibility.IsGuideSegmentVisible(project.Settings.Map, segment.Id),
+                                visible => SetMapLayerVisibility(segment.Id, true, visible));
+                            _mapNodes[segment.Id] = segmentNode;
+                            segments.Children.Add(segmentNode);
+                        }
+                        node.Children.Add(segments);
+                    }
+                    var owned = project.Waypoints.Where(marker => marker.AssociatedTrackId == track.Id).ToArray();
+                    var waypointGroup = new NavigationNode($"普通标注（{owned.Length}）");
+                    foreach (var marker in owned)
+                    {
+                        var markerNode = new NavigationNode(marker.Name ?? "未命名标注", marker);
+                        _mapNodes[marker.Id] = markerNode;
+                        waypointGroup.Children.Add(markerNode);
+                    }
+                    node.Children.Add(waypointGroup);
+                    var splitSections = track.GetSplitSections();
+                    var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
+                    foreach (var section in splitSections)
+                    {
+                        var segmentNode = new NavigationNode(section.Name, section);
+                        _mapNodes[section.Id] = segmentNode;
+                        geometryGroup.Children.Add(segmentNode);
+                    }
+                    node.Children.Add(geometryGroup);
+                    root.Children.Add(node);
+                }
+                var orphaned = project.GuideNodes.Where(marker => marker.IsOrphaned || project.MainGuideTrackId is null).ToArray();
+                if (orphaned.Length > 0)
+                {
+                    var group = new NavigationNode($"未关联攻略节点（{orphaned.Length}）");
+                    foreach (var marker in orphaned)
+                    {
+                        var nav = new NavigationNode(marker.Name ?? "未命名攻略节点", marker);
+                        _mapNodes[marker.Id] = nav;
+                        group.Children.Add(nav);
+                    }
+                    root.Children.Add(group);
+                }
+                var unassociated = project.Waypoints.Where(marker => marker.AssociatedTrackId is null).ToArray();
+                if (unassociated.Length > 0)
+                {
+                    var group = new NavigationNode($"未关联标注（{unassociated.Length}）");
+                    foreach (var marker in unassociated)
+                    {
+                        var nav = new NavigationNode(marker.Name ?? "未命名标注", marker);
+                        _mapNodes[marker.Id] = nav;
+                        group.Children.Add(nav);
+                    }
+                    root.Children.Add(group);
+                }
+                var points = project.Tracks.Sum(track => track.GetPointCount());
+                StatusText = $"项目：{project.Name} | 轨迹：{project.Tracks.Count}条 | 轨迹点：{points} | 标注点：{project.Waypoints.Count}";
+            }
+            RestoreExpandedNodes(expanded);
+            SyncNavigationSelection();
+            if (switched)
+                foreach (var root in NavigationNodes.Where(node => ReferenceEquals(node.Model, project)))
+                    root.IsExpanded = true;
+            if (project is not null)
+            {
+                var context = _projects.OpenProjects.First(c => ReferenceEquals(c.Project, project));
+                if (context.SelectedTrackId.HasValue && !project.Tracks.Any(t => t.Id == context.SelectedTrackId)) context.SelectedTrackId = null;
+                project.ActiveTrackId = context.SelectedTrackId;
+                if (context.SelectedObjectId is Guid objectId &&
+                    (objectId==project.Id?NavigationNodes.FirstOrDefault(n=>ReferenceEquals(n.Model,project)):_mapNodes.GetValueOrDefault(objectId)) is {} selectedNode)
+                {
+                    _selectedModel = selectedNode.Model; _selectedNavigationKeys.Add(selectedNode.SelectionKey);
+                    _suppressTreeSelection = true; try { selectedNode.IsSelected = true; } finally { _suppressTreeSelection = false; }
+                    SyncNavigationSelection();
+                }
+            }
+            NotifyPrimaryTrack();
+            AnalysisSelectionChanged?.Invoke(this, EventArgs.Empty);
+            OnPropertyChanged(nameof(WindowTitle));
+            OnPropertyChanged(nameof(ProjectName));
             RaiseCommandStates();
+            if (refreshMap)
+            {
+                // 删除当前目标后仍在项目编辑模式中，改选剩余轨迹；空项目才退出。
+                if (project is not null && ReferenceEquals(project, _trackEditProject) &&
+                    (_trackEditTrack is null || !project.Tracks.Contains(_trackEditTrack)))
+                {
+                    if ((project.ActiveTrack ?? project.Tracks.FirstOrDefault()) is { } remaining)
+                        _trackEditState.SelectTarget(project, remaining, renewSession: true);
+                    else _trackEditState.End();
+                }
+                _mapRefreshTask = Map.SetProjectAsync(project);
+                if (project is not null && ReferenceEquals(project, _trackEditProject) &&
+                    _trackEditTrack is { } editing)
+                {
+                    // 撤销/重做可将 GeometryRevision 回退，故重建时也必须轮换会话。
+                    _trackEditState.SelectTarget(project, editing, renewSession: true);
+                    _trackEditPick = null;
+                    _trackRangeStart = null;
+                    _trackRangeEnd = null;
+                    _trackClickMode = TrackClickMode.SelectPoint;
+                    var session = _trackEditSessionId!.Value;
+                    _mapRefreshTask = RestoreTrackEditAfterMapRefreshAsync(_mapRefreshTask,
+                        project, editing, session);
+                    _trackEditContextChangeTask = _mapRefreshTask;
+                }
+                OnPropertyChanged(nameof(IsTrackEditActive));
+                OnPropertyChanged(nameof(SelectedTrackEditPointId));
+                RaiseCommandStates();
+            }
         }
+        finally { _isRefreshingTree=false; }
     }
 
     private async Task RestoreTrackEditAfterMapRefreshAsync(Task refresh,
@@ -2082,39 +2103,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private void OnMapMediaThumbnailRequested(object? sender, HikingGuide.Application.Maps.MapEventMessage value) =>
         _ = PrepareMapThumbnailAsync(value);
 
-    private async Task PrepareMapThumbnailAsync(HikingGuide.Application.Maps.MapEventMessage value)
-    {
-        var project = CurrentProject;
-        var markerId = value.WaypointId ?? value.GuideNodeId;
-        if (project is null || project.Id != value.ProjectId || markerId is not Guid id) return;
-        try
-        {
-            byte[]? thumbnail = null;
-            var attachment = project.MediaAttachments.Where(item => item.OwnerId == id)
-                .OrderBy(item => item.DisplayOrder).FirstOrDefault();
-            if (attachment is not null)
-            {
-                var blob = project.MediaBlobs.First(item => item.Id == attachment.MediaBlobId);
-                thumbnail = await _thumbnails.GetInternalThumbnailAsync(project, blob);
-            }
-            else
-            {
-                var reference = project.ExternalMediaReferences.Where(item => item.OwnerId == id)
-                    .OrderBy(item => item.DisplayOrder).FirstOrDefault();
-                if (reference is not null)
-                {
-                    var cached = await Task.Run(() => _externalMediaDownloader.TryGetCachedAsync(reference.Url));
-                    if (cached is not null) thumbnail = await _thumbnails.GetExternalThumbnailAsync(cached.CachePath);
-                }
-            }
-            if (thumbnail is not null) await Map.SetMarkerPopupThumbnailAsync(project.Id, value.Revision, id, thumbnail);
-        }
-        catch (Exception exception)
-        {
-            _log.Warning($"地图图片缩略图加载失败：{exception.GetType().Name}");
-            await Map.SetMarkerPopupErrorAsync(project.Id, value.Revision, id, "图片缩略图暂不可用，可打开查看器重试。");
-        }
-    }
+    private Task PrepareMapThumbnailAsync(HikingGuide.Application.Maps.MapEventMessage value)=>PrepareMarkerThumbnailAsync(value);
 
     private void SetMapLayerVisibility(Guid objectId, bool guideSegment, bool visible)
     {
@@ -2673,6 +2662,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             {
                 var plan = await Task.Run(() => new TrackMergeService().Prepare(project, sources,
                     name, connect, token, deleteOriginals), token);
+                plan.NewTrack.Metadata[HikingGuide.Core.Services.TrackKilometerService.RouteKindKey]=dialog.IsSingleJourney?"route":"collection";
                 token.ThrowIfCancellationRequested();
                 if (!ReferenceEquals(CurrentProject, project)) return;
                 if (connect || deleteOriginals)
@@ -3239,20 +3229,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         marker.CustomTypeName = choice.CustomTypeName;
     }
 
-    private void OpenSelectedMedia()
-    {
-        if (CurrentProject is not { } project || SelectedMarker is not { } marker) return;
-        var savedToProject = false;
-        var window = new MediaViewerWindow(project, marker.Id, _externalMediaDownloader,
-            async (reference, downloaded) =>
-            {
-                await SaveExternalToProjectAsync(project, reference, downloaded);
-                savedToProject = true;
-            })
-        { Owner = System.Windows.Application.Current.MainWindow };
-        window.ShowDialog();
-        if (savedToProject) RefreshProjectView();
-    }
+    private void OpenSelectedMedia()=>_=OpenMarkerImageViewerAsync();
 
     private async Task SaveExternalToProjectAsync(HikingProject project,
         ExternalMediaReference reference, ExternalMediaDownloadResult downloaded)
@@ -3393,6 +3370,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private bool CanExport() => !IsBusy && CurrentProject is { Tracks.Count: > 0 };
     private void RaiseCommandStates()
     {
+        RaiseKilometerCommands();
         RaiseRoutingCommandStates();
         _enterTrackEditCommand.RaiseCanExecuteChanged();
         _exitTrackEditCommand.RaiseCanExecuteChanged();
@@ -3444,6 +3422,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     public void Dispose()
     {
+        _markerThumbnailLifetime.Cancel();
         foreach (var token in _guideSaveDebounce.Values.ToArray()) token.Cancel();
         _periodicAutoSaveCancellation?.Cancel();
         _periodicAutoSaveCancellation?.Dispose();

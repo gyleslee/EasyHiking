@@ -5,7 +5,7 @@
 | 组件 | 用途与许可说明 |
 |---|---|
 | BRouter 1.7.10 | 本地路由及 rd5 解码，MIT；全文随引擎保留在 BRouterRuntime/BRouter-LICENSE.txt。上游：https://github.com/abrensch/brouter |
-| MapLibre GL JS 6.11.1 | 地图渲染，BSD-3-Clause；全文见 Map/Web/vendor/MAPLIBRE-LICENSE.txt。本地虚线图集修补说明见同目录 LOCAL-PATCHES.md。上游：https://github.com/maplibre/maplibre-gl-js |
+| MapLibre GL JS 6.17.0（现代主分支；Win7历史分支6.11.1） | 地图渲染，BSD-3-Clause；全文见 Map/Web/vendor/MAPLIBRE-LICENSE.txt。本地虚线图集修补说明见同目录 LOCAL-PATCHES.md。上游：https://github.com/maplibre/maplibre-gl-js |
 | coordtransform | 坐标转换公式，MIT；全文见 ThirdPartyNotices/coordtransform-LICENSE.txt。 |
 | ScottPlot / ScottPlot.WPF | 高程图表，MIT；精确版本以对应 csproj / NuGet 元数据为准。 |
 | NetTopologySuite | 几何运算，BSD-3-Clause；保留 NuGet 包许可。 |

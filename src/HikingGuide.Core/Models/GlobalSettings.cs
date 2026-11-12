@@ -3,6 +3,7 @@ namespace HikingGuide.Core.Models;
 /// <summary>软件级设置模型，不进入 .hikeproj 项目容器。</summary>
 public sealed class GlobalSettings
 {
+    public int MarkerDisplayMode { get; set; } = 3;
     /// <summary>P3 兼容字段；P4 使用强类型 MapSources。</summary>
     public List<string> MapSourceDefinitions { get; set; } = [];
     public List<MapSourceDefinition> MapSources { get; set; } = [];
@@ -11,6 +12,7 @@ public sealed class GlobalSettings
     public OfflineTerrainSettings OfflineTerrain { get; set; } = new();
     public OsmRoadSettings OsmRoads {get;set;}=new();
     public Terrain3DSettings? Terrain3D { get; set; }
+    public int UnifiedMapDemVersion {get;set;}
     public TerrainCameraState? TerrainCamera {get;set;}
     public PathReference? MapCacheDirectory { get; set; }
     public PathReference? DefaultDemDirectory { get; set; }

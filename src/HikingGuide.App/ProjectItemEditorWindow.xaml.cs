@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using HikingGuide.Application.Maps;
@@ -10,23 +10,29 @@ public partial class ProjectItemEditorWindow : Window
 {
     private string _color = "#2877C7";
     private readonly bool _guideSegment;
+    private Track? _kilometerTrack;
+    public string? EditedKilometerKind=>RouteKindCombo.SelectedIndex==1?"route":RouteKindCombo.SelectedIndex==2?"collection":null;
+    public string? EditedKilometerDirections {get;private set;}
 
     public string? EditedName { get; private set; }
     public string? EditedDescription { get; private set; }
     public string? EditedRoadCondition { get; private set; }
     public TimeSpan? EditedDuration { get; private set; }
     public string EditedColor => _color;
+    public bool? EditedKilometers=>RouteKindCombo.SelectedIndex==2?false:KilometerBox.Visibility==Visibility.Visible?KilometerBox.IsChecked==true:null;
 
     public ProjectItemEditorWindow(Track track)
     {
         InitializeComponent();
         Title = "编辑轨迹属性";
+        _kilometerTrack=track;RouteKindPanel.Visibility=track.Segments.Count>1?Visibility.Visible:Visibility.Collapsed;RouteKindCombo.SelectedIndex=track.Metadata.GetValueOrDefault(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey)=="collection"?2:track.Metadata.GetValueOrDefault(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey)=="route"?1:0;
         ObjectKindText.Text = "轨迹属性";
         NameInput.Text = track.Name ?? string.Empty;
         DescriptionInput.Text = track.Description ?? string.Empty;
         NameHint.Text = "名称和说明会保存在项目中，不会改写原始轨迹文件。";
         SafetyHint.Text = "轨迹点、长度、来源高程和项目主攻略轨迹设置不在此窗口修改。";
         ColorPanel.Visibility = Visibility.Visible;
+        if(new HikingGuide.Core.Services.TrackKilometerService().Assess(track).Eligible){KilometerDirectionButton.Visibility=Visibility.Visible;_kilometerTrack=track;EditedKilometerDirections=track.Metadata.GetValueOrDefault(HikingGuide.Core.Services.KilometerRouteDirections.Key);KilometerBox.Visibility=Visibility.Visible;KilometerBox.IsChecked=HikingGuide.Core.Services.TrackKilometerService.IsEnabled(track);}
         SetColor(TrackDisplayColor.IsValid(track.DisplayColor) ? track.DisplayColor! : "#2877C7");
     }
 
@@ -69,8 +75,22 @@ public partial class ProjectItemEditorWindow : Window
         if (picker.ShowDialog() == true) SetColor(picker.SelectedColor);
     }
 
+    private void OnRouteKindChanged(object sender,System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        if(_kilometerTrack is not {} track||KilometerBox is null||KilometerDirectionButton is null)return;
+        var show=RouteKindCombo.SelectedIndex!=2&&(RouteKindCombo.SelectedIndex==1||new HikingGuide.Core.Services.TrackKilometerService().Assess(track,true).Eligible);
+        KilometerBox.Visibility=KilometerDirectionButton.Visibility=show?Visibility.Visible:Visibility.Collapsed;if(!show)KilometerBox.IsChecked=false;
+    }
+    private void OnKilometerDirections(object sender,RoutedEventArgs e)
+    {
+        if(_kilometerTrack is not {} track)return;
+        var preview=new Track{Name=track.Name,Segments=track.Segments,Metadata=new(track.Metadata)};preview.RestoreGeometryRevision(track.GeometryRevision);if(EditedKilometerDirections is {} directions)preview.Metadata[HikingGuide.Core.Services.KilometerRouteDirections.Key]=directions;var dialog=new KilometerDirectionWindow(preview){Owner=this};if(dialog.ShowDialog()==true)EditedKilometerDirections=HikingGuide.Core.Services.KilometerRouteDirections.Serialize(track,dialog.Result!);
+    }
     private void OnSave(object sender, RoutedEventArgs e)
     {
+        if(KilometerBox.IsChecked==true&&RouteKindCombo.SelectedIndex==0&&_kilometerTrack is {} pending&&HikingGuide.Core.Services.TrackKilometerService.RequiresKindConfirmation(pending)){MessageBox.Show(this,"请先选择路线性质。","请选择路线性质");return;}
+        if(KilometerBox.IsChecked==true&&_kilometerTrack is {} track&&HikingGuide.Core.Services.KilometerRouteDirections.NeedsConfirmation(track)&&EditedKilometerDirections is null){OnKilometerDirections(sender,e);if(EditedKilometerDirections is null)return;}
+
         var name = NameInput.Text.Trim();
         if (!_guideSegment && name.Length == 0)
         {

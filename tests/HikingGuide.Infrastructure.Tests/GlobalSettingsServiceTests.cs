@@ -8,6 +8,28 @@ namespace HikingGuide.Infrastructure.Tests;
 
 public sealed class GlobalSettingsServiceTests
 {
+    [Fact]public async Task UnifiedMapDemUsesTerrainChoiceAndMigratesOnlyOnceWithoutTouchingOtherSettings()
+    {
+        using var directory=new TemporaryDirectory();
+        GlobalSettingsService Service()=>new(new ApplicationDataPaths(directory.Path),new TestLoggingService(),new MapSourceTemplateService());
+        var service=Service();await service.LoadAsync();var terrain=Guid.NewGuid();var oldContour=Guid.NewGuid();
+        service.Current.Terrain3D=new(){TerrainDemDatabaseId=terrain,Enabled=false,Exaggeration=1.2};
+        service.Current.OfflineTerrain=new(){DemDatabaseId=oldContour,ContourOpacity=.37,HillshadeOpacity=.6};
+        service.Current.FlatSlopeThresholdPercent=2.1;var sources=service.Current.MapSources.Select(s=>s.Id).ToArray();
+        await service.SaveAsync();var reopened=Service();await reopened.LoadAsync();
+        Assert.Equal(1,reopened.Current.UnifiedMapDemVersion);Assert.Equal(terrain,reopened.Current.OfflineTerrain.DemDatabaseId);
+        Assert.Equal(.37,reopened.Current.OfflineTerrain.ContourOpacity);Assert.Equal(.6,reopened.Current.OfflineTerrain.HillshadeOpacity);
+        Assert.Equal(1.2,reopened.Current.Terrain3D!.Exaggeration);Assert.False(reopened.Current.Terrain3D.Enabled);
+        Assert.Equal(2.1,reopened.Current.FlatSlopeThresholdPercent);Assert.Equal(sources,reopened.Current.MapSources.Select(s=>s.Id));
+        reopened.Current.Terrain3D=reopened.Current.Terrain3D with{TerrainDemDatabaseId=null};await reopened.SaveAsync();
+        Assert.Null(reopened.Current.OfflineTerrain.DemDatabaseId);
+    }
+    [Fact]public async Task UnifiedMapDemCanAdoptLegacyContourChoiceWhenTerrainChoiceWasNeverSet()
+    {
+        using var directory=new TemporaryDirectory();var service=new GlobalSettingsService(new ApplicationDataPaths(directory.Path),new TestLoggingService(),new MapSourceTemplateService());
+        await service.LoadAsync();var legacy=Guid.NewGuid();service.Current.OfflineTerrain=service.Current.OfflineTerrain with{DemDatabaseId=legacy};
+        await service.SaveAsync();Assert.Equal(legacy,service.Current.Terrain3D!.TerrainDemDatabaseId);
+    }
     [Fact]public async Task SavedRoadLevelsPersistAsDefaultsAndNewUsersReadPackageBaselineOnlyOnce()
     {
         using var directory=new TemporaryDirectory();var defaults=Path.Combine(directory.Path,"Defaults");Directory.CreateDirectory(defaults);
@@ -107,7 +129,7 @@ public sealed class GlobalSettingsServiceTests
         Assert.True(reopened.Current.OfflineTerrain.ContoursVisible);Assert.True(reopened.Current.OfflineTerrain.HillshadeVisible);
     }
     [Fact]
-    public async Task TerrainSettingsAndGlobalCameraRoundTripWithoutOverwriting2D()
+    public async Task UnifiedTerrainSettingsAndGlobalCameraPreserve2DDisplayParameters()
     {
         using var directory=new TemporaryDirectory();var service=Create(directory.Path);await service.LoadAsync();
         var dem2D=Guid.NewGuid();var dem3D=Guid.NewGuid();
@@ -117,7 +139,7 @@ public sealed class GlobalSettingsServiceTests
         var reopened=Create(directory.Path);await reopened.LoadAsync();
         Assert.Equal(1.4,reopened.Current.Terrain3D!.Exaggeration);
         Assert.Equal(service.Current.Terrain3D,reopened.Current.Terrain3D);Assert.Equal(service.Current.TerrainCamera,reopened.Current.TerrainCamera);
-        Assert.Equal(original,reopened.Current.OfflineTerrain);Assert.Equal(2.1,reopened.Current.FlatSlopeThresholdPercent);
+        Assert.Equal(original with{DemDatabaseId=dem3D},reopened.Current.OfflineTerrain);Assert.Equal(2.1,reopened.Current.FlatSlopeThresholdPercent);
     }
     [Fact]
     public async Task TerrainMigrationKeepsOldVisibilityAndRejectsInvalidSettings()

@@ -10,7 +10,7 @@ using SkiaSharp;
 
 namespace HikingGuide.App.Services;
 
-public sealed class TerrainTileGenerator(DemDatabaseCatalog catalog) : IDisposable
+public sealed partial class TerrainTileGenerator(DemDatabaseCatalog catalog) : IDisposable
 {
     // Terrain密集读取使用独立只读句柄/原像元窗口，避免压缩TIF每像元解压及阻塞攻略分析句柄。
     private readonly DemElevationProvider _terrainProvider=new(catalog,maximumOpenHandles:4,rasterWindowCacheCapacity:32);
@@ -99,5 +99,5 @@ public sealed class TerrainTileGenerator(DemDatabaseCatalog catalog) : IDisposab
         try{await _cache.TrimAsync(CacheId,0);}
         finally{_cache.Configure(CacheId,(long)_settings.CacheLimitMb*1024*1024);_gate.Release(2);}
     }
-    public void Dispose(){lock(_sync)_generation.Cancel();TerrainGenerationPriority.Shared.SetTerrainReady(true);_terrainProvider.Dispose();}
+    public void Dispose(){lock(_sync){_generation.Cancel();_surfaceGeneration.Cancel();}TerrainGenerationPriority.Shared.SetTerrainReady(true);_terrainProvider.Dispose();}
 }

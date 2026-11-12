@@ -1,11 +1,11 @@
-<Window x:Class="HikingGuide.App.Terrain3DWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+﻿<Window x:Class="HikingGuide.App.Terrain3DWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
  Title="3D地图设置" Width="760" Height="780" MinWidth="700" MinHeight="650" WindowStartupLocation="CenterOwner" Background="#F8FAFC">
  <DockPanel Margin="16">
   <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right"><Button Content="恢复默认" Padding="12,5" Margin="4" Click="OnDefaults"/><Button Content="确定" Padding="24,5" Margin="4" IsDefault="True" Click="OnConfirm"/></StackPanel>
   <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
    <GroupBox Header="3D地形"><StackPanel Margin="12">
     <CheckBox x:Name="EnabledBox" Content="启用3D地形" Margin="0,4" Click="OnChanged"/>
-    <TextBlock Text="3D高程来源：" Margin="0,8,0,4"/><ComboBox x:Name="DemBox" DisplayMemberPath="Summary" SelectedValuePath="Id" SelectionChanged="OnChanged"/>
+    <TextBlock Text="统一地图DEM（3D地形、等高线、阴影共用；2D也有效）：" Margin="0,8,0,4"/><ComboBox x:Name="DemBox" DisplayMemberPath="Summary" SelectedValuePath="Id" SelectionChanged="OnChanged"/>
     <TextBlock x:Name="NativeText" Margin="0,6" TextWrapping="Wrap"/>
     <StackPanel Orientation="Horizontal" Margin="0,4"><TextBlock Text="地形夸张：" Width="120"/><Slider x:Name="Exaggeration" Minimum="0.5" Maximum="3" Value="1.5" Width="300" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.1" IsSnapToTickEnabled="True" ValueChanged="OnSliderChanged"/><TextBox x:Name="ExaggerationInput" Text="1.5" Width="90" Margin="8,0,4,0" VerticalContentAlignment="Center" LostKeyboardFocus="OnExaggerationTextCommitted" PreviewKeyDown="OnExaggerationKeyDown" ToolTip="精确到1位小数，例如1.2、1.4；输入更多位将四舍五入，范围0.5—3。按回车或离开输入框应用。"/><TextBlock Text="×" VerticalAlignment="Center"/></StackPanel>
     <StackPanel Orientation="Horizontal" Margin="0,4"><TextBlock Text="默认3D倾角：" Width="120"/><Slider x:Name="Pitch" Minimum="0" Maximum="85" Value="55" Width="300" ValueChanged="OnSliderChanged"/><TextBlock Text="{Binding ElementName=Pitch,Path=Value,StringFormat={}{0:F0}°}" Width="70"/></StackPanel>
@@ -15,7 +15,7 @@
     <TextBlock x:Name="EffectsSummary" Margin="0,8" TextWrapping="Wrap"/>
     <StackPanel Orientation="Horizontal"><Button Content="等高线设置…" Click="OnEffects" Padding="12,4" Margin="0,0,12,0"/><Button Content="阴影设置…" Click="OnEffects" Padding="12,4"/></StackPanel>
     <StackPanel Orientation="Horizontal" Margin="0,12,0,0" ToolTip="阴影叠加强度统一在等高线生成器中设置。"><TextBlock Text="阴影叠加强度：" Width="120"/><Slider x:Name="ShadeOpacity" Minimum="0" Maximum="100" Value="20" Width="300" IsEnabled="False"/><TextBlock Text="{Binding ElementName=ShadeOpacity,Path=Value,StringFormat={}{0:F0}%}"/></StackPanel>
-    <TextBlock Text="上方为等高线生成器的当前状态，请通过设置按钮修改。等高线和阴影在2D、3D中均使用生成器所选DEM、显隐、颜色和强度；本窗口的DEM仅用于3D山体。两者可独立选择，使用同一DEM时高程更贴合。" TextWrapping="Wrap" Margin="0,8,0,0"/>
+    <TextBlock Text="3D地形、等高线和阴影共用上方选择的统一地图DEM，2D模式也采用此来源。等高线与阴影的显隐、颜色及强度，请通过对应设置按钮修改；不会改变轨迹分析、攻略或收藏点的高程来源。" TextWrapping="Wrap" Margin="0,8,0,0"/>
    </StackPanel></GroupBox>
    <GroupBox Header="3D缓存" Margin="0,10,0,0"><StackPanel Margin="12">
     <StackPanel Orientation="Horizontal"><TextBlock Text="缓存上限：" Width="120"/><TextBox x:Name="CacheGb" Text="4" Width="90" LostKeyboardFocus="OnChanged"/><TextBlock Text=" GB（1—50；默认4）"/></StackPanel>

@@ -134,6 +134,12 @@ public sealed class GlobalSettingsService(
         {ShowContours=settings.OfflineTerrain.DemDatabaseId.HasValue?settings.OfflineTerrain.ContoursVisible:true,
             ShowHillshade=settings.OfflineTerrain.DemDatabaseId.HasValue?settings.OfflineTerrain.HillshadeVisible:true};
         settings.Terrain3D=settings.Terrain3D with{Exaggeration=Terrain3DSettings.RoundExaggeration(settings.Terrain3D.Exaggeration)};
+        if(settings.UnifiedMapDemVersion<1)
+        {
+            settings.Terrain3D=settings.Terrain3D with{TerrainDemDatabaseId=settings.Terrain3D.TerrainDemDatabaseId??settings.OfflineTerrain.DemDatabaseId};
+            settings.UnifiedMapDemVersion=1;
+        }
+        settings.OfflineTerrain=settings.OfflineTerrain with{DemDatabaseId=settings.Terrain3D.TerrainDemDatabaseId};
         if (settings.PanelLayout is { IsValid: false }) settings.PanelLayout = null;
         settings.GuideTableColumnWidths = (settings.GuideTableColumnWidths ?? [])
             .Where(pair => !string.IsNullOrWhiteSpace(pair.Key) && double.IsFinite(pair.Value) && pair.Value >= 20 && pair.Value <= 4000)

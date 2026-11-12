@@ -6,13 +6,15 @@
 
 [下载安装包](https://github.com/gyleslee/EasyHiking/releases) · [操作说明](docs/易行徒步规划制作器-操作说明.md) · [反馈问题](https://github.com/gyleslee/EasyHiking/issues) · [源码编译](BUILDING.md)
 
-## 当前版本：V1.9.5
+## 当前版本：V1.9.6
 
-[下载 V1.9.5](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.5) · [查看本次全部更新](CHANGELOG.md)
+[下载 V1.9.6](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.6) · [查看相对 V1.9.5 的全部更新](CHANGELOG.md)
 
-本次发布汇总上次 GitHub 版本 T1.9.2 之后的 1.9.3～1.9.5 更新：统一轨迹与攻略覆盖色的显示精度，重做贴线方向标记，完善收藏点、图片和 KMZ 交换，增加 WASD 地图平移与规划右键撤销，改善启动与地图连续显示，并更新 SQLite 原生库以修复 CVE-2025-6965。软件显示版本现统一使用 V 前缀。
+新增GPU动态等高线与圆滑显示，完善近中远地形细节、标注缩略图及图片浏览，增加轨迹公里水滴标识与路线性质管理，修复项目树选择重入，更新操作说明。
 
-Windows 10/11 安装版保留中文名称、图标和快捷方式，使用标准 .NET 入口启动；无需额外运行 CMD，不强制关闭 GPU 或 3D。Windows 7 SP1 x64 仍提供独立安装包。
+安装包拆为普通Windows10/11 x64版与Windows11 ARM64专用兼容版。ARM版通过系统x64模拟运行，不是ARM原生构建，不支持Windows10 ARM；目标ARM虚拟机的实际运行仍待验证。
+
+**后续版本暂不更新 Windows 7 支持。** 不再同步新功能或重新生成Windows7安装包，原V1.9.5兼容包及历史源码保留：[Windows7历史下载](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.5)。
 
 ## 主要作用
 
@@ -31,7 +33,7 @@ Windows 10/11 安装版保留中文名称、图标和快捷方式，使用标准
 | 地图与图层 | 自定义 XYZ 底图及两个在线叠加层；坐标系选择与纠偏；图源缓存、透明度和缓存清理。 |
 | 离线地图 | 多边形选区、层级选择、大小预估、下载进度及续传；生成 PMTiles，优先读取已下载区域；超出包内层级时继续在线加载。 |
 | 2D / 3D 地形 | 使用本地 DEM 生成 3D 地形；调整地形夸张、旋转、倾斜和一键向北。 |
-| DEM 等高线与阴影 | 按视野后台生成并缓存；主等高线加粗；调整颜色、透明度及阴影强度；与在线图层独立控制。 |
+| 动态等高线与阴影 | GPU动态等高线、圆滑显示、近中远细节、主次线样式与海拔数字；统一地图DEM、独立显隐及高程采样/阴影缓存。 |
 | OSM 离线路网 | 读取 BRouter rd5 数据中的道路并独立叠加；道路类型单行设置，提供样式示例，可调整最小与最大显示层级。 |
 | 高程与里程分析 | 挂载多套 GeoTIFF/HGT DEM；GPS 与 DEM 高程查看和对比；交互式海拔剖面、攻略节点黄点及点击定位地图。 |
 | 攻略节点与图片 | 普通标注和攻略节点互转、批量编辑、轨迹吸附及重合路段候选选择；KMZ 图片与网络图片按需下载。 |
@@ -63,7 +65,8 @@ Windows 10/11 安装版保留中文名称、图标和快捷方式，使用标准
 - [夸克网盘](https://pan.quark.cn/s/39129b268105)
 
 - Windows 10 / 11 64 位：`EasyHiking-{版本号}-Windows10-11-x64-Setup.exe`
-- Windows 7 SP1 64 位：`EasyHiking-{版本号}-Windows7-x64-Setup.exe`
+- Windows 11 ARM64：`EasyHiking-{版本号}-Windows11-ARM64-Setup.exe`，应用通过x64模拟运行。
+- Windows 7 SP1 x64：仅保留 [V1.9.5历史兼容包](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.5)，后续版本暂不更新支持。
 
 ### 安装后依照首次设置向导挂载 DEM、导入或下载 BRouter 路由数据。
 
@@ -78,7 +81,7 @@ Windows 10/11 安装版保留中文名称、图标和快捷方式，使用标准
 
 ## 技术与开发
 
-主分支使用 C#、.NET 10、WPF、WebView2 和 MapLibre；Windows 7 兼容源码位于 `compat/windows7`，使用 .NET 6 与相应兼容组件。核心计算与 GUI 分离，提供 xUnit 及 Web 地图自动测试。
+主分支使用 C#、.NET 10、WPF、WebView2 和 MapLibre；Windows 7 历史兼容源码位于 `compat/windows7`，保留V1.9.5及其.NET 6组件，后续版本暂不更新Windows7支持。核心计算与 GUI 分离，提供 xUnit 及 Web 地图自动测试。
 
 详见 [BUILDING.md](BUILDING.md)、[第三方说明](THIRD_PARTY_NOTICES.md) 和 [贡献说明](CONTRIBUTING.md)。源代码不包含本机缓存、私有配置或已编译的历史发布目录。
 

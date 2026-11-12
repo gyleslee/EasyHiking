@@ -1,6 +1,7 @@
-[CmdletBinding()]
+﻿[CmdletBinding()]
 param(
  [Parameter(Mandatory=$true)][string]$PayloadRoot,
+ [ValidateSet('Modern','Win7')][string[]]$Branches=@('Modern','Win7'),
  [string]$SettingsFile='F:\Hiking Guide\易行徒步规划制作器\Data\settings.json'
 )
 $ErrorActionPreference='Stop'
@@ -17,11 +18,11 @@ foreach($s in $roads.styles){
  $levels[$s.id]=[ordered]@{MinZoom=$min;MaxZoom=$max}
 }
 $json=$levels|ConvertTo-Json -Depth 4
-foreach($branch in 'Modern','Win7'){
+foreach($branch in $Branches){
  $payload=Join-Path $PayloadRoot ('Payload'+$branch)
  if(!(Test-Path -LiteralPath $payload -PathType Container)){throw "程序载荷不存在：$payload"}
 }
-foreach($branch in 'Modern','Win7'){
+foreach($branch in $Branches){
  $folder=Join-Path $PayloadRoot ('Payload'+$branch+'\Defaults')
  New-Item -ItemType Directory -Path $folder -Force|Out-Null
  $file=Join-Path $folder 'osm-road-default-levels.json'
@@ -29,4 +30,4 @@ foreach($branch in 'Modern','Win7'){
  Move-Item -LiteralPath ($file+'.tmp') -Destination $file -Force
 }
 if((Get-FileHash -LiteralPath $SettingsFile -Algorithm SHA256).Hash-ne$sourceHash){throw '读取期间F盘设置发生变化，请重新制作默认层级。'}
-[pscustomobject]@{Rules=$levels.Count;SourceSettings=$SettingsFile;SourceUnchanged=$true;Files=@('PayloadModern\Defaults\osm-road-default-levels.json','PayloadWin7\Defaults\osm-road-default-levels.json')}
+[pscustomobject]@{Rules=$levels.Count;SourceSettings=$SettingsFile;SourceUnchanged=$true;Files=@($Branches|ForEach-Object{'Payload'+$_+'\Defaults\osm-road-default-levels.json'})}

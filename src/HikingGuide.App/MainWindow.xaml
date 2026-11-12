@@ -17,7 +17,11 @@
     <Window.Resources>
         <local:SixCharacterWidthConverter x:Key="SixCharacterWidth" />
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-        <HierarchicalDataTemplate DataType="{x:Type vm:NavigationNode}"
+        <Style x:Key="ProjectTreeItemStyle" TargetType="TreeViewItem">
+            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+        <HierarchicalDataTemplate ItemContainerStyle="{StaticResource ProjectTreeItemStyle}" DataType="{x:Type vm:NavigationNode}"
                                   ItemsSource="{Binding Children}">
             <StackPanel Orientation="Horizontal">
                 <CheckBox IsChecked="{Binding IsMapVisible, Mode=TwoWay}"
@@ -66,6 +70,10 @@
                         <MenuItem Header="删除轨迹"
                                   Command="{Binding PlacementTarget.Tag.DeleteTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        <MenuItem Header="显示公里数标识（所选轨迹）" Visibility="{Binding PlacementTarget.DataContext.CanKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.ShowKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        <MenuItem Header="隐藏公里数标识（所选轨迹）" Visibility="{Binding PlacementTarget.DataContext.CanKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.HideKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        <MenuItem Header="显示本项目轨迹公里数标识" Visibility="{Binding PlacementTarget.DataContext.CanProjectKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.ShowProjectKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        <MenuItem Header="隐藏本项目轨迹公里数标识" Visibility="{Binding PlacementTarget.DataContext.CanProjectKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.HideProjectKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <MenuItem Header="设置轨迹颜色…"
                                   Command="{Binding PlacementTarget.Tag.SetTrackColorCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -150,10 +158,6 @@
                     Visibility="{Binding IsTrack, Converter={StaticResource BooleanToVisibilityConverter}}" />
             </StackPanel>
         </HierarchicalDataTemplate>
-        <Style TargetType="TreeViewItem">
-            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
-        </Style>
     </Window.Resources>
 
     <Grid x:Name="WindowPanels">
@@ -221,6 +225,13 @@
                 <MenuItem Header="BRouter设置与路由数据…" Click="OnOpenBRouterSettings" />
             </MenuItem>
             <MenuItem Header="标注点">
+                <MenuItem x:Name="MarkerDisplayMenu" Header="显示方式" SubmenuOpened="OnMarkerDisplayMenuOpened">
+                    <MenuItem Header="仅圆点" Tag="0" IsCheckable="True" Click="OnMarkerDisplayModeClick"/>
+                    <MenuItem Header="显示文字" Tag="1" IsCheckable="True" Click="OnMarkerDisplayModeClick"/>
+                    <MenuItem Header="显示缩略图" Tag="2" IsCheckable="True" Click="OnMarkerDisplayModeClick"/>
+                    <MenuItem Header="显示文字与缩略图" Tag="3" IsCheckable="True" Click="OnMarkerDisplayModeClick"/>
+                </MenuItem>
+                <Separator/>
                 <MenuItem Header="添加攻略节点" Command="{Binding AddGuideMenuCommand}" />
                 <MenuItem Header="添加普通标注" Command="{Binding AddWaypointMenuCommand}" />
                 <Separator />
@@ -273,6 +284,7 @@
                 <MenuItem x:Name="FavoritesVisibleMenu" Header="地图上显示收藏点" IsCheckable="True" Click="OnFavoriteVisibility" />
             </MenuItem>
             <MenuItem Header="设置">
+                <MenuItem Header="轨迹公里数标识…" Command="{Binding KilometerSettingsCommand}" />
                 <MenuItem Header="DEM与路由数据设置向导…" Click="OnOpenFirstRunSetup" />
                 <MenuItem Header="DEM 高程数据库…" Click="OnOpenDemDatabases" />
                 <MenuItem Header="面板显示">
@@ -321,7 +333,7 @@
                             <Run Text="所有条目可 Ctrl / Shift 多选；已选 " /><Run Text="{Binding SelectedProjectItemCount, Mode=OneWay}" /><Run Text=" 项" />
                         </TextBlock>
                     </StackPanel>
-                    <TreeView x:Name="ProjectTree" ItemsSource="{Binding NavigationNodes}"
+                    <TreeView x:Name="ProjectTree" ItemsSource="{Binding NavigationNodes}" ItemContainerStyle="{StaticResource ProjectTreeItemStyle}"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               PreviewMouseLeftButtonDown="OnNavigationLeftClick"
                               VirtualizingStackPanel.IsVirtualizing="True"

@@ -311,12 +311,19 @@ public partial class MainWindow : Window
         _bRouterSettingsWindow.Show();
     }
 
+    private long _navigationSelectionVersion;
     private void OnNavigationSelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        if (DataContext is MainViewModel viewModel)
+        var version=++_navigationSelectionVersion;
+        if(DataContext is not MainViewModel viewModel||viewModel.IsProjectTreeRefreshActive||e.NewValue is not NavigationNode node)return;
+        var focus=!viewModel.IsMapSelectionInProgress;
+        // IsSelected can be applied while WPF is evaluating a recycled container's Style.
+        // Never clear/rebuild ItemsSource inside that property-change stack.
+        Dispatcher.BeginInvoke(()=>
         {
-            viewModel.SelectNavigationNode(e.NewValue as NavigationNode, !viewModel.IsMapSelectionInProgress);
-        }
+            if(version!=_navigationSelectionVersion||!IsLoaded||!ReferenceEquals(DataContext,viewModel)||viewModel.IsProjectTreeRefreshActive||!ReferenceEquals(ProjectTree.SelectedItem,node))return;
+            viewModel.SelectNavigationNode(node,focus);
+        },DispatcherPriority.ContextIdle);
     }
 
     private void OnBottomTabSelectionChanged(object sender, SelectionChangedEventArgs e)

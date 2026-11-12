@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -36,31 +36,39 @@ public partial class MapSourceManagerWindow : Window
     {
         var s=_settings.Current.OfflineTerrain ?? new();
         TerrainDem.ItemsSource=((App)System.Windows.Application.Current).DemCatalog.Databases;
-        TerrainDem.SelectedValue=s.DemDatabaseId;
+        TerrainDem.SelectedValue=_settings.Current.Terrain3D?.TerrainDemDatabaseId;
         TerrainContours.IsChecked=s.ContoursVisible;TerrainHillshade.IsChecked=s.HillshadeVisible;
         TerrainColor.Content=s.ContourColor;TerrainContourCache.Text=s.ContourCacheMb.ToString();TerrainShadeCache.Text=s.HillshadeCacheMb.ToString();TerrainOpacity.Value=s.HillshadeOpacity*100;
         TerrainMajorContours.IsChecked=s.MajorContoursEnabled;TerrainMajorInterval.Text=s.MajorContourIntervalMeters.ToString();
         TerrainContourOpacity.Value=s.ContourOpacity*100;
+        TerrainLowInterval.Text=s.LowContourIntervalMeters.ToString();TerrainHighInterval.Text=s.HighContourIntervalMeters.ToString();
+        TerrainLineWidth.Text=s.ContourLineWidth.ToString(System.Globalization.CultureInfo.CurrentCulture);TerrainMajorLineWidth.Text=s.MajorContourLineWidth.ToString(System.Globalization.CultureInfo.CurrentCulture);
+        TerrainMajorColor.Content=s.MajorContourColor??s.ContourColor;
+        TerrainSmooth.IsChecked=s.SmoothContours;
         TerrainStatus.Text="没有可选DEM时，请先在“DEM管理”挂载并扫描数据库。缺测或未覆盖区域透明显示。";
     }
     private void OnTerrainColor(object sender,RoutedEventArgs e)
     {
-        var picker=new TrackColorWindow(TerrainColor.Content.ToString()!){Owner=this,Title="等高线颜色选择器"};
-        if(picker.ShowDialog()==true)TerrainColor.Content=picker.SelectedColor;
+        var button=(Button)sender;var picker=new TrackColorWindow(button.Content.ToString()!){Owner=this,Title="等高线颜色选择器"};
+        if(picker.ShowDialog()==true)button.Content=picker.SelectedColor;
     }
     private async void OnApplyTerrain(object sender,RoutedEventArgs e)
     {
         if(_terrainCacheBusy)return;
         if(!int.TryParse(TerrainMajorInterval.Text,out var major)||major<=0)
         {TerrainStatus.Text="主等高线间隔请输入大于0的整数，单位米，例如50、100、200。";return;}
+        if(!int.TryParse(TerrainLowInterval.Text,out var low)||!int.TryParse(TerrainHighInterval.Text,out var high)||
+            !double.TryParse(TerrainLineWidth.Text,out var lineWidth)||!double.TryParse(TerrainMajorLineWidth.Text,out var majorWidth))
+        {TerrainStatus.Text="等高距请输入整数米，线宽请输入数值（像素）。";return;}
         if(!int.TryParse(TerrainContourCache.Text,out var contours)||!int.TryParse(TerrainShadeCache.Text,out var shade))
         {TerrainStatus.Text="缓存容量请输入0至1048576的整数，单位MB。";return;}
-        var s=new OfflineTerrainSettings{DemDatabaseId=TerrainDem.SelectedValue as Guid?,ContoursVisible=TerrainContours.IsChecked==true,HillshadeVisible=TerrainHillshade.IsChecked==true,ContourColor=TerrainColor.Content.ToString()!,ContourCacheMb=contours,HillshadeCacheMb=shade,HillshadeOpacity=TerrainOpacity.Value/100,MajorContoursEnabled=TerrainMajorContours.IsChecked==true,MajorContourIntervalMeters=major};
+        var s=_settings.Current.OfflineTerrain with{DemDatabaseId=_settings.Current.Terrain3D?.TerrainDemDatabaseId,ContoursVisible=TerrainContours.IsChecked==true,HillshadeVisible=TerrainHillshade.IsChecked==true,ContourColor=TerrainColor.Content.ToString()!,ContourCacheMb=contours,HillshadeCacheMb=shade,HillshadeOpacity=TerrainOpacity.Value/100,MajorContoursEnabled=TerrainMajorContours.IsChecked==true,MajorContourIntervalMeters=major};
         if(!s.IsValid){TerrainStatus.Text="缓存容量或颜色无效，请检查设置。";return;}
         var app=(App)System.Windows.Application.Current;
         if((s.ContoursVisible||s.HillshadeVisible)&&(s.DemDatabaseId is not {} id||app.DemCatalog.Databases.FirstOrDefault(d=>d.Id==id) is not {Status:HikingGuide.Infrastructure.Elevation.DemDatabaseStatus.Ready}||app.DemProvider is null))
         {TerrainStatus.Text="请先选择可读取、已完成扫描的DEM数据库。";return;}
-        s=s with {ContourOpacity=TerrainContourOpacity.Value/100};
+        s=s with {ContourOpacity=TerrainContourOpacity.Value/100,LowContourIntervalMeters=low,HighContourIntervalMeters=high,ContourLineWidth=lineWidth,MajorContourLineWidth=majorWidth,MajorContourColor=TerrainMajorColor.Content.ToString(),SmoothContours=TerrainSmooth.IsChecked==true};
+        if(!s.IsValid){TerrainStatus.Text="等高距应为1—10000米；普通线宽0.3—20像素，主线宽0.3—40像素。";return;}
         _settings.Current.OfflineTerrain=s;
         if(!await SaveSafelyAsync()){TerrainStatus.Text="保存失败，请检查设置目录权限。";return;}
         _settings.NotifyMapSettingsChanged();
@@ -75,17 +83,22 @@ public partial class MapSourceManagerWindow : Window
         catch(UnauthorizedAccessException){TerrainStatus.Text="设置已保存，但缓存目录不可写。";}
     }
     private async void OnClearContours(object sender,RoutedEventArgs e)=>await ConfirmClearTerrainCacheAsync(true);
+    private void OnSharedTerrainDem(object sender,RoutedEventArgs e)
+    {
+        if(System.Windows.Application.Current.MainWindow?.DataContext is HikingGuide.App.ViewModels.MainViewModel main)
+        {new Terrain3DWindow(main.Map){Owner=this}.ShowDialog();TerrainDem.SelectedValue=_settings.Current.Terrain3D?.TerrainDemDatabaseId;}
+    }
     private async void OnClearShade(object sender,RoutedEventArgs e)=>await ConfirmClearTerrainCacheAsync(false);
     private async Task ConfirmClearTerrainCacheAsync(bool contours)
     {
-        if(_terrainCacheBusy)return;var name=contours?"等高线":"阴影";
-        if(MessageBox.Show(this,$"仅清除{name}生成缓存（含2D及3D使用的缓存），不删除DEM、项目或其他缓存。已显示图块暂时保留，之后按地图请求重新生成。是否继续？",$"清除{name}缓存",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+        if(_terrainCacheBusy)return;var name=contours?"高程采样":"阴影";
+        if(MessageBox.Show(this,$"仅清除{name}缓存（含2D及3D使用的缓存），不删除DEM、项目或其他缓存。已显示图块暂时保留，之后按地图请求重新生成。是否继续？",$"清除{name}缓存",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
         await ClearTerrainCacheAsync(contours);
     }
     internal async Task ClearTerrainCacheAsync(bool contours)
     {
         if(_terrainCacheBusy)return;_terrainCacheBusy=true;ClearContoursButton.IsEnabled=ClearShadeButton.IsEnabled=false;
-        var name=contours?"等高线":"阴影";TerrainStatus.Text=$"正在清除{name}缓存…";
+        var name=contours?"高程采样":"阴影";TerrainStatus.Text=$"正在清除{name}缓存…";
         try{await ((App)System.Windows.Application.Current).ClearOfflineTerrainCacheAsync(contours);TerrainStatus.Text=$"{name}缓存已清除；未删除DEM或其他缓存，后续按视野请求重新生成。";}
         catch(Exception error) when(error is System.IO.IOException or UnauthorizedAccessException){TerrainStatus.Text=$"清除{name}缓存失败：{error.Message}";}
         finally{_terrainCacheBusy=false;ClearContoursButton.IsEnabled=ClearShadeButton.IsEnabled=true;}

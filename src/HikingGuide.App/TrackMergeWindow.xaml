@@ -16,6 +16,7 @@
                 <TextBlock Text="新轨迹名称" FontWeight="SemiBold" />
                 <TextBox x:Name="NameBox" Margin="0,5,0,12" />
             </StackPanel>
+            <StackPanel x:Name="RouteKindPanel" Orientation="Horizontal" Margin="0,0,0,10"><TextBlock Text="合并后路线性质：" VerticalAlignment="Center"/><ComboBox x:Name="RouteKindCombo" SelectedIndex="1" Width="185"><ComboBoxItem Content="一条行进路线"/><ComboBoxItem Content="轨迹合集"/></ComboBox></StackPanel>
             <CheckBox x:Name="DeleteOriginalCheck" Content="删除原有轨迹" IsChecked="True" Margin="0,0,0,6" />
             <TextBlock x:Name="DeleteExplanation" Text="默认删除所选来源：选整轨删除整轨，选部分分段仅删除这些分段，其余保留。所属普通标注转到新轨迹；部分分段按原轨迹最近位置判断。取消勾选则来源与标注归属不变。图片和人工内容保留，原始文件不删除，可撤销。"
                        TextWrapping="Wrap" Margin="0,0,0,10" />

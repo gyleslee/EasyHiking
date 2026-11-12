@@ -2,6 +2,9 @@ namespace HikingGuide.App.ViewModels;
 
 public sealed partial class MapViewModel
 {
+    public IReadOnlyList<string> MarkerDisplayModes {get;}=["仅圆点","文字","缩略图","文字与缩略图"];
+    public int MarkerDisplayMode {get=>Math.Clamp(_settings.Current.MarkerDisplayMode,0,3);set{if(value<0||value>3||value==MarkerDisplayMode)return;_settings.Current.MarkerDisplayMode=value;OnPropertyChanged();_=SaveMarkerDisplayAsync();}}
+    private async Task SaveMarkerDisplayAsync(){try{if(_bridge?.IsReady==true)await _bridge.SendAsync(HikingGuide.Application.Maps.MapProtocol.SerializeCommand("SetMarkerDisplay",new{mode=MarkerDisplayMode}));await _settings.SaveAsync();}catch(Exception error){_log.Error(error,"保存标注显示设置失败");UserMessage?.Invoke(this,"标注显示设置保存失败，请检查配置目录。");}}
     private readonly SemaphoreSlim _layerToggleGate=new(1,1);
     public bool DemContoursVisible {get=>_settings.Current.OfflineTerrain.ContoursVisible;set{if(value!=DemContoursVisible)_=SetQuickLayerAsync(0,value);}}
     public bool TerrainHillshadeVisible {get=>_settings.Current.OfflineTerrain.HillshadeVisible;set{if(value!=TerrainHillshadeVisible)_=SetQuickLayerAsync(1,value);}}

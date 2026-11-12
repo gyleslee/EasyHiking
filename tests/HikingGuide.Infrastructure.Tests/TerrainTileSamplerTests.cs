@@ -1,4 +1,4 @@
-using HikingGuide.Core.Elevation;
+﻿using HikingGuide.Core.Elevation;
 using HikingGuide.Core.Geometry;
 using HikingGuide.Infrastructure.Elevation;
 using HikingGuide.Infrastructure.Projects;
@@ -116,6 +116,19 @@ public sealed class TerrainTileSamplerTests:IDisposable
         await cache.GetAsync(b,"independent",300,Fetch);await cache.TrimAsync(a,150);
         await cache.GetAsync(a,"old",150,Fetch);Assert.Equal(3,calls);
         await cache.TrimAsync(a,0);await cache.GetAsync(b,"independent",300,Fetch);Assert.Equal(3,calls);
+    }
+    [Fact]
+    public async Task GpuSurfaceKeepsValidPixelsAlongsideNoDataAndSharesExactNeighborHalo()
+    {
+        DemGdalRuntime.EnsureReady();var folder=Path.Combine(_root,"surface");Directory.CreateDirectory(folder);Create(folder,22,113,false);
+        var catalog=new DemDatabaseCatalog(new ApplicationDataPaths(Path.Combine(_root,"data")));var mount=await catalog.MountAsync("GPU有效性",folder,unitMetersConfirmed:true);
+        using var provider=new DemElevationProvider(catalog,rasterWindowCacheCapacity:2);var sampler=new TerrainTileSampler(catalog,provider);
+        var left=sampler.SampleSurface(mount.Database.Id,9,417,222);var right=sampler.SampleSurface(mount.Database.Id,9,418,222);
+        const int size=TerrainRgb.SurfaceTileSize;
+        Assert.Equal(size*size*4,left.Length);Assert.Contains((byte)0,Enumerable.Range(0,size*size).Select(i=>left[i*4+3]));Assert.Contains((byte)255,Enumerable.Range(0,size*size).Select(i=>left[i*4+3]));
+        for(var row=0;row<size;row++)for(var channel=0;channel<4;channel++)for(var halo=0;halo<4;halo++)
+            Assert.Equal(left[(row*size+512+halo)*4+channel],right[(row*size+halo)*4+channel]);
+        Assert.Throws<TerrainUnavailableException>(()=>sampler.Sample(mount.Database.Id,9,417,222));
     }
     private static void Create(string folder,int lat,int lon,bool hgt)
     {

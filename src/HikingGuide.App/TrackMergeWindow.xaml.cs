@@ -72,6 +72,7 @@ public partial class TrackMergeWindow : Window
     {
         InitializeComponent();
         _connect = connect;
+        RouteKindPanel.Visibility=connect||splitMode?Visibility.Collapsed:Visibility.Visible;
         _splitMode = splitMode;
         _focusGeometry = focusGeometry;
         _focusPoint = focusPoint;
@@ -104,6 +105,7 @@ public partial class TrackMergeWindow : Window
     }
 
     public string NewTrackName => NameBox.Text.Trim();
+    public bool IsSingleJourney => _connect||RouteKindCombo.SelectedIndex==0;
     public bool DeleteOriginalTracks => DeleteOriginalCheck.IsChecked == true;
     private GeometrySelectionRow[] OrderedRows()
     {

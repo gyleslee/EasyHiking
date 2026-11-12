@@ -1,4 +1,19 @@
-// 与隔离探针共用的系统检查，不把产品名称或是否Windows 11当作判断条件。
+// Arm64需要Windows11的x64模拟；不按系统版本名称或Insider/LTSC名称排除。
+function PackageArchitectureError(ArmPackage, NativeArm: Boolean): String;
+begin
+ Result := '';
+ if ArmPackage and not NativeArm then Result := '此为ARM64专用包，普通Intel/AMD电脑请使用x64安装包。';
+ if not ArmPackage and NativeArm then Result := '此为普通x64包，ARM64 Windows11请使用ARM64专用兼容包。';
+end;
+
+function TargetArchitectureError(Legacy, NativeArm, X64Compatible: Boolean; Major, Build: Cardinal): String;
+begin
+  Result := '';
+  if Legacy and NativeArm then begin Result := 'Windows 7安装包仅适用于原生x64系统。'; Exit; end;
+  if not Legacy and (not X64Compatible or (NativeArm and ((Major<10) or (Build<22000)))) then
+    Result := '此安装包需要x64 Windows 10/11，或支持x64模拟的ARM64 Windows 11。Windows 10 ARM及32位系统不受支持。';
+end;
+
 function TargetSystemError(Legacy: Boolean; Major, Minor, Build, ServicePack: Cardinal; Win64: Boolean): String;
 var Detected: String;
 begin

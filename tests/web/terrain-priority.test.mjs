@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Terrain3DController } from '../../src/HikingGuide.App/Map/Web/terrain3d.js';
-import { ContourLabels } from '../../src/HikingGuide.App/Map/Web/contour-labels.js';
+import { GpuContourLayer } from '../../src/HikingGuide.App/Map/Web/gpu-contours.js';
 
 const wait=()=>new Promise(r=>setTimeout(r,110));
 function setup(){
@@ -28,9 +28,7 @@ test('回到2D释放等待，状态消息含修订号且重复状态不刷屏',a
     s.controller.state.enabled=false;s.controller.scheduleWork();await wait();assert.equal(s.messages.at(-1).ready,true);
   }finally{s.dispose();}
 });
-test('移动时暂停新标签请求但不清除已有数字，暂停中的加载不会启动',async()=>{
-  const labels=new ContourLabels({on(){}});labels.featureCount=5;let aborted=0;
-  labels.abort={abort(){aborted++;}};labels.setPaused(true);labels.schedule();await labels.load();
-  assert.equal(labels.featureCount,5);assert.equal(aborted,1);assert.equal(labels.timer,null);
-  labels.setPaused(false);assert.ok(labels.timer);clearTimeout(labels.timer);
+test('GPU移动时不重采样标签且已有贴地数字保留',()=>{
+  const map={isMoving:()=>true};const layer=new GpuContourLayer(map);layer.labelCount=5;
+  layer.labels();assert.equal(layer.labelCount,5);assert.equal(layer.pending.size,0);
 });

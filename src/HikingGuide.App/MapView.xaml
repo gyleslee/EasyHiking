@@ -1,4 +1,4 @@
-<UserControl x:Class="HikingGuide.App.MapView"
+﻿<UserControl x:Class="HikingGuide.App.MapView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf">
@@ -48,10 +48,11 @@
             <Separator />
             <Button x:Name="OpenMapManagerButton" Content="地图管理" Click="OnOpenMapManager"/>
             <StackPanel Orientation="Horizontal">
-            <CheckBox x:Name="QuickContoursBox" Content="DEM等高线" IsChecked="{Binding DemContoursVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center" ToolTip="与等高线生成器共用显示设置，2D/3D同时生效。"/>
+            <CheckBox x:Name="QuickContoursBox" Content="动态等高线" IsChecked="{Binding DemContoursVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center" ToolTip="与等高线生成器共用显示设置，2D/3D同时生效。"/>
             <CheckBox x:Name="QuickHillshadeBox" Content="地形阴影" IsChecked="{Binding TerrainHillshadeVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center"/>
             <CheckBox x:Name="QuickOsmRoadsBox" Content="OSM路网" IsChecked="{Binding OsmRoadsVisible,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Margin="6,0" VerticalAlignment="Center"/>
             </StackPanel>
+        <TextBlock ToolBar.OverflowMode="Never" Text="标注显示：" VerticalAlignment="Center" Margin="8,0,2,0"/><ComboBox ToolBar.OverflowMode="Never" x:Name="MarkerDisplayBox" Width="112" ItemsSource="{Binding MarkerDisplayModes}" SelectedIndex="{Binding MarkerDisplayMode,Mode=TwoWay}" ToolTip="文字从Z12显示，缩略图从Z14显示；2D与3D共用。"/>
         </ToolBar>
         <Grid Grid.Row="1">
             <wv2:WebView2 x:Name="MapWebView" />

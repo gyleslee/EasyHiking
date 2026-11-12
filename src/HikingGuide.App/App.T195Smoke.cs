@@ -39,7 +39,7 @@ public partial class App
             var dem=DemCatalog.Databases.First(d=>d.Status==HikingGuide.Infrastructure.Elevation.DemDatabaseStatus.Ready&&d.Name.Contains("Fathom",StringComparison.OrdinalIgnoreCase));
             GlobalSettingsService.Current.OfflineTerrain=new(){DemDatabaseId=dem.Id,ContoursVisible=true,HillshadeVisible=true,ContourOpacity=.8,HillshadeOpacity=.3};
             GlobalSettingsService.Current.OsmRoads=new(){Enabled=true,Opacity=1};
-            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false};
+            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false,TerrainDemDatabaseId=dem.Id};
             await JS("window.hikingGuide3DTest.at([113.269571,24.464423],16);true");
             await main.Map.ApplyGlobalMapLayersAsync(true);
             async Task Ready(){await Wait(async()=>{
@@ -75,7 +75,7 @@ public partial class App
                 if(final.GetProperty("baseFrameMs").ValueKind==JsonValueKind.Number)timings[label+"底图首帧毫秒"]=final.GetProperty("baseFrameMs").GetDouble();downloadDelay=20;
             }
             await Startup("冷缓存2D启动",true,false);await Startup("热缓存2D启动",false,false);await Startup("热缓存3D启动",false,true);
-            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false};await main.Map.ApplyGlobalMapLayersAsync(true);
+            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false,TerrainDemDatabaseId=dem.Id};await main.Map.ApplyGlobalMapLayersAsync(true);
             await JS("window.hikingGuide3DTest.at([113.269571,24.464423],16);true");await Ready();
             async Task Motion(string label,bool is3D,string gesture){
                 await JS("window.hikingGuideLayerContinuityTest.remember();true");
@@ -83,7 +83,7 @@ public partial class App
                 async Task Sample(){var state=await JS("window.hikingGuideLayerContinuityTest.inspect()");count++;var sampleZoom=state.GetProperty("zoom").GetDouble();minZoom=Math.Min(minZoom,sampleZoom);maxZoom=Math.Max(maxZoom,sampleZoom);if(state.GetProperty("moving").GetBoolean())moving++;
                     stable&=state.GetProperty("sameSources").GetBoolean();
                     var layers=state.GetProperty("layers").EnumerateArray().ToArray();
-                    visible&=layers.Count(l=>l.GetProperty("id").GetString() is "raster-overlay-1-layer" or "dem-hillshade" or "dem-contours-high")==3&&layers.All(l=>l.GetProperty("visible").GetBoolean());
+                    visible&=layers.Count(l=>l.GetProperty("id").GetString() is "raster-overlay-1-layer" or "dem-hillshade" or "dem-gpu-contours")==3&&layers.All(l=>l.GetProperty("visible").GetBoolean());
                     minRoads=Math.Min(minRoads,state.GetProperty("roads").GetInt32());
                     if(count is 2 or 7 or 12){
                         using var imageStream=new MemoryStream();await web.CoreWebView2.CapturePreviewAsync(Microsoft.Web.WebView2.Core.CoreWebView2CapturePreviewImageFormat.Png,imageStream);var imageBytes=imageStream.ToArray();
@@ -120,7 +120,7 @@ public partial class App
             GlobalSettingsService.Current.OfflineTerrain=GlobalSettingsService.Current.OfflineTerrain with{ContoursVisible=false,HillshadeVisible=false};GlobalSettingsService.Current.OsmRoads.Enabled=false;await main.Map.ApplyGlobalMapLayersAsync(true);
             await JS("window.hikingGuideTrackSceneTest.camera(16,0,0,[113.2698,24.4645]);true");await Task.Delay(350);
             var hidden=await JS("window.hikingGuideTerrainTest.inspect()");checks["用户关闭的等高线阴影和路网不会因移动被开启"]=hidden.GetProperty("layers").EnumerateArray().Where(l=>l.ValueKind!=JsonValueKind.Null).All(l=>!l.GetProperty("visible").GetBoolean())&&!(await JS("window.hikingGuideOsmRoadTest.inspect().enabled")).GetBoolean();
-            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false};await main.Map.ApplyGlobalMapLayersAsync(true);await Task.Delay(200);
+            GlobalSettingsService.Current.Terrain3D=new(){Enabled=false,TerrainDemDatabaseId=dem.Id};await main.Map.ApplyGlobalMapLayersAsync(true);await Task.Delay(200);
             timings["网络瓦片请求次数"]=downloads;
             // 点击画布建立真实DOM焦点，再用Windows输入路径及中文IME物理码验证。
             await web.CoreWebView2.CallDevToolsProtocolMethodAsync("Input.dispatchMouseEvent","{\"type\":\"mousePressed\",\"x\":180,\"y\":160,\"button\":\"left\",\"buttons\":1,\"clickCount\":1}");

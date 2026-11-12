@@ -28,7 +28,7 @@ public sealed class FirstRunSetupWindow : Window
         var buttons=new WrapPanel{Margin=new(0,12,0,8)};panel.Children.Add(buttons);
         Add(buttons,"1．挂载 DEM 高程文件…",OpenDem);
         Add(buttons,"2．导入或下载 BRouter 数据…",OpenRouting);
-        panel.Children.Add(new TextBlock{Text="等高线与阴影使用的 DEM：",FontWeight=FontWeights.Bold});panel.Children.Add(_dem);
+        panel.Children.Add(new TextBlock{Text="统一地图DEM（3D地形、等高线与阴影共用）：",FontWeight=FontWeights.Bold});panel.Children.Add(_dem);
         panel.Children.Add(new TextBlock{Text="默认启用等高线和阴影叠加，阴影不透明度为30%。请先挂载并选择可用DEM；未配置或不覆盖当前地图时不生成地形。此选择仅用于地图显示，不改变攻略最终高程来源。",TextWrapping=TextWrapping.Wrap});
         panel.Children.Add(_status);
         var footer=new WrapPanel{HorizontalAlignment=HorizontalAlignment.Right};panel.Children.Add(footer);
@@ -67,10 +67,10 @@ public sealed class FirstRunSetupWindow : Window
     internal async Task FinishAsync()
     {
         if(_saving||_closeApproved)return;_saving=true;
-        var settings=_host.GlobalSettingsService.Current;var old=settings.OfflineTerrain;var wasCompleted=settings.FirstRunSetupCompleted;
+        var settings=_host.GlobalSettingsService.Current;var old=settings.OfflineTerrain;var oldTerrain=settings.Terrain3D;var wasCompleted=settings.FirstRunSetupCompleted;
         try
         {
-            if(_dem.SelectedValue is Guid id)settings.OfflineTerrain=old with{DemDatabaseId=id};
+            if(_dem.SelectedValue is Guid id){settings.Terrain3D=(settings.Terrain3D??new()) with{TerrainDemDatabaseId=id};settings.OfflineTerrain=old with{DemDatabaseId=id};}
             settings.FirstRunSetupCompleted=true;
             await _host.GlobalSettingsService.SaveAsync();
             try { await _map.ApplyGlobalMapLayersAsync(true); }
@@ -79,7 +79,7 @@ public sealed class FirstRunSetupWindow : Window
         }
         catch(Exception error)
         {
-            settings.FirstRunSetupCompleted=wasCompleted;settings.OfflineTerrain=old;
+            settings.FirstRunSetupCompleted=wasCompleted;settings.OfflineTerrain=old;settings.Terrain3D=oldTerrain;
             _status.Text="设置尚未保存，请重试："+error.Message;
         }
         finally{_saving=false;}

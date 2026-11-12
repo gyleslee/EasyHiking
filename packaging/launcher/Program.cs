@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -29,6 +29,17 @@ internal static class Program
         result.Append('\\',slashes*2);result.Append('"');return result.ToString();
     }
 
+    internal static bool IsX64Host(string file)
+    {
+        try { using(var stream=File.OpenRead(file)) using(var reader=new BinaryReader(stream))
+        {
+            if(stream.Length<64 || reader.ReadUInt16()!=0x5A4D)return false;
+            stream.Position=0x3C;uint offset=reader.ReadUInt32();
+            if(offset>stream.Length-6)return false;
+            stream.Position=offset;return reader.ReadUInt32()==0x4550 && reader.ReadUInt16()==0x8664;
+        }} catch(IOException){return false;} catch(UnauthorizedAccessException){return false;}
+    }
+
     private static string FindHost()
     {
         // Use the installed x64 host directly; do not depend on PATH or an SDK.
@@ -39,13 +50,16 @@ internal static class Program
             if(!string.IsNullOrEmpty(location))
             {
                 var candidate=Path.Combine(location,"dotnet.exe");
-                if(File.Exists(candidate))return candidate;
+                if(IsX64Host(candidate))return candidate;
             }
         }
         var programFiles=Environment.GetEnvironmentVariable("ProgramW6432");
         if(string.IsNullOrEmpty(programFiles))programFiles=Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        // On Arm64, the native host is in dotnet; the x64 host is in dotnet\x64.
+        var emulated=Path.Combine(programFiles,"dotnet","x64","dotnet.exe");
+        if(IsX64Host(emulated))return emulated;
         var fallback=Path.Combine(programFiles,"dotnet","dotnet.exe");
-        if(File.Exists(fallback))return fallback;
+        if(IsX64Host(fallback))return fallback;
         throw new FileNotFoundException("未找到64位 .NET 桌面运行环境。请安装 .NET 10 Desktop Runtime（x64）后重试。\r\nhttps://dotnet.microsoft.com/download/dotnet/10.0");
     }
 

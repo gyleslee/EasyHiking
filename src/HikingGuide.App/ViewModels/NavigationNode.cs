@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using HikingGuide.Core.Models;
@@ -18,6 +18,8 @@ public sealed class NavigationNode(string displayName, object? model = null, boo
     public object? Model { get; } = model;
     public string SelectionKey { get; set; } = string.Empty;
     public bool IsTrack => Model is Track;
+    public bool CanKilometerMarks=>Model is Track t&&new HikingGuide.Core.Services.TrackKilometerService().Assess(t).Eligible;
+    public bool CanProjectKilometerMarks=>Model is HikingProject p&&p.Tracks.Any(t=>new HikingGuide.Core.Services.TrackKilometerService().Assess(t).Eligible);
     public bool IsMarker => Model is MapMarkerBase;
     public bool IsTrackSegment => Model is SplitSection;
     public bool IsTrackOrSplitSection => Model is Track or SplitSection;

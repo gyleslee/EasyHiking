@@ -40,10 +40,29 @@ public sealed partial class WebViewMapBridge(WebView2 webView, ILoggingService l
             _terrainTiles=new(app.DemCatalog,DemTerrainTiles.CacheRoot);
             app.Exit+=(_,_)=>_terrainTiles?.Dispose();
         }
-        return _terrainTiles.Configure(settings);
+        var shade=System.Text.Json.JsonSerializer.SerializeToElement(_terrainTiles.Configure(settings with{ContoursVisible=false}));
+        var surface=app.TerrainTiles?.ConfigureGpuSurface(settings)??new{ready=false};
+        return new{signature=shade.GetProperty("signature").GetString(),hillshadeSignature=shade.GetProperty("hillshadeSignature").GetString(),
+            hillshade=shade.GetProperty("hillshade").GetBoolean(),opacity=settings.HillshadeOpacity,
+            contours=settings.ContoursVisible,surface,color=settings.ContourColor,contourOpacity=settings.ContourOpacity,
+            majorEnabled=settings.MajorContoursEnabled,majorInterval=settings.MajorContourIntervalMeters,
+            lowInterval=settings.LowContourIntervalMeters,highInterval=settings.HighContourIntervalMeters,smooth=settings.SmoothContours,
+            lineWidth=settings.ContourLineWidth,majorLineWidth=settings.MajorContourLineWidth,majorColor=settings.MajorContourColor??settings.ContourColor};
     }
-    public Task ClearOfflineTerrainCacheAsync(bool contours)=>_terrainTiles?.ClearCacheAsync(contours)??
-        HikingGuide.Infrastructure.Maps.MapTileDiskCache.Shared(DemTerrainTiles.CacheRoot).ClearAsync(contours?DemTerrainTiles.ContourCacheId:DemTerrainTiles.HillshadeCacheId);
+    internal object ConfigureGpuContourProbe(OfflineTerrainSettings settings)=>
+        ((App)System.Windows.Application.Current).TerrainTiles?.ConfigureGpuSurface(settings)??new {ready=false};
+    public async Task ClearOfflineTerrainCacheAsync(bool contours)
+    {
+        var app=(App)System.Windows.Application.Current;
+        if(contours&&app.TerrainTiles is {} generator)
+        {
+            await SendAsync(MapProtocol.SerializeCommand("ClearGpuContours",new{}));
+            await generator.ClearGpuSurfaceAsync();
+            await SendAsync(MapProtocol.SerializeCommand("SetOfflineTerrain",ConfigureOfflineTerrain(app.GlobalSettingsService.Current.OfflineTerrain with{DemDatabaseId=app.GlobalSettingsService.Current.Terrain3D?.TerrainDemDatabaseId})));
+        }
+        else if(_terrainTiles is not null)await _terrainTiles.ClearCacheAsync(contours);
+        else await HikingGuide.Infrastructure.Maps.MapTileDiskCache.Shared(DemTerrainTiles.CacheRoot).ClearAsync(contours?DemTerrainTiles.ContourCacheId:DemTerrainTiles.HillshadeCacheId);
+    }
     private readonly HikingGuide.Infrastructure.Maps.MapTileDiskCache _tileCache=HikingGuide.Infrastructure.Maps.MapTileDiskCache.Shared(
         Path.Combine(new HikingGuide.Infrastructure.Projects.ApplicationDataPaths().RootDirectory,"MapTileCache"));
     public IReadOnlyList<RasterLayerSlot> ConfigureRasterLayers(IReadOnlyList<RasterLayerSlot> slots)
@@ -148,8 +167,8 @@ public sealed partial class WebViewMapBridge(WebView2 webView, ILoggingService l
     {
         if (pngBytes.Length == 0 || pngBytes.Length > 2 * 1024 * 1024)
             throw new InvalidDataException("地图缩略图大小无效。");
-        if (_mediaThumbnails.Count >= 128) _mediaThumbnails.Clear();
-        var token = Guid.NewGuid().ToString("N");
+        var token = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(pngBytes))[..32].ToLowerInvariant();
+        while(!_mediaThumbnails.ContainsKey(token)&&_mediaThumbnails.Count>0&&(_mediaThumbnails.Count>=512||_mediaThumbnails.Values.Sum(v=>(long)v.Length)+pngBytes.Length>32L*1024*1024))_mediaThumbnails.Remove(_mediaThumbnails.Keys.First());
         _mediaThumbnails[token] = pngBytes;
         return $"https://hikingguide-media.local/media/{token}.png";
     }
@@ -244,11 +263,12 @@ public sealed partial class WebViewMapBridge(WebView2 webView, ILoggingService l
         try
         {
             var is3D=uri.AbsolutePath.StartsWith("/terrain/",StringComparison.Ordinal);
+            var isSurface=uri.AbsolutePath.StartsWith("/contour-dem/",StringComparison.Ordinal);
             var generator=((App)System.Windows.Application.Current).TerrainTiles;
-            if(is3D?generator is null:_terrainTiles is null)throw new OperationCanceledException();
-            var bytes=await Task.Run(()=>is3D?generator!.GetAsync(uri):_terrainTiles!.GetAsync(uri));
+            if(is3D||isSurface?generator is null:_terrainTiles is null)throw new OperationCanceledException();
+            var bytes=await Task.Run(()=>isSurface?generator!.GetGpuSurfaceAsync(uri):is3D?generator!.GetAsync(uri):_terrainTiles!.GetAsync(uri));
             args.Response=webView.CoreWebView2.Environment.CreateWebResourceResponse(new MemoryStream(bytes,false),200,"OK",
-                $"Content-Type: {(uri.AbsolutePath.EndsWith(".json",StringComparison.Ordinal)?"application/json":"image/png")}\r\nAccess-Control-Allow-Origin: https://hikingguide.local\r\nCache-Control: no-store");
+                $"Content-Type: {(isSurface?"application/octet-stream":uri.AbsolutePath.EndsWith(".json",StringComparison.Ordinal)?"application/json":"image/png")}\r\nAccess-Control-Allow-Origin: https://hikingguide.local\r\nCache-Control: no-store");
         }
         catch(OperationCanceledException) {args.Response=webView.CoreWebView2.Environment.CreateWebResourceResponse(new MemoryStream(),410,"Gone","Access-Control-Allow-Origin: https://hikingguide.local");}
         catch(ArgumentException){args.Response=webView.CoreWebView2.Environment.CreateWebResourceResponse(new MemoryStream(),400,"Bad Request",cors);}
@@ -282,7 +302,7 @@ public sealed partial class WebViewMapBridge(WebView2 webView, ILoggingService l
             if (_mediaThumbnails.TryGetValue(token, out var bytes))
                 args.Response = webView.CoreWebView2.Environment.CreateWebResourceResponse(
                     new MemoryStream(bytes, writable: false), 200, "OK",
-                    "Content-Type: image/png\r\nCache-Control: no-store");
+                    "Content-Type: image/png\r\nAccess-Control-Allow-Origin: https://hikingguide.local\r\nCache-Control: no-store");
             else args.Response = webView.CoreWebView2.Environment.CreateWebResourceResponse(
                 new MemoryStream(), 404, "Not Found", "Content-Type: text/plain");
             return;

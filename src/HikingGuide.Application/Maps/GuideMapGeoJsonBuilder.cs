@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using HikingGuide.Application.Guides;
 using HikingGuide.Core.Models;
 
@@ -20,6 +20,7 @@ public sealed class GuideMapGeoJsonBuilder
                 guideNodeId = node.Id.ToString("D"),
                 name = node.Name ?? "未命名攻略节点",
                 namedLabel = node.Name?.Trim() ?? "",
+                description = node.Description??"",
                 order = order.GetValueOrDefault(node.Id),
                 isOrphaned = node.IsOrphaned,
                 markerType = node.Type.ToString(),

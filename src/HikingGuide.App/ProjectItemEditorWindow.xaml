@@ -1,4 +1,4 @@
-<Window x:Class="HikingGuide.App.ProjectItemEditorWindow"
+﻿<Window x:Class="HikingGuide.App.ProjectItemEditorWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="编辑项目内容" Width="500" Height="515" MinWidth="420" MinHeight="420"
@@ -26,6 +26,9 @@
                     <TextBlock Text="计划用时（分钟，可留空）" FontWeight="SemiBold" />
                     <TextBox x:Name="DurationInput" Margin="0,4,0,12" />
                 </StackPanel>
+                <StackPanel x:Name="RouteKindPanel" Visibility="Collapsed" Margin="0,0,0,10"><TextBlock Text="路线性质" FontWeight="SemiBold"/><ComboBox x:Name="RouteKindCombo" SelectedIndex="0" SelectionChanged="OnRouteKindChanged"><ComboBoxItem Content="尚未确认"/><ComboBoxItem Content="一条行进路线"/><ComboBoxItem Content="轨迹合集"/></ComboBox></StackPanel>
+                <CheckBox x:Name="KilometerBox" Content="显示轨迹公里数标识" Visibility="Collapsed" Margin="0,4,0,12"/>
+                <Button x:Name="KilometerDirectionButton" Content="设置公里标识起终方向…" Visibility="Collapsed" HorizontalAlignment="Left" Padding="8,4" Margin="0,0,0,12" Click="OnKilometerDirections"/>
                 <StackPanel x:Name="ColorPanel" Visibility="Collapsed" Orientation="Horizontal" Margin="0,0,0,12">
                     <TextBlock Text="轨迹颜色" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
                     <Border x:Name="ColorPreview" Width="28" Height="20" BorderBrush="#666666"

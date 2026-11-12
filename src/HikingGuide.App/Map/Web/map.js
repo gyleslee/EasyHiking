@@ -1,4 +1,7 @@
+import { KilometerMarks } from "./kilometer-marks.js";
+import { MarkerDisplay } from "./marker-display.js";
 import { TrackScene, trackArrowImages } from "./track-scene.js";
+import { GpuContourLayer } from "./gpu-contours.js";
 import { mapPanKey } from "./map-keyboard.js";
 import { StartupMapLoad } from "./startup-map-load.js";
 import * as maplibregl from "./vendor/maplibre-gl.mjs";
@@ -8,7 +11,6 @@ import { TerrainNavigation } from "./terrain-navigation.js";
 import { ZoomNavigationControl } from "./zoom-navigation.js";
 import { OfflineRegionSelection } from "./offline-region.js";
 import { OsmRoadLayer, roadDash } from "./osm-roads.js";
-import { ContourLabels } from "./contour-labels.js";
 import { loadFavoriteSymbols, FavoriteMapInteraction } from "./favorites.js";
 import { nearestLineFeature, trackPickProfile } from "./track-hit-test.js";
 
@@ -34,6 +36,8 @@ let dragEndedAt = 0;
 let snapPickNodeId = null;
 let addMarkerKind = null;
 let activeMediaPopup = null;
+let markerDisplay;let markerHover;
+function hideMarkerPopup(){activeMediaPopup?.popup.remove();activeMediaPopup=null;markerHover?.remove();markerHover=null;}
 let trackEdit = null;
 let trackEditContextVersion = -1;
 let trackEditHandles = emptyCollection;
@@ -48,11 +52,28 @@ const markerStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 0.75, 10, 1, 
 const selectedStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2, 19, 3];
 
 let trackScene;
+let kilometerMarks;
 function loadFavoriteSymbol(style) { return loadFavoriteSymbols(map, style); }
 let terrain3D;
 let terrainNavigation;
 let requestedOfflineTerrain=null;
 let requestedTerrainState=null;
+// Isolated real-WebView2 probe. Formal contour routing stays unchanged until gate B passes.
+let gpuContourProbe=null;
+const gpuContourErrors=[];
+let gpuRenderFrames=0,gpuLastFrame=0;const gpuFrameTimes=[];
+let gpuContextLostCount=0,gpuContextRestoredCount=0;
+window.hikingGuideGpuTest={
+  groundPoint:(longitude,latitude)=>gpuContourProbe?.distanceAt(longitude,latitude,0),
+  distance:()=>{const c=map.getCanvas(),rows=[];for(const y of [.15,.35,.55,.75,.9]){const ll=map.unproject([c.clientWidth*.5,c.clientHeight*y]),h=(map.queryTerrainElevation(ll)??0)/(map.getTerrain()?.exaggeration??1);rows.push({screenY:y,...gpuContourProbe?.distanceAt(ll.lng,ll.lat,h)});}return rows;},
+  labels:()=>map.getStyle().sources['dem-contour-labels']?.data?.features||[],
+  start:async config=>{if(!gpuContourProbe){gpuContourProbe=new GpuContourLayer(map,e=>gpuContourErrors.push(e));map.addLayer(gpuContourProbe,'tracks-normal');}gpuContourProbe.configure(config);ensureRasterLayerOrder();return true;},
+  inspect:()=>({version:maplibregl.getVersion(),errors:gpuContourErrors,contextLost:gpuContextLostCount,contextRestored:gpuContextRestoredCount,...gpuContourProbe?.inspect()}),
+  animate:camera=>{map.easeTo({...camera,duration:700});return true;},
+  metrics:()=>{const times=[...gpuFrameTimes].sort((a,b)=>a-b);return{frames:gpuRenderFrames,activeFrameSamples:times.length,meanFrameMs:times.length?times.reduce((a,b)=>a+b,0)/times.length:null,p95FrameMs:times.length?times[Math.floor((times.length-1)*.95)]:null,jsHeap:performance.memory?.usedJSHeapSize??null};},
+  contextLoss:()=>{const gl=map.getCanvas().getContext('webgl2'),extension=gl?.getExtension('WEBGL_lose_context');if(!extension)return false;extension.loseContext();setTimeout(()=>extension.restoreContext(),300);return true;},
+  clear:()=>{if(gpuContourProbe){map.removeLayer(gpuContourProbe.id);gpuContourProbe=null;}return true;}
+};
 
 let lastScriptError={message:"",time:0};
 window.addEventListener("error", event => {
@@ -132,14 +153,25 @@ const map = new maplibregl.Map({
   }
 });
 
+for(const event of ['dragstart','rotatestart','pitchstart'])map.on(event,hideMarkerPopup);
 const startupMapLoad = new StartupMapLoad(map, error => post("MapError", { message: error?.message || "加载地图图层失败" }));
+map.on('render',()=>{if(!gpuContourProbe)return;const now=performance.now();if(gpuLastFrame&&now-gpuLastFrame<250){gpuFrameTimes.push(now-gpuLastFrame);if(gpuFrameTimes.length>6000)gpuFrameTimes.shift();}gpuLastFrame=now;gpuRenderFrames++;});
+map.on('webglcontextlost',()=>{gpuContextLostCount++;});
+map.on('webglcontextrestored',()=>{
+  gpuContextRestoredCount++;
+  // Style reloads during a context restore may discard custom implementations.
+  // Recreate only this owned layer after the official style is ready.
+  let attempts=0;const restore=()=>{
+    if(!map.isStyleLoaded()){if(attempts++<40)setTimeout(restore,100);return;}
+    if(map.getLayer('dem-gpu-contours'))map.removeLayer('dem-gpu-contours');gpuContourProbe=null;
+    if(requestedOfflineTerrain)setOfflineTerrain(requestedOfflineTerrain);
+  };queueMicrotask(restore);
+});
 window.hikingGuideStartupTest = { inspect: () => startupMapLoad.inspect() };
 terrain3D=new Terrain3DController(map,post,enabled=>{setTerrainEditingLock(enabled);terrainNavigation?.setEnabled(enabled);},()=>{suppressNextViewPersistence=true;},ready=>{
-  contourLabels.setPaused(!ready);
   if(ready&&requestedOfflineTerrain)setOfflineTerrain(requestedOfflineTerrain);
 });
 terrainNavigation=new TerrainNavigation(map);
-const contourLabels=new ContourLabels(map);
 const osmRoads=new OsmRoadLayer(map,post);
 function setPlanningCursor(){map.getContainer().classList.toggle("route-planning",routePlanning);}
 let stationaryCamera;
@@ -162,7 +194,7 @@ window.hikingGuideStationaryTest={
 };
 window.hikingGuideOsmRoadTest={inspect:()=>({...osmRoads.inspect(),atlas:{rows:map.style.lineAtlas.nextRow,height:map.style.lineAtlas.height,patterns:Object.keys(map.style.lineAtlas.dashEntry).length}}),configure:v=>osmRoads.configure(v),sample:type=>osmRoads.sample(type),
   warmDashes:()=>{let missing=0;for(const s of osmRoads.config.styles||[]){const p=roadDash(s.dashArray,s.width,s.scaleMode,s.lineCap);if(!p)continue;for(const d of p[0]==="step"?p.filter(v=>Array.isArray(v)&&v[0]==="literal").map(v=>v[1]):[p])if(!map.style.lineAtlas.getDash(d,s.lineCap==="round"))missing++;}map.triggerRepaint();return{missing,rows:map.style.lineAtlas.nextRow,height:map.style.lineAtlas.height};}};
-window.hikingGuide3DTest={inspect:()=>({...terrain3D.inspect(),labelCount:contourLabels.featureCount||0}),camera:(pitch=55,bearing=0)=>{suppressNextViewPersistence=true;map.jumpTo({pitch,bearing});},
+window.hikingGuide3DTest={inspect:()=>({...terrain3D.inspect(),labelCount:gpuContourProbe?.labelCount||0}),camera:(pitch=55,bearing=0)=>{suppressNextViewPersistence=true;map.jumpTo({pitch,bearing});},
   at:(coordinate,zoom=15)=>{suppressNextViewPersistence=true;map.jumpTo({center:coordinate,zoom});},
   surface:(lng,lat)=>{const p=map.project([lng,lat]);const ll=map.unproject(p);return {x:p.x,y:p.y,longitude:ll.lng,latitude:ll.lat};},
   layers:()=>map.getStyle().layers.map(l=>({id:l.id,type:l.type,source:l.source})),
@@ -220,6 +252,7 @@ window.hikingGuideFavoriteTest = {
 map.addControl(new ZoomNavigationControl(maplibregl.NavigationControl), "bottom-right");
 map.addControl(terrainNavigation, "bottom-right");
 
+window.hikingGuideKilometerTest={features:()=>map.getStyle().sources["kilometer-marks"]?.data?.features||[],rendered:()=>map.getLayer("kilometer-marks")?map.queryRenderedFeatures({layers:["kilometer-marks"]}).length:0,fit:()=>{const f=window.hikingGuideKilometerTest.features();if(f.length){const c=f.map(x=>x.geometry.coordinates);map.fitBounds([[Math.min(...c.map(x=>x[0])),Math.min(...c.map(x=>x[1]))],[Math.max(...c.map(x=>x[0])),Math.max(...c.map(x=>x[1]))]],{padding:70,duration:0,maxZoom:16});}}};
 map.on("load", () => {
   document.getElementById("loading").classList.add("hidden");
   post("MapReady", { durationMs: performance.now() - pageStarted });
@@ -366,9 +399,9 @@ map.on("contextmenu", event => {
       return;
     }
   }
-  const markerLayers = ["guide-node-media-badges", "guide-node-label-z15", "guide-node-labels", "guide-nodes-selected", "guide-nodes",
+  const markerLayers = ["waypoint-display","waypoint-thumbnails","guide-display","guide-thumbnails","guide-node-media-badges", "guide-node-label-z15", "guide-node-labels", "guide-nodes-selected", "guide-nodes",
     "waypoint-media-badges", "marker-label-z15", "waypoint-labels", "waypoints-selected", "waypoints"];
-  const marker = map.queryRenderedFeatures(event.point, { layers: markerLayers })
+  const marker = map.queryRenderedFeatures(event.point, { layers: markerLayers.filter(id=>map.getLayer(id)) })
     .find(feature => feature.properties?.guideNodeId || feature.properties?.waypointId);
   if (marker) {
     post("MarkerRightClicked", { projectId, revision,
@@ -456,39 +489,43 @@ map.on("mouseup", event => {
 });
 
 function showMediaPopup(feature, coordinates, id, kind) {
+  markerHover?.remove();markerHover=null;
   const props = feature?.properties || {};
   const internalCount = Number(props.mediaInternalCount || 0);
   const externalCount = Number(props.mediaExternalCount || 0);
   if (internalCount + externalCount === 0) return;
-  const root = document.createElement("div");
+  const root = document.createElement("div");root.style.cssText=`width:260px;max-width:calc(100vw - 80px);max-height:${Math.max(180,map.getCanvas().clientHeight*.85)}px;overflow:hidden;display:flex;flex-direction:column`;
   const title = document.createElement("strong");
   title.textContent = props.name || "未命名标注";
   root.append(title);
   const summary = document.createElement("p");
-  summary.textContent = `${internalCount} 张项目图片 · ${externalCount} 张网络图片`;
+  summary.textContent = `${internalCount} 张项目图片 · ${externalCount} 张网络图片`;summary.style.cssText="margin:6px 0;flex-shrink:0";
   root.append(summary);
   if (externalCount > 0) {
     const host = document.createElement("p");
-    host.textContent = `网络图片：${props.mediaHost || "未知来源"}（点击后按需下载）`;
+    host.textContent = `网络图片：${props.mediaHost || "未知来源"}`;host.style.cssText="margin:4px 0;flex-shrink:0";
     root.append(host);
   }
-  const thumbnail = document.createElement("div");
-  thumbnail.textContent = internalCount > 0 ? "正在准备图片缩略图……" : "";
+  const description=document.createElement("p");description.textContent=props.description||"";description.style.cssText="white-space:pre-wrap;max-height:70px;overflow:auto;margin:4px 0;flex-shrink:1";if(description.textContent)root.append(description);
+  const thumbnail = document.createElement("div");thumbnail.style.cssText=`height:${Math.min(160,map.getCanvas().clientHeight*.28)}px;min-height:80px;flex-shrink:1;display:flex;align-items:center;justify-content:center;overflow:hidden`;
+  thumbnail.textContent = "正在准备图片缩略图……";
   root.append(thumbnail);
   const button = document.createElement("button");
-  button.type = "button";
+  button.type = "button";button.style.cssText="align-self:flex-start;flex-shrink:0;margin-top:8px";
   button.textContent = internalCount > 0 ? "查看图片" : "下载并查看";
   button.addEventListener("click", () => post("MediaOpenRequested", {
     projectId, revision, ...(kind === "guide" ? { guideNodeId: id } : { waypointId: id })
   }));
   root.append(button);
-  const popup = new maplibregl.Popup({ closeButton: true }).setLngLat(coordinates).setDOMContent(root).addTo(map);
+  const popup = new maplibregl.Popup({ closeButton: true,maxWidth:"300px" }).setLngLat(coordinates).setDOMContent(root).addTo(map);
+  activeMediaPopup?.popup.remove();
   activeMediaPopup = { popup, markerId: id, thumbnail };
+  const existing=markerDisplay?.urls.get(id);if(existing){const img=document.createElement("img");img.src=existing;img.style.cssText="width:100%;max-width:240px;height:100%;object-fit:contain";thumbnail.replaceChildren(img);}
   popup.on("close", () => { if (activeMediaPopup?.popup === popup) activeMediaPopup = null; });
   post("MediaThumbnailRequested", { projectId, revision,
     ...(kind === "guide" ? { guideNodeId: id } : { waypointId: id }) });
 }
-for (const layer of ["waypoints", "waypoints-selected", "waypoint-labels", "waypoint-media-badges"]) {
+for (const layer of ["waypoints", "waypoints-selected", "waypoint-labels", "waypoint-media-badges","waypoint-display","waypoint-thumbnails"]) {
   map.on("click", layer, event => {
   if(offlineSelection.active)return;
     if (routePlanning || event.originalEvent?.favoriteHit) return;
@@ -501,7 +538,7 @@ for (const layer of ["waypoints", "waypoints-selected", "waypoint-labels", "wayp
     }
   });
 }
-for (const layer of ["guide-nodes", "guide-nodes-selected", "guide-node-labels", "guide-node-media-badges"]) {
+for (const layer of ["guide-nodes", "guide-nodes-selected", "guide-node-labels", "guide-node-media-badges","guide-display","guide-thumbnails"]) {
   map.on("click", layer, event => {
   if(offlineSelection.active)return;
     if (routePlanning || event.originalEvent?.favoriteHit) return;
@@ -513,6 +550,10 @@ for (const layer of ["guide-nodes", "guide-nodes-selected", "guide-node-labels",
       showMediaPopup(event.features[0], event.lngLat, id, "guide");
     }
   });
+}
+for(const layer of ["waypoint-display","waypoint-thumbnails","guide-display","guide-thumbnails","waypoints","guide-nodes"]){
+ map.on('mouseenter',layer,e=>{if(routePlanning||draggingMarker)return;const p=e.features?.[0]?.properties;if(!p?.namedLabel)return;const node=document.createElement('div');node.textContent=p.namedLabel;node.style.cssText='white-space:pre-wrap;max-height:240px;overflow:auto';markerHover?.remove();markerHover=new maplibregl.Popup({closeButton:false,closeOnClick:false,maxWidth:'360px'}).setLngLat(e.lngLat).setDOMContent(node).addTo(map);});
+ map.on('mouseleave',layer,()=>{markerHover?.remove();markerHover=null;});
 }
 for (const layer of ["guide-segments", "guide-segments-selected"]) {
   map.on("click", layer, event => {
@@ -550,7 +591,7 @@ map.on("error", event => {
 });
 
 function accepts(command) {
-  if (["Initialize","ClearProject","SetMapSource","SetMapLayerStack","BeginOfflineRegion","CancelOfflineRegion","ClearOfflineRegion","SetOfflineTerrain","SetOsmRoads","SetTerrainState","SetTerrainCamera","TerrainHealthResult","PauseTerrain"].includes(command.type)) return true;
+  if (["Initialize","ClearProject","SetMapSource","SetMapLayerStack","BeginOfflineRegion","CancelOfflineRegion","ClearOfflineRegion","SetOfflineTerrain","SetOsmRoads","SetTerrainState","SetTerrainCamera","TerrainHealthResult","PauseTerrain","ClearGpuContours","SetMarkerDisplay"].includes(command.type)) return true;
   return command.projectId === projectId && Number(command.revision || 0) >= revision;
 }
 
@@ -558,6 +599,7 @@ function setGeoJson(sourceId, geoJson, command) {
   if (!accepts(command)) return;
   const started = performance.now();
   if(sourceId === "tracks") { trackScene ??= new TrackScene(map); trackScene.set(geoJson || emptyCollection); }
+  else if(sourceId==="waypoints"||sourceId==="guideNodes"){markerDisplay??=new MarkerDisplay(map,f=>{const p=f.properties;post("MediaThumbnailRequested",{projectId,revision,...(p.guideNodeId?{guideNodeId:p.guideNodeId}:{waypointId:p.waypointId})});});markerDisplay.set(sourceId,geoJson||emptyCollection);}
   else map.getSource(sourceId)?.setData(geoJson || emptyCollection);
   if (sourceId === "tracks") lastTracks = geoJson || emptyCollection;
   if (sourceId === "waypoints") lastWaypoints = geoJson || emptyCollection;
@@ -570,6 +612,12 @@ function setGeoJson(sourceId, geoJson, command) {
   }));
 }
 
+window.hikingGuideMarkerDisplayTest={
+ inspect:()=>({mode:markerDisplay?.mode,images:markerDisplay?.images.size,error:markerDisplay?.lastError||lastScriptError.message,urls:markerDisplay?.urls.size,pending:markerDisplay?.pending.size,features:map.getStyle().sources.waypoints?.data?.features,renderedText:map.queryRenderedFeatures({layers:['waypoint-display','guide-display'].filter(id=>map.getLayer(id))}).length,renderedThumbnails:map.queryRenderedFeatures({layers:['waypoint-thumbnails','guide-thumbnails'].filter(id=>map.getLayer(id))}).length}),
+ popup:id=>{const f=(lastWaypoints.features||[]).find(f=>f.properties.waypointId===id);if(f)showMediaPopup(f,f.geometry.coordinates,id,'waypoint');},
+ closePopup:()=>activeMediaPopup?.popup.remove(),
+ mode:v=>markerDisplay?.setMode(v)
+};
 window.hikingGuideTrackSceneTest={
   camera:(zoom,bearing=0,pitch=0,center=null)=>map.jumpTo({zoom,bearing,pitch,...(center?{center}:{})}),
   inspect:()=>({zoom:map.getZoom(),center:map.getCenter(),pitch:map.getPitch(),terrain:!!map.getTerrain(),
@@ -596,7 +644,7 @@ const tileErrorTimes = new Map();
 function ensureRasterLayerOrder() {
   const business = map.getStyle().layers.find(l => l.type !== "background" && l.type !== "raster" && !l.id.startsWith("osm-road-") && !l.id.startsWith("dem-"))?.id;
   for (const slot of rasterSlots) if (map.getLayer(slot.layer)) map.moveLayer(slot.layer, business);
-  for (const id of ["dem-hillshade", "dem-contours-low", "dem-contours-high"]) if (map.getLayer(id)) map.moveLayer(id, business);
+  for (const id of ["dem-hillshade", "dem-contours-low", "dem-contours-high", "dem-gpu-contours", "dem-contour-labels"]) if (map.getLayer(id)) map.moveLayer(id, business);
   for (const id of ["guide-segments", "guide-segments-selected"]) if (map.getLayer(id) && map.getLayer("waypoints")) map.moveLayer(id, "waypoints");
   osmRoads.reorder();
   if (map.getLayer("elevation-hover")) map.moveLayer("elevation-hover");
@@ -612,16 +660,18 @@ function setOfflineTerrain(value) {
   requestedOfflineTerrain=value;
   // 初次启用或切换山体时不启动派生请求；山体完成后由优先级回调恢复用户原设置。
   if(terrain3D.state.enabled&&!terrain3D.effective)value={...value,contours:false,hillshade:false};
-  contourLabels.configure(value);
+  if(value.contours&&value.surface?.surfaceUrlTemplate&&(!gpuContourProbe||!map.getLayer('dem-gpu-contours'))){
+    try{gpuContourProbe=new GpuContourLayer(map,e=>post('MapError',{message:'GPU等高线：'+e}));map.addLayer(gpuContourProbe,'tracks-normal');}
+    catch(error){if(map.getLayer('dem-gpu-contours'))map.removeLayer('dem-gpu-contours');post('MapError',{message:'当前图形环境无法启用GPU动态等高线：'+error.message});gpuContourProbe=null;}
+  }
+  gpuContourProbe?.configure(value);
   postTerrainViewport();
   const signature = JSON.stringify(value);
-  if (signature === terrainSignature && map.getSource("dem-contours-low")) return;
+  if (signature === terrainSignature && map.getSource("dem-hillshade")) return;
   terrainSignature = signature;
   const before = map.getStyle().layers.find(l => l.type !== "background" && l.type !== "raster")?.id;
   const definitions = [
-    { id: "dem-hillshade", kind: "hillshade", visible: value.hillshade, min: 13, max: 22, opacity: value.opacity ?? .2 },
-    { id: "dem-contours-low", kind: "contours", visible: value.contours, min: 13, max: 14, end: 15, opacity: value.contourOpacity ?? 1 },
-    { id: "dem-contours-high", kind: "contours", visible: value.contours, min: 15, max: 22, opacity: value.contourOpacity ?? 1 }
+    { id: "dem-hillshade", kind: "hillshade", visible: value.hillshade, min: 13, max: 22, opacity: value.opacity ?? .3 }
   ];
   for (const d of definitions) {
     const signature=d.kind==="hillshade"?(value.hillshadeSignature||value.signature):value.signature;
@@ -636,16 +686,19 @@ function setOfflineTerrain(value) {
   }
   ensureRasterLayerOrder();
 }
+map.on('style.load',()=>{if(requestedOfflineTerrain)setOfflineTerrain(requestedOfflineTerrain);});
 let continuitySources=null;
 window.hikingGuideLayerContinuityTest={
   remember:()=>{continuitySources=new Map(map.getStyle().layers.filter(l=>l.id.startsWith("raster-")||l.id.startsWith("dem-")||l.id.startsWith("osm-road-")).filter(l=>l.source).map(l=>[l.source,map.getSource(l.source)]));},
   inspect:()=>({moving:map.isMoving()||!!terrainNavigation.gesture?.active,zoom:map.getZoom(),terrain:!!map.getTerrain(),effective:terrain3D.effective,
     sameSources:!continuitySources||[...continuitySources].every(([id,source])=>map.getSource(id)===source),
-    layers:map.getStyle().layers.filter(l=>l.id.startsWith("raster-overlay-")||l.id.startsWith("dem-")||l.id.startsWith("osm-road-")).map(l=>({id:l.id,visible:l.layout?.visibility!=="none"})),roads:osmRoads.inspect().features})
+    layers:[...map.getStyle().layers.filter(l=>l.id.startsWith("raster-overlay-")||l.id.startsWith("dem-")||l.id.startsWith("osm-road-")).map(l=>({id:l.id,visible:l.layout?.visibility!=="none"})),...(gpuContourProbe?[{id:'dem-gpu-contours',visible:gpuContourProbe.active()}]:[])],roads:osmRoads.inspect().features})
 };
 window.hikingGuideTerrainTest = {
   camera: (zoom=15) => map.jumpTo({center:[113.32,24.42],zoom,bearing:0,pitch:0}),
-  inspect: () => ({ signature: terrainSignature, labelOpacity:map.getLayer("dem-contour-labels")?map.getPaintProperty("dem-contour-labels","icon-opacity"):null, layers: ["dem-hillshade", "dem-contours-low", "dem-contours-high"].map(id => map.getLayer(id) ? {id, min: map.getLayer(id).minzoom, max: map.getLayer(id).maxzoom, visible:map.getLayoutProperty(id,"visibility")!=="none", opacity:map.getPaintProperty(id,"raster-opacity"), loaded:map.isSourceLoaded(id)} : null) })
+  inspect: () => ({ signature: terrainSignature, gpu:gpuContourProbe?.inspect(),labelOpacity:map.getLayer("dem-contour-labels")?map.getPaintProperty("dem-contour-labels","icon-opacity"):null,
+    layers:[map.getLayer('dem-hillshade')?{id:'dem-hillshade',visible:map.getLayoutProperty('dem-hillshade','visibility')!=='none',opacity:map.getPaintProperty('dem-hillshade','raster-opacity'),loaded:map.isSourceLoaded('dem-hillshade')}:null,
+      gpuContourProbe?{id:'dem-gpu-contours',visible:gpuContourProbe.active(),loaded:gpuContourProbe.tiles.size>0&&gpuContourProbe.pending.size===0}:null] })
 };
 function setMapLayerStack(payload) {
   const incoming = Number(payload.settingsRevision);
@@ -745,11 +798,13 @@ listen(async command => {
           latitude: map.getCenter().lat, longitude: map.getCenter().lng, zoom: map.getZoom() }) });
         break;
       case "Initialize":
+        if(projectId!==command.projectId)markerDisplay?.reset();else markerDisplay?.requested.clear();
         clearTrackEdit();
         projectId = command.projectId;
         revision = Number(command.revision || 0);
         break;
       case "ClearProject":
+        kilometerMarks?.clear();
         routePlanning = false; setPlanningCursor();
         map.getSource("routePreviewLegs")?.setData(emptyCollection);
         map.getSource("routePreviewPoints")?.setData(emptyCollection);
@@ -758,7 +813,7 @@ listen(async command => {
         selectedTrackIds = []; selectedSplitSectionIds = [];
         activeMediaPopup?.popup.remove(); activeMediaPopup = null;
         map.getSource("tracks")?.setData(emptyCollection);
-        trackScene?.set(emptyCollection); lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
+        markerDisplay?.reset();markerHover?.remove();trackScene?.set(emptyCollection); lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
         map.getSource("splitSections")?.setData(emptyCollection);
         lastSplitSections = emptyCollection;
         map.getSource("directionArrows")?.setData(emptyCollection);
@@ -769,7 +824,8 @@ listen(async command => {
         setSelection({ kind: "none", objectId: null });
         break;
       case "SetMapSource": setMapSource(payload); break;
-      case "SetMapLayerStack": setMapLayerStack(payload); break;
+      case "SetMarkerDisplay": markerDisplay??=new MarkerDisplay(map,f=>{const p=f.properties;post("MediaThumbnailRequested",{projectId,revision,...(p.guideNodeId?{guideNodeId:p.guideNodeId}:{waypointId:p.waypointId})});});markerDisplay.setMode(payload.mode);break;
+      case "SetMapLayerStack": setMapLayerStack(payload);markerDisplay??=new MarkerDisplay(map,f=>{const p=f.properties;post("MediaThumbnailRequested",{projectId,revision,...(p.guideNodeId?{guideNodeId:p.guideNodeId}:{waypointId:p.waypointId})});});markerDisplay.setMode(payload.markerDisplayMode??3); break;
       case "SetOfflineTerrain": startupMapLoad.run("derived", () => setOfflineTerrain(payload)); break;
       case "BeginOfflineRegion": offlineSelection.begin(); break;
       case "CancelOfflineRegion": offlineSelection.cancel(); break;
@@ -788,6 +844,9 @@ listen(async command => {
       case "PauseTerrain":
         requestedTerrainState={...(requestedTerrainState||terrain3D.state),enabled:false};
         startupMapLoad.run("terrain",()=>terrain3D.update(requestedTerrainState));break;
+      case "ClearGpuContours":
+        if(gpuContourProbe){gpuContourProbe.configure({...gpuContourProbe.config,contours:false});gpuContourProbe.releaseTiles();}break;
+      case "SetKilometerMarks": kilometerMarks??=new KilometerMarks(map);kilometerMarks.set(payload.geoJson);break;
       case "SetTracks": setGeoJson("tracks", payload.geoJson, command); break;
       case "SetSplitSections":
         if (accepts(command)) lastSplitSections = payload.geoJson || emptyCollection;
@@ -903,12 +962,14 @@ listen(async command => {
             latitude: payload.latitude, longitude: payload.longitude });
         break;
       case "SetMarkerPopupMedia":
-        if (accepts(command) && activeMediaPopup?.markerId === payload.markerId &&
+        if (accepts(command) &&
             /^https:\/\/hikingguide-media\.local\/media\/[a-f0-9]{32}\.png$/.test(payload.thumbnailUrl || "")) {
+          markerDisplay?.thumbnail(payload.markerId,payload.thumbnailUrl);
+          if(activeMediaPopup?.markerId!==payload.markerId)break;
           const preview = document.createElement("img");
           preview.src = payload.thumbnailUrl;
           preview.alt = "图片缩略图";
-          preview.style.cssText = "max-width:160px;max-height:120px;object-fit:contain";
+          preview.style.cssText = "width:100%;max-width:240px;height:100%;object-fit:contain";
           preview.addEventListener("load", () => post("MediaThumbnailReady", { projectId, revision, waypointId: payload.markerId }));
           preview.addEventListener("error", () => post("MapError", { projectId, revision, message: "地图图片缩略图资源加载失败" }));
           activeMediaPopup.thumbnail.replaceChildren(preview);

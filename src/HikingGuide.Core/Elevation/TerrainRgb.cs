@@ -4,6 +4,8 @@ namespace HikingGuide.Core.Elevation;
 public static class TerrainRgb
 {
     public const int TileSize = 512;
+    public const int SurfaceBorder=2;
+    public const int SurfaceTileSize=TileSize+2*SurfaceBorder;
     public const string EncodingVersion = "mapbox-rgb-512-v1";
     public static (byte R,byte G,byte B) Encode(double meters)
     {

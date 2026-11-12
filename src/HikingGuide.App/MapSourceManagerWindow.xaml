@@ -23,23 +23,24 @@
             </DataGrid.Columns></DataGrid>
         </DockPanel></GroupBox></TabItem>
         <TabItem Header="等高线生成器"><ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="16">
-            <TextBlock Text="DEM派生等高线（独立叠加，不占用在线图源位置）" FontSize="16" FontWeight="Bold"/>
-            <TextBlock Margin="0,8" TextWrapping="Wrap" Text="只生成当前地图请求区域，后台处理并保留缓存；不写入DEM原文件，也不改变攻略高程来源。缓存为透明PNG瓦片的原子缓存包（.tile），达到上限后自动删除最早生成的缓存。"/>
-            <StackPanel Orientation="Horizontal" Margin="0,6"><TextBlock Text="生成DEM：" Width="100" VerticalAlignment="Center"/><ComboBox x:Name="TerrainDem" Width="440" DisplayMemberPath="Name" SelectedValuePath="Id"/></StackPanel>
+            <TextBlock Text="动态等高线（独立叠加，不占用在线图源位置）" FontSize="16" FontWeight="Bold"/>
+            <TextBlock Margin="0,8" TextWrapping="Wrap" Text="等高线由GPU按当前视野动态绘制，缓存只读DEM高程及有效性数据；阴影继续复用独立瓦片缓存。不写入DEM原文件，不改变攻略高程来源。"/>
+            <StackPanel Orientation="Horizontal" Margin="0,6"><TextBlock Text="统一地图DEM：" Width="100" VerticalAlignment="Center"/><ComboBox x:Name="TerrainDem" Width="360" DisplayMemberPath="Name" SelectedValuePath="Id" IsEnabled="False"/><Button Content="选择统一DEM" Margin="8,0" Padding="10,4" Click="OnSharedTerrainDem"/></StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,8"><CheckBox x:Name="TerrainContours" Content="显示等高线" Width="130"/><TextBlock Text="颜色："/><Button x:Name="TerrainColor" Content="#8B5A2B" Width="110" Click="OnTerrainColor" Margin="8,0"/><TextBlock Text="透明度：" VerticalAlignment="Center" Margin="12,0,0,0"/><Slider x:Name="TerrainContourOpacity" Width="180" Minimum="0" Maximum="100" Value="100" TickFrequency="1" IsSnapToTickEnabled="True" ToolTip="0%=完全透明，100%=完全显示；主等高线与海拔数字同步变化，2D/3D共用。"/><TextBlock Text="{Binding ElementName=TerrainContourOpacity,Path=Value,StringFormat={}{0:F0}%}" Width="55" VerticalAlignment="Center"/></StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,6"><TextBlock Text="等高距（米）：" Width="130" VerticalAlignment="Center"/><TextBlock Text="Z13—Z14" VerticalAlignment="Center"/><TextBox x:Name="TerrainLowInterval" Width="65" Margin="8,0,16,0" VerticalContentAlignment="Center"/><TextBlock Text="Z15及以上" VerticalAlignment="Center"/><TextBox x:Name="TerrainHighInterval" Width="65" Margin="8,0" VerticalContentAlignment="Center"/></StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0,6"><TextBlock Text="线宽（像素）：" Width="130" VerticalAlignment="Center"/><TextBlock Text="普通线" VerticalAlignment="Center"/><TextBox x:Name="TerrainLineWidth" Width="65" Margin="8,0,16,0" VerticalContentAlignment="Center"/><TextBlock Text="主线" VerticalAlignment="Center"/><TextBox x:Name="TerrainMajorLineWidth" Width="65" Margin="8,0,16,0" VerticalContentAlignment="Center"/><TextBlock Text="主线颜色：" VerticalAlignment="Center"/><Button x:Name="TerrainMajorColor" Content="#8B5A2B" Width="100" Click="OnTerrainColor"/></StackPanel>
+            <CheckBox x:Name="TerrainSmooth" Content="圆滑等高线（减少折角，保留原始DEM精度）" Margin="0,6" ToolTip="使用有约束的曲面插值，数字标签同步贴线；不会改写DEM或攻略高程。关闭可减少GPU采样。"/>
             <StackPanel Orientation="Horizontal" Margin="0,8"><CheckBox x:Name="TerrainMajorContours" Content="加粗主等高线" Width="150"/><TextBlock Text="主等高线间隔：" VerticalAlignment="Center"/><TextBox x:Name="TerrainMajorInterval" Text="50" Width="90" Margin="8,0" VerticalContentAlignment="Center"/><TextBlock Text="米（按该值的倍数加粗）" VerticalAlignment="Center"/></StackPanel>
-            <TextBlock Text="默认50米倍数为主等高线，线宽为普通线的2倍；2D与3D共用设置，粗细线一同贴合3D地形。此项不改变等高距；Z13—Z14的100米线在默认规则下均为主等高线。" TextWrapping="Wrap"/>
-            <TextBlock Text="Z13—Z14：100米等高距；Z15及以上：10米等高距；显示海拔数字，不生成0米等高线。" TextWrapping="Wrap"/>
-            <StackPanel Orientation="Horizontal" Margin="0,8"><TextBlock Text="等高线缓存：" Width="130"/><TextBox x:Name="TerrainContourCache" Width="100"/><TextBlock Text=" MB（默认2048；0为不保留）"/><Button x:Name="ClearContoursButton" Content="清除等高线缓存" Margin="12,0,0,0" Padding="10,4" Click="OnClearContours"/></StackPanel>
+            <TextBlock Text="默认Z13—Z14为100米等高距，Z15起为10米；显示海拔数字，0米线不绘制、不标注。" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" Margin="0,8"><TextBlock Text="高程采样缓存：" Width="130"/><TextBox x:Name="TerrainContourCache" Width="100"/><TextBlock Text=" MB（高程数据磁盘缓存；默认2048；0为不保留）"/><Button x:Name="ClearContoursButton" Content="清除高程采样缓存" Margin="12,0,0,0" Padding="10,4" Click="OnClearContours"/></StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0,8"><CheckBox x:Name="TerrainHillshade" Content="显示地形阴影" Width="150"/><TextBlock Text="叠加强度："/><Slider x:Name="TerrainOpacity" Width="180" Minimum="0" Maximum="100" Value="30" ToolTip="仅控制背光部分的加深程度；平坦和受光区域不覆盖底图。0%不叠加，100%使用完整暗部强度。"/><TextBlock Text="{Binding ElementName=TerrainOpacity,Path=Value,StringFormat={}{0:F0}%}" Width="55"/></StackPanel>
-            <TextBlock Text="阴影与等高线使用同一DEM，从Z13显示。平坦和受光区域透明，背光区域自然渐变；光照方位315°、高度45°。地图放大不提升DEM原始精度。" TextWrapping="Wrap"/>
+            <TextBlock Text="阴影、等高线与3D地形使用统一DEM，2D也采用该来源；从Z13显示。平坦和受光区域透明，背光区域自然渐变；光照方位315°、高度45°。地图放大不提升DEM原始精度。" TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" Margin="0,8"><TextBlock Text="地形阴影缓存：" Width="130"/><TextBox x:Name="TerrainShadeCache" Width="100"/><TextBlock Text=" MB（默认1024；0为不保留）"/><Button x:Name="ClearShadeButton" Content="清除阴影缓存" Margin="12,0,0,0" Padding="10,4" Click="OnClearShade"/></StackPanel>
             <Button Content="应用并保存等高线生成设置" HorizontalAlignment="Left" Padding="16,6" Margin="0,12" Click="OnApplyTerrain"/>
             <TextBlock x:Name="TerrainStatus" TextWrapping="Wrap"/>
         </StackPanel></ScrollViewer></TabItem><TabItem Header="OSM路网"><local:OsmRoadSettingsPanel x:Name="RoadPanel"/></TabItem><TabItem Header="下载离线地图"><local:OfflineMapDownloadPanel x:Name="OfflinePanel"/></TabItem></TabControl>
     </DockPanel>
 </Window>
-
 
 
 

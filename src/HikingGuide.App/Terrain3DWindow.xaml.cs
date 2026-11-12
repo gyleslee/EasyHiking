@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Windows;
 using HikingGuide.App.ViewModels;
 using HikingGuide.Core.Models;
@@ -39,9 +39,9 @@ public partial class Terrain3DWindow : Window
     {
         NativeText.Text=DemBox.SelectedItem is TerrainDemChoice choice?$"地形原生最高级别：Z{choice.MaxNativeZoom}；从地图Z{choice.MaxNativeZoom+1}起可启用3D，更高层级放大现有地形，不生成虚假高精度瓦片。":"请选择可采样的DEM数据库。";
         var offline=_app.GlobalSettingsService.Current.OfflineTerrain;
-        var major=offline.MajorContoursEnabled?$"{offline.MajorContourIntervalMeters}米倍数为主等高线（2倍线宽）":"主等高线加粗已关闭";
-        var dem=offline.DemDatabaseId is {} id?_app.DemCatalog.Databases.FirstOrDefault(d=>d.Id==id)?.Name:null;
-        EffectsSummary.Text=$"生成器DEM：{dem??"未选择"}。等高距：Z13—Z14为100米，Z15起10米；0米线不生成。{major}，与粗细线共同贴合地形。颜色：{offline.ContourColor}。阴影光照：方位315°，高度45°。";
+        var major=offline.MajorContoursEnabled?$"{offline.MajorContourIntervalMeters}米倍数为主等高线（自定义主线宽）":"主等高线加粗已关闭";
+        var dem=_app.GlobalSettingsService.Current.Terrain3D?.TerrainDemDatabaseId is {} id?_app.DemCatalog.Databases.FirstOrDefault(d=>d.Id==id)?.Name:null;
+        EffectsSummary.Text=$"统一地图DEM：{dem??"未选择"}。等高距：Z13—Z14为{offline.LowContourIntervalMeters}米，Z15起{offline.HighContourIntervalMeters}米；0米线不生成。{major}，与粗细线共同贴合地形。颜色：{offline.ContourColor}。阴影光照：方位315°，高度45°。";
     }
     private async Task<bool> CommitAsync()
     {

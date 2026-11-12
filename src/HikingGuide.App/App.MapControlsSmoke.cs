@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Text.Json;
 using System.Text.Encodings.Web;
 using System.Windows;
@@ -52,7 +52,7 @@ public partial class App
             await T10ManualLayoutAsync(manager);checks["下载进度格完整显示百分比"]=FavoritesPanel.Descendants<TextBlock>(offline).Any(t=>t.Text.Contains("95.1%"));
             await CaptureT10ClientAsync(manager,Path.Combine(folder,"T186-下载进度.png"));
             tabs.SelectedIndex=1;await T10ManualLayoutAsync(manager);
-            checks["等高线面板标题已更新"]=FavoritesPanel.Descendants<TextBlock>(manager).Any(t=>t.Text=="DEM派生等高线（独立叠加，不占用在线图源位置）");
+            checks["等高线面板标题已更新"]=FavoritesPanel.Descendants<TextBlock>(manager).Any(t=>t.Text=="动态等高线（独立叠加，不占用在线图源位置）");
             await CaptureT10ClientAsync(manager,Path.Combine(folder,"T186-等高线生成器.png"));manager.Close();await Wait(()=>Task.FromResult(!manager.IsVisible),"地图管理尚未关闭");
             var dem=DemCatalog.Databases.First(d=>d.Status==DemDatabaseStatus.Ready&&d.Name.Contains("Fathom",StringComparison.OrdinalIgnoreCase));
             GlobalSettingsService.Current.OfflineTerrain=GlobalSettingsService.Current.OfflineTerrain with{DemDatabaseId=dem.Id,ContoursVisible=false,HillshadeVisible=false};GlobalSettingsService.Current.OsmRoads.Enabled=false;GlobalSettingsService.NotifyMapSettingsChanged();

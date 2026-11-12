@@ -127,6 +127,7 @@ public partial class MapView : UserControl
         menu.Items.Add(new Separator());
         Add("合并轨迹", main.CreateMergedTrackCommand);
         Add("连接轨迹", main.CreateConnectedTrackCommand);
+        if(new HikingGuide.Core.Services.TrackKilometerService().Assess(track).Eligible){menu.Items.Add(new Separator());menu.Items.Add(new MenuItem{Header="显示公里数标识（所选轨迹）",Command=new ScopedMapCommand(main.ShowKilometersCommand,()=>ReferenceEquals(main.MapContextProject,project)&&map.IsTrackMapContextCurrent(value)),CommandParameter=track});menu.Items.Add(new MenuItem{Header="隐藏公里数标识（所选轨迹）",Command=new ScopedMapCommand(main.HideKilometersCommand,()=>ReferenceEquals(main.MapContextProject,project)&&map.IsTrackMapContextCurrent(value)),CommandParameter=track});}
         AddWeather(menu, value);
         OpenAtMapPosition(menu, value);
 

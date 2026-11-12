@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -230,6 +230,12 @@ public partial class ImportWindow : Window
                 "无法导入", MessageBoxButton.OK, MessageBoxImage.Warning);
             return;
         }
+        foreach(var row in _tracks.Where(t=>t.Import))
+        {
+            if(row.HasGap&&row.RouteKind=="请选择…"){MessageBox.Show(this,"请为有间隙的轨迹选择一条行进路线或轨迹合集。","请选择路线性质",MessageBoxButton.OK,MessageBoxImage.Warning);return;}
+            row.Track.Metadata[HikingGuide.Core.Services.TrackKilometerService.RouteKindKey]=row.RouteKind=="轨迹合集"?"collection":"route";
+            HikingGuide.Core.Services.TrackKilometerService.SetEnabled(row.Track,false);
+        }
         DialogResult = true;
     }
 
@@ -243,6 +249,9 @@ public partial class ImportWindow : Window
         public bool Import { get => _import; set { _import = value; if (!value && IsMain && owner._project.MainGuideTrackId is null) owner.ClearMainTrackClicked(this, new RoutedEventArgs()); PropertyChanged?.Invoke(this, new(nameof(Import))); } }
         public bool IsMain => owner._session?.SelectedGuideTrackId == Track.Id;
         public void NotifyMainChanged() => PropertyChanged?.Invoke(this, new(nameof(IsMain)));
+        public bool HasGap=>HikingGuide.Core.Services.TrackKilometerService.RequiresKindConfirmation(Track)||Track.Segments.Count>1&&Track.Segments.Zip(Track.Segments.Skip(1),(a,b)=>a.EndPoint is not null&&b.StartPoint is not null&&HikingGuide.Core.Services.GeoDistanceCalculator.Instance.CalculateDistance(a.EndPoint.Coordinate,b.StartPoint.Coordinate)>.001).Any(x=>x);
+        public string[] RouteKinds {get;}=["请选择…","一条行进路线","轨迹合集"];
+        public string RouteKind {get;set;}=HikingGuide.Core.Services.TrackKilometerService.RequiresKindConfirmation(track)?"请选择…":track.Metadata.GetValueOrDefault(HikingGuide.Core.Services.TrackKilometerService.RouteKindKey)=="collection"?"轨迹合集":"一条行进路线";
         public string Name => Track.Name ?? "（未命名轨迹）";
         public int SegmentCount => Track.Segments.Count;
         public string PointCount => Track.GetPointCount().ToString("N0");

@@ -1,8 +1,12 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';
 import {roadDash} from '../../src/HikingGuide.App/Map/Web/osm-roads.js';
 const vendor=fs.readFileSync(new URL('../../src/HikingGuide.App/Map/Web/vendor/maplibre-gl.mjs',import.meta.url),'utf8');
-const start=vendor.indexOf('Xi=class{'),end=vendor.indexOf(';function Zi',start);
-const Atlas=new Function('I','let '+vendor.slice(start,end)+';return Xi;')(()=>{});
+const marker=vendor.indexOf('grow(required){let limit=this.maxHeight||2048;');
+assert.ok(marker>0,'发行引擎必须包含经批准的图集扩容');
+const assignment=vendor.lastIndexOf('=class{',marker);
+let depth=0,end=assignment+6;
+for(;end<vendor.length;end++){if(vendor[end]==='{')depth++;if(vendor[end]==='}'&&--depth===0){end++;break;}}
+const Atlas=new Function('return '+vendor.slice(assignment+1,end))();
 const theme=JSON.parse(fs.readFileSync(new URL('../../src/HikingGuide.Core/Resources/OsmRoadDefaultStyles.json',import.meta.url),'utf8'));
 test('真实引擎虚线图集容纳完整主题各缩放级，扩容后行位置和旧像素不丢失',()=>{
  let deletes=0;const gl=new Proxy({getParameter:()=>4096,deleteTexture:()=>deletes++,createTexture:()=>({})},{get:(o,k)=>o[k]??(()=>{})});

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
@@ -94,6 +94,7 @@ public sealed class DemTerrainTiles : IDisposable
     public async Task<byte[]> GetAsync(Uri uri)
     {
         var p=uri.AbsolutePath.Trim('/').Split('/');
+        if(p.Length>1 && p[1]!="hillshade")throw new OperationCanceledException("旧CPU等高线显示入口已停用。");
         OfflineTerrainSettings s;CancellationToken token;CancellationToken sampling;string gridIdentity;string shadeSignature;
         lock(_stateGate)
         {
@@ -180,8 +181,7 @@ public sealed class DemTerrainTiles : IDisposable
         using var bitmap=new SKBitmap(512,512,SKColorType.Rgba8888,SKAlphaType.Premul);
         using var canvas=new SKCanvas(bitmap);canvas.Clear(SKColors.Transparent);
         var outputLabels=new List<object>();
-        if(contour) DrawContours(canvas,grid,TerrainTileMath.ContourInterval(z),SKColor.Parse(color),screenLabels,majorEnabled,majorInterval,(point,elevation)=>
-        {var c=TerrainTileMath.Coordinate(z,x,y,point.X/4,point.Y/4);outputLabels.Add(new{latitude=c.Latitude,longitude=c.Longitude,elevation});},token);
+        if(contour) throw new OperationCanceledException("旧CPU等高线显示入口已停用。");
         else
         {
             // 在网格节点上计算，含相邻瓦片共用的最后一行/列；半像素源矩形保持世界坐标对齐。
@@ -212,41 +212,6 @@ public sealed class DemTerrainTiles : IDisposable
         using var png=SKImage.FromBitmap(bitmap);using var encoded=png.Encode(SKEncodedImageFormat.Png,100);return new(encoded.ToArray(),JsonSerializer.SerializeToUtf8Bytes(outputLabels));
     }
 
-    private static void DrawContours(SKCanvas canvas,double?[,] grid,int interval,SKColor color,bool screenLabels,bool majorEnabled,int majorInterval,Action<SKPoint,double> label,CancellationToken token)
-    {
-        using var paint=new SKPaint{Color=color,Style=SKPaintStyle.Stroke,StrokeWidth=(float)TerrainTileMath.NormalContourStrokeWidth,IsAntialias=true};
-        using var font=new SKFont(SKTypeface.Default,22);
-        using var halo=new SKPaint{Color=SKColors.White,Style=SKPaintStyle.Stroke,StrokeWidth=4,IsAntialias=true};
-        using var ink=new SKPaint{Color=color,IsAntialias=true};
-        var labels=new List<SKRect>();
-        foreach(var line in TerrainTileMath.Contours(grid,interval,token))
-        {
-            token.ThrowIfCancellationRequested();
-            paint.StrokeWidth=(float)TerrainTileMath.ContourStrokeWidth(line.Elevation,majorEnabled,majorInterval);
-            using var path=new SKPath();var points=line.Points.Select(p=>new SKPoint((float)((p.X-1)*4),(float)((p.Y-1)*4))).ToArray();
-            path.MoveTo(points[0]);foreach(var point in points.Skip(1))path.LineTo(point);
-            canvas.DrawPath(path,paint);
-            var length=0d;for(var i=1;i<points.Length;i++)length+=Math.Sqrt(Math.Pow(points[i].X-points[i-1].X,2)+Math.Pow(points[i].Y-points[i-1].Y,2));
-            if(length<130)continue;
-            var text=line.Elevation.ToString("0",CultureInfo.InvariantCulture);
-#if WIN7_COMPAT
-            var glyphs=new ushort[font.CountGlyphs(text)];font.GetGlyphs(text,glyphs);var width=font.MeasureText(glyphs);
-#else
-            var width=font.MeasureText(text);
-#endif
-            // Walk by arclength, not vertex index; regular spacing in dense/flat terrain alike.
-            var walked=0d;var anchor=points[0];
-            for(var i=1;i<points.Length;i++)
-            {
-                var d=Math.Sqrt(Math.Pow(points[i].X-points[i-1].X,2)+Math.Pow(points[i].Y-points[i-1].Y,2));
-                if(walked+d>=length/2){var f=(float)((length/2-walked)/d);anchor=new(points[i-1].X+f*(points[i].X-points[i-1].X),points[i-1].Y+f*(points[i].Y-points[i-1].Y));break;}walked+=d;
-            }
-            var box=new SKRect(anchor.X-width/2-5,anchor.Y-24,anchor.X+width/2+5,anchor.Y+8);
-            if(box.Left<5||box.Top<5||box.Right>507||box.Bottom>507||labels.Any(b=>b.IntersectsWith(box)))continue;
-            labels.Add(box);label(anchor,line.Elevation);
-            if(!screenLabels){canvas.DrawText(text,anchor.X-width/2,anchor.Y,font,halo);canvas.DrawText(text,anchor.X-width/2,anchor.Y,font,ink);}
-        }
-    }
     public async Task ClearCacheAsync(bool contours)
     {
         await _maintenance.WaitAsync().ConfigureAwait(false);

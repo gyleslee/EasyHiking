@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using HikingGuide.Core.Models;
@@ -76,6 +76,7 @@ public sealed class MapGeoJsonBuilder
 
     public string BuildWaypoints(MapDisplayData data, HikingProject? project = null)
     {
+        var descriptions=project?.Waypoints.ToDictionary(p=>p.Id,p=>p.Description);
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -93,6 +94,7 @@ public sealed class MapGeoJsonBuilder
                 writer.WriteString("waypointId", waypoint.WaypointId);
                 writer.WriteString("name", waypoint.Name);
                 writer.WriteString("namedLabel", waypoint.Name?.Trim() ?? "");
+                writer.WriteString("description", descriptions?.GetValueOrDefault(waypoint.WaypointId)??"");
                 writer.WriteString("waypointType", waypoint.Type.ToString());
                 var attachments = project?.MediaAttachments.Count(item => item.OwnerId == waypoint.WaypointId) ?? 0;
                 var external = project?.ExternalMediaReferences.Where(item => item.OwnerId == waypoint.WaypointId).ToArray() ?? [];

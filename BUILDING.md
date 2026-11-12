@@ -25,7 +25,7 @@ dotnet test HikingGuide.sln -c Release --no-restore
 
 V1.9.5 已固定 SQLite 原生库 3.53.3，安全修复及验证见 SECURITY.md。保留默认依赖审计；不要为通过构建而关闭审计或忽略新的 NU1903。若所在网络无法读取 NuGet 漏洞服务，NU1900 应作为网络问题单独处理，不能当作审计通过。
 
-Windows 7 分支可单独测试：
+Windows7分支停留在V1.9.5，后续版本暂不更新支持；以下仅为历史源码的单独测试方式：
 
 ```powershell
 dotnet test compat/windows7/HikingGuide.sln -c Release
@@ -46,7 +46,7 @@ Excel 模板随 Infrastructure 项目发布到 `Templates/攻略数据模板.xls
 Windows 10/11 的正式安装载荷还需生成中文无控制台启动器：
 
 ```powershell
-./packaging/Build-Launcher.ps1 -PayloadDirectory artifacts/modern -Version 1.9.5
+./packaging/Build-Launcher.ps1 -PayloadDirectory artifacts/modern -Version 1.9.6
 ```
 
 该入口调用系统 x64 dotnet.exe 加载原程序集，不增加 GPU 禁用参数。命令行直接运行程序集也使用同一标准机制：
@@ -75,3 +75,7 @@ DEM、rd5 路由数据、个人图源配置及离线地图均需用户自行准�
 原生应用从程序目录 `docs/易行徒步规划制作器-操作说明.html` 打开说明。自行发布时把本仓库 `docs` 复制到发布目录。
 
 GitHub Releases 的既有 T1.9.2 安装包按维护者要求原样提供，可能包含与源码内置示例不同的预置图源；这些个人预置图源列表不在源码中。重建通用软件不需要它们。源码及安装脚本不保证与历史安装包逐字节一致，但保留本版本应用代码、算法、模板及第三方组件版本。
+
+## Windows11 ARM64安装包
+
+本版ARM包仍发布win-x64程序，经Windows11系统模拟运行，共用.NET x64运行时；只将WebView2离线依赖改为ARM64。不能将RuntimeIdentifier改成win-arm64就宣称完成原生移植：GDAL、Java等原生依赖需要另行适配。详见packaging/README.md。

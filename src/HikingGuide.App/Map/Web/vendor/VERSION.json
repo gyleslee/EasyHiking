@@ -1,0 +1,31 @@
+{
+  "version": "6.17.0",
+  "approvedByUser": "2026-11-10: allow reviewed dash atlas growth patch",
+  "packageSha256": "587807d8d6c99349022e027fa310c16cfaa55392131f6263df080306db6809b0",
+  "files": [
+    {
+      "file": "maplibre-gl.mjs",
+      "officialSha256": "e02cb08c572fd0950a75343cd558099c2a1dbbaf67f26b0c96f115431962d1ae",
+      "deployedSha256": "b0d99bb78adba3eb45ab4a1dc6928000877426009c2f230df4fdb06a76ed5ba1",
+      "patched": true
+    },
+    {
+      "file": "maplibre-gl-shared.mjs",
+      "officialSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "deployedSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "patched": false
+    },
+    {
+      "file": "maplibre-gl-worker.mjs",
+      "officialSha256": "73d7a024a4efe1a46e49db193e18cfe33271e3ecc652ec7542c281a4ef5f0f04",
+      "deployedSha256": "73d7a024a4efe1a46e49db193e18cfe33271e3ecc652ec7542c281a4ef5f0f04",
+      "patched": false
+    },
+    {
+      "file": "maplibre-gl.css",
+      "officialSha256": "a90798a1953017790e590f7e1bd35ff103a8a4263972cb47290b78adf86f8c20",
+      "deployedSha256": "a90798a1953017790e590f7e1bd35ff103a8a4263972cb47290b78adf86f8c20",
+      "patched": false
+    }
+  ]
+}

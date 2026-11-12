@@ -1,6 +1,9 @@
 ﻿#include "build\Prerequisites.iss"
 #define TestAppId "EasyHiking-Installed-0EE343F3-212F-4B44-ABBF-7FF0B80AB4E7"
 #define ProductName "易行徒步规划制作器"
+#ifndef TargetArm
+ #define TargetArm 0
+#endif
 #ifndef ProductVersion
   #define ProductVersion "1.8.0"
 #endif
@@ -21,10 +24,20 @@ DefaultDirName={autopf}\EasyHiking
 DefaultGroupName={#ProductName}
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
+#if TargetLegacy
 ArchitecturesAllowed=x64os
 ArchitecturesInstallIn64BitMode=x64os
-#if TargetLegacy
-MinVersion=6.1sp1
+#else
+#if TargetArm
+ArchitecturesAllowed=arm64
+ArchitecturesInstallIn64BitMode=arm64
+#else
+ArchitecturesAllowed=x64os
+ArchitecturesInstallIn64BitMode=x64os
+#endif
+#endif
+#if TargetArm
+MinVersion=10.0.22000
 #else
 MinVersion=6.1sp1
 #endif
@@ -35,6 +48,8 @@ UninstallDisplayIcon={app}\易行徒步规划制作器.exe
 OutputDir=output
 #if TargetLegacy
 OutputBaseFilename=EasyHiking-{#ProductVersion}-Windows7-x64-Setup
+#elif TargetArm
+OutputBaseFilename=EasyHiking-{#ProductVersion}-Windows11-ARM64-Setup
 #else
 OutputBaseFilename=EasyHiking-{#ProductVersion}-Windows10-11-x64-Setup
 #endif
@@ -54,7 +69,11 @@ ChangesAssociations=no
 Name: "chinesesimp"; MessagesFile: "build\ChineseSimplified.isl"
 [Messages]
 #if !TargetLegacy
-WindowsVersionNotSupported=此安装包需要64位x64 Windows 10（1607/14393或更高版本）或Windows 11。请核对系统版本和位数，并取消兼容模式后重试。
+#if TargetArm
+WindowsVersionNotSupported=此为ARM64 Windows 11专用兼容安装包，程序通过系统x64模拟运行。普通Intel/AMD电脑请使用Windows10-11-x64安装包。
+#else
+WindowsVersionNotSupported=此为普通x64 Windows 10/11安装包。ARM64 Windows 11（包括M芯片Mac虚拟机）请使用Windows11-ARM64安装包。
+#endif
 #endif
 [Tasks]
 Name: "desktopicon"; Description: "创建桌面快捷方式"; Flags: unchecked
@@ -67,7 +86,11 @@ Source: "{#PrereqRoot}\VC_redist-2019-x64.exe"; Flags: dontcopy noencryption
 #else
 Source: "{#PayloadBase}\PayloadModern\*"; DestDir: "{app}"; Excludes: "EasyHiking.Installation.ini,docs\*"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "{#PrereqRoot}\windowsdesktop-runtime-10-win-x64.exe"; Flags: dontcopy noencryption
+#if TargetArm
+Source: "{#ArmWebViewFile}"; Flags: dontcopy noencryption
+#else
 Source: "{#PrereqRoot}\MicrosoftEdgeWebView2RuntimeInstallerX64.exe"; Flags: dontcopy noencryption
+#endif
 #endif
 Source: "build\EasyHiking.Installation.ini"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#ManualBase}\*"; DestDir: "{app}\docs"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -133,12 +156,13 @@ function DotnetReady: Boolean;
 var Root: String;
 begin
   if UseLegacyBuild then begin Result := True; Exit; end;
-  Result := Version10Folder(ExpandConstant('{commonpf64}\dotnet'));
+  if IsArm64 then Result := Version10Folder(ExpandConstant('{commonpf64}\dotnet\x64'))
+  else Result := Version10Folder(ExpandConstant('{commonpf64}\dotnet'));
   if not Result then begin
     if RegQueryStringValue(HKLM64, 'SOFTWARE\dotnet\Setup\InstalledVersions\x64', 'InstallLocation', Root) then Result := Version10Folder(Root);
   end;
   if not Result then Result := Version10Folder(GetEnv('DOTNET_ROOT_X64'));
-  if not Result then Result := Version10Folder(GetEnv('DOTNET_ROOT'));
+  if not Result and not IsArm64 then Result := Version10Folder(GetEnv('DOTNET_ROOT'));
 end;
 
 function ValidWebViewVersion(const Value: String): Boolean;
@@ -197,6 +221,15 @@ function InitializeSetup: Boolean;
 var Report, PreviousDirectory, SystemError: String; Version: TWindowsVersion;
 begin
   GetWindowsVersionEx(Version);
+#if TargetArm
+  SystemError := PackageArchitectureError(True,IsArm64);
+#else
+  SystemError := PackageArchitectureError(False,IsArm64);
+#endif
+  if SystemError<>'' then begin SuppressibleMsgBox(SystemError,mbError,MB_OK,IDOK);Result:=False;Exit;end;
+  SystemError := TargetArchitectureError(UseLegacyBuild,IsArm64,IsX64Compatible,Version.Major,Version.Build);
+  if SystemError<>'' then begin SuppressibleMsgBox(SystemError,mbError,MB_OK,IDOK);Result:=False;Exit;end;
+  Log('架构检测：ARM64='+IntToStr(Ord(IsArm64))+'；x64兼容='+IntToStr(Ord(IsX64Compatible)));
   Log('系统检测：'+IntToStr(Version.Major)+'.'+IntToStr(Version.Minor)+'.'+IntToStr(Version.Build)+'；64位='+IntToStr(Ord(IsWin64)));
   SystemError := TargetSystemError(UseLegacyBuild,Version.Major,Version.Minor,Version.Build,Version.ServicePackMajor,IsWin64);
   if SystemError<>'' then begin SuppressibleMsgBox(SystemError,mbError,MB_OK,IDOK);Result:=False;Exit;end;
@@ -226,7 +259,12 @@ begin
   InstallMissing.Caption := '自动安装缺少的运行环境（已内置离线安装程序，建议勾选）'; InstallMissing.Checked := True;
   RuntimeNote := TNewStaticText.Create(RuntimePage); RuntimeNote.Parent := RuntimePage.Surface;
   RuntimeNote.SetBounds(0, ScaleY(128), RuntimePage.SurfaceWidth, ScaleY(100)); RuntimeNote.WordWrap := True;
-  RuntimeNote.Caption := '缺少.NET时，微软安装程序可能请求管理员权限；可取消后自行安装。未满足环境时不会自动启动软件。' + #13#10#13#10 +
+#if TargetArm
+  RuntimeNote.Caption := 'ARM64专用兼容包：应用及.NET为x64，由Windows11模拟运行；内置ARM64 WebView2。' + #13#10 +
+#else
+  RuntimeNote.Caption := '普通x64系统安装包：内置x64 .NET及x64 WebView2，供Intel/AMD Windows10/11使用。' + #13#10 +
+#endif
+    '缺少.NET时，微软安装程序可能请求管理员权限；可取消后自行安装。未满足环境时不会自动启动软件。' + #13#10#13#10 +
     '程序与配置位于同一盘符，例如程序D:\Program Files\EasyHiking，配置D:\Users\用户名\AppData\Local\EasyHiking。首次切换会复制旧配置，原目录保留。Java和GDAL随软件提供。';
   Button := TNewButton.Create(RuntimePage); Button.Parent := RuntimePage.Surface;
   Button.SetBounds(0, ScaleY(245), ScaleX(155), ScaleY(28)); Button.Caption := '.NET官方下载'; Button.OnClick := @DotnetLinkClick;
@@ -306,7 +344,11 @@ begin
       if not DotnetReady and not NeedReboot then begin Result := '.NET桌面运行时安装后仍未满足要求，请手动安装后重新检测。'; Exit; end;
     end;
     if not WebViewReady then begin
+#if TargetArm
+      if not InstallRuntime('MicrosoftEdgeWebView2RuntimeInstallerARM64.exe', '{#ArmWebViewSha256}', '/silent /install', False, Result) then Exit;
+#else
       if not InstallRuntime('MicrosoftEdgeWebView2RuntimeInstallerX64.exe', '{#WebViewSha256}', '/silent /install', False, Result) then Exit;
+#endif
       if not WebViewReady and not NeedReboot then begin Result := 'WebView2运行时安装后仍未满足要求，请手动安装后重新检测。'; Exit; end;
     end;
 #endif

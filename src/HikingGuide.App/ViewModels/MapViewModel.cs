@@ -8,6 +8,7 @@ using HikingGuide.Application.Maps;
 using HikingGuide.Application.TrackEditing;
 using HikingGuide.Core.Geometry;
 using HikingGuide.Core.Models;
+using HikingGuide.Core.Services;
 
 namespace HikingGuide.App.ViewModels;
 
@@ -16,6 +17,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
     private readonly IGlobalSettingsService _settings;
     private readonly MapDisplayDataService _displayData;
     private readonly MapGeoJsonBuilder _geoJson;
+    private readonly KilometerGeoJsonBuilder _kilometerGeoJson=new();
     private readonly DirectionArrowCache _arrowCache = new();
     private Guid[] _selectedSplitSectionIds = [];
     private Guid[] _selectedTrackIds = [];
@@ -662,10 +664,12 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
             var data = await Task.Run(() => _displayData.Create(project, zoom, expectedRevision, token,
                 _temporaryVisibleTrackId), token);
             var payload = await Task.Run(() => _geoJson.Build(data, project), token);
+            var kilometerMarks=await Task.Run(()=>_kilometerGeoJson.Build(project,token),token);
             if (token.IsCancellationRequested || project != _project || !_revisionGate.IsCurrent(project.Id, expectedRevision)) return;
             _lastDisplayData = data;
             _lastZoomBucket = _profile.GetCacheZoomBucket(zoom);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetTracks", new { geoJson = ParseJson(payload.TracksGeoJson) }, project.Id, expectedRevision), token);
+            await bridge.SendAsync(MapProtocol.SerializeCommand("SetKilometerMarks", new { geoJson=kilometerMarks }, project.Id, expectedRevision), token);
             var overlays = await Task.Run(() => (
                 Sections: "{\"type\":\"FeatureCollection\",\"features\":[]}",
                 Arrows: "{\"type\":\"FeatureCollection\",\"features\":[]}"), token);
@@ -682,6 +686,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetGuideSegments", new { geoJson = guides.Segments }, project.Id, expectedRevision), token);
             await SelectObjectAsync(FindSelectedObject(), cancelPendingFocus: false);
             MapStatusText = $"地图已就绪：显示 {data.Tracks.Sum(track => track.DisplayPointCount):N0} / 原始 {data.Tracks.Sum(track => track.OriginalPointCount):N0} 个轨迹点";
+            if(project.Tracks.Any(t=>TrackKilometerService.IsEnabled(t)&&KilometerRouteDirections.NeedsConfirmation(t)))MapStatusText+="；部分公里标识需重新确认起终方向，请右击轨迹选择显示公里数标识。";
         }
         catch (OperationCanceledException) { }
         catch (Exception exception)
@@ -732,14 +737,14 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
         var settingsRevision=++_mapSettingsRevision;
         slots=_bridge.ConfigureRasterLayers(slots);
         object Payload(RasterLayerSlot slot) => new {sourceId=slot.Source?.Id,name=slot.Source?.Name,templates=slot.Templates,minZoom=slot.Source?.MinZoom??0,maxZoom=slot.Source?.MaxZoom??19,opacity=slot.Opacity,visible=slot.Visible,attribution=slot.Source?.Attribution??""};
-        await _bridge.SendAsync(MapProtocol.SerializeCommand("SetMapLayerStack",new {settingsRevision,@base=Payload(slots[0]),overlay1=Payload(slots[1]),overlay2=Payload(slots[2])}));
+        await _bridge.SendAsync(MapProtocol.SerializeCommand("SetMapLayerStack",new {settingsRevision,markerDisplayMode=MarkerDisplayMode,@base=Payload(slots[0]),overlay1=Payload(slots[1]),overlay2=Payload(slots[2])}));
         var terrainState=_bridge.ConfigureTerrain3D(_settings.Current.Terrain3D??new());
         if(terrainState.Enabled&&!_terrainCameraInitialized&&_settings.Current.TerrainCamera is {IsValid:true} camera)terrainState=terrainState with{Camera=camera};
         _terrainCameraInitialized=true;
         _terrainRevision=terrainState.TerrainRevision;
         var offline=_settings.Current.OfflineTerrain;
-        // 2D/3D共用生成器的DEM、显隐及样式；3D仅改变数字贴合方式，不覆盖用户选择。
-        offline=offline with{ScreenAlignedLabels=terrainState.Enabled};
+        // 2D/3D等高线和阴影统一跟随全局Terrain DEM；不改攻略/收藏点高程来源。
+        offline=offline with{DemDatabaseId=_settings.Current.Terrain3D?.TerrainDemDatabaseId,ScreenAlignedLabels=terrainState.Enabled};
         await _bridge.SendAsync(MapProtocol.SerializeCommand("SetTerrainState",terrainState));
         await _bridge.SendAsync(MapProtocol.SerializeCommand("SetOfflineTerrain",_bridge.ConfigureOfflineTerrain(offline)));
         var roads=await ((App)System.Windows.Application.Current).OsmRoads.ConfigureAsync(_settings.Current.OsmRoads,terrainEnabled:terrainState.Enabled);

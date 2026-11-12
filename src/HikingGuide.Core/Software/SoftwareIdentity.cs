@@ -7,6 +7,6 @@ public static class SoftwareIdentity
 {
     public const string DisplayName = "易行徒步规划制作器";
     public static string DisplayVersion => typeof(SoftwareIdentity).Assembly
-        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "V1.9.5";
+        .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.Split('+')[0] ?? "V1.9.6";
     public static string DisplayTitle => $"{DisplayName} {DisplayVersion}";
 }
