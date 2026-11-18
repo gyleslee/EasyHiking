@@ -40,7 +40,7 @@ public sealed class MapGeoJsonBuilder
                 writer.WriteNumber("originalPointCount", track.OriginalPointCount);
                 writer.WriteNumber("displayPointCount", track.DisplayPointCount);
                 writer.WriteString("splitSectionId",piece.SplitSectionId);
-                writer.WriteBoolean("hasSplitSections",track.Segments.Count>1);
+                writer.WriteBoolean("hasSplitSections",false);
                 if(piece.GuideSegmentId is Guid guideId)writer.WriteString("guideSegmentId",guideId);
                 writer.WriteBoolean("guideVisible",piece.GuideSegmentId is Guid visibleId && (projectForVisibility is null || MapLayerVisibility.IsGuideSegmentVisible(projectForVisibility.Settings.Map,visibleId)));
                 writer.WriteEndObject();

@@ -14,6 +14,7 @@ public sealed class SplitSectionMapGeoJsonBuilder
             if (track is null || track.Segments.Count < 2) continue;
             foreach (var section in track.GetSplitSections())
             {
+                if (!MapLayerVisibility.IsSplitSectionVisible(project.Settings.Map, section.Id)) continue;
                 var coordinates = section.GeometryParts.Select(part =>
                 {
                     var index = track.Segments.IndexOf(part);

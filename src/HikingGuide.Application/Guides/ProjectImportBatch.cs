@@ -1,4 +1,4 @@
-using HikingGuide.Application.Maps;
+﻿using HikingGuide.Application.Maps;
 using HikingGuide.Application.TrackFiles;
 using HikingGuide.Core.Models;
 
@@ -74,6 +74,14 @@ public sealed class ProjectImportBatch(ITrackFileService trackFiles)
                     if (waypoint.AssociatedTrackId is null)
                         waypoint.AssociatedTrackId = track.Id;
             }
+            // 导入确认前完成独立轨迹转换，使导入计划及其撤销包含所有新轨迹。
+            var scratch=new HikingProject();
+            foreach(var track in part.Tracks)scratch.AddTrack(track,false);
+            foreach(var point in part.Waypoints)scratch.Waypoints.Add(point);
+            foreach(var track in scratch.Tracks.ToArray())
+                if(track.GetSplitSections().Count>1)
+                    new HikingGuide.Application.TrackEditing.IndependentTracks(scratch,track).Apply();
+            part.Tracks.Clear();part.Tracks.AddRange(scratch.Tracks);
             foreach (var track in part.Tracks)
             {
                 track.DisplayColor = TrackDisplayColor.NextUnique(colors);

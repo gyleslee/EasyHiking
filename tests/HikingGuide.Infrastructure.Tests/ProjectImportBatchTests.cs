@@ -1,4 +1,4 @@
-using HikingGuide.Application.Guides;
+﻿using HikingGuide.Application.Guides;
 using HikingGuide.Application.Maps;
 using HikingGuide.Core.Models;
 using HikingGuide.Infrastructure.Projects;
@@ -9,7 +9,7 @@ namespace HikingGuide.Infrastructure.Tests;
 public sealed class ProjectImportBatchTests
 {
     [Fact]
-    public async Task KmzInternalTracks_BecomeOneNamedParent_WithSplitSectionsAndOwnMarkers()
+    public async Task KmzInternalTracks_BecomeIndependentNamedTracks_WithOwnMarkers()
     {
         using var context = new TrackFileTestContext();
         var path = context.OutputPath("山脊合并线路.kmz");
@@ -26,20 +26,20 @@ public sealed class ProjectImportBatchTests
         }
         var raw = await context.Service.ImportAsync(path);
         var result = await new ProjectImportBatch(context.Service).ReadAsync([path], new HikingProject());
-        Assert.True(result.IsSuccess); var track = Assert.Single(result.Tracks);
-        Assert.Equal("山脊合并线路", track.Name);
-        Assert.Equal(raw.Tracks.Sum(t => t.GetPointCount()), track.GetPointCount());
-        Assert.Equal(raw.Tracks.Sum(t => t.GetTotalLength()), track.GetTotalLength(), 6);
-        Assert.Equal(raw.Tracks.Sum(t => t.Segments.Count), track.Segments.Count);
-        Assert.Equal(raw.Tracks.Count, track.GetSplitSections().Count);
-        Assert.Equal(raw.Tracks.Select(t => t.Name), track.GetSplitSections().Select(s => s.Name));
-        Assert.Equal(track.Id, Assert.Single(result.Waypoints).AssociatedTrackId);
+        Assert.True(result.IsSuccess);var track=result.Tracks[0];
+        Assert.Equal(raw.Tracks.Count,result.Tracks.Count);
+        Assert.Equal(new[]{"山脊合并线路（1）","山脊合并线路（2）"},result.Tracks.Select(t=>t.Name));
+        Assert.Equal(raw.Tracks.Sum(t=>t.GetPointCount()),result.Tracks.Sum(t=>t.GetPointCount()));
+        Assert.Equal(raw.Tracks.Sum(t=>t.GetTotalLength()),result.Tracks.Sum(t=>t.GetTotalLength()),6);
+        Assert.Equal(raw.Tracks.Sum(t=>t.Segments.Count),result.Tracks.Sum(t=>t.Segments.Count));
+        Assert.All(result.Tracks,t=>Assert.Single(t.GetSplitSections()));
+        Assert.Equal(track.Id,Assert.Single(result.Waypoints).AssociatedTrackId);
         Assert.Equal(raw.ExternalMediaReferences.Count, result.ExternalMediaReferences.Count);
         var p = new HikingProject(); var session = ProjectImportSession.Create(result, path, p);
         new ProjectImportService().Commit(session, p, true);
         var saved = context.OutputPath("分段.hikeproj"); var storage = new ProjectFileService();
         await storage.SaveAsync(p, saved, false); var reopened = await storage.LoadAsync(saved);
-        Assert.Equal(track.GetSplitSections().Select(s => s.Name), Assert.Single(reopened.Tracks).GetSplitSections().Select(s => s.Name));
+        Assert.Equal(result.Tracks.Select(t=>t.Name), reopened.Tracks.Select(t=>t.Name));
         Assert.Equal(track.Id, Assert.Single(reopened.Waypoints).AssociatedTrackId);
     }
 

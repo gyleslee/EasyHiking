@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -512,6 +512,7 @@ public partial class ElevationAnalysisControl : UserControl
             gpsFingerprint = leftId is null || rightId is null && mode != 0 ?
                 await Task.Run(() => new StandardElevationAnalysisV1().GpsFingerprint(target),
                     cancellation.Token) : null;
+            var cachedIds = project.ElevationAnalyses.Select(result => result.Id).ToHashSet();
             var first = await AnalyzeOne(left, coordinator, project, target, progress,
                 cancellation.Token, forceRefresh, profile);
             if (!Current(first, leftId)) return;
@@ -540,7 +541,7 @@ public partial class ElevationAnalysisControl : UserControl
                 AnalysisStatus.Text = first.IsStale ? "分析期间轨迹或DEM已变化，结果已标记过期。" :
                     first.Summary.Availability == ElevationAvailability.Unavailable ?
                     "该来源没有可用高程；不会自动改用其他来源补洞。" :
-                    "分析完成。单击曲线可定位地图，滚轮可缩放，拖动可平移；黄色圆点为攻略节点。";
+                    (cachedIds.Contains(first.Id) ? "已复用项目中的分析结果。" : "分析完成。") + "单击曲线可定位地图，滚轮可缩放，拖动可平移；黄色圆点为攻略节点。";
             }
         }
         catch (OperationCanceledException)
@@ -804,6 +805,17 @@ public partial class ElevationAnalysisControl : UserControl
     private static string FormatSlope(double? slope) => slope is double value &&
         double.IsFinite(value) ? $"{value:+0.0;-0.0;0.0}%" : "—";
 
+    internal string BuildRecordedHoverText(ElevationAnalysisResult result, ElevationSeriesPoint point, double chainage)
+    {
+        var total = result.Series.LastOrDefault()?.DistanceMeters ?? 0;
+        var track = _project?.Tracks.FirstOrDefault(t => t.Id == result.TrackId);
+        var absolute = chainage + (_target?.GeometryParts.FirstOrDefault()?.Points.FirstOrDefault()?.DistanceFromStart ?? 0);
+        var time = track is null ? null : HikingGuide.Core.Services.RecordedTrackTiming.TimeAtDistance(track, absolute);
+        return (point.ProcessedElevationMeters is double h ? $"{h:F0} m｜坡度 {FormatSlope(point.SlopePercent)}" : "无海拔数据") +
+            $"\n离起点 {chainage/1000:F1} km｜离终点 {Math.Max(0,total-chainage)/1000:F1} km\n时间 " +
+            (time?.ToLocalTime().ToString("M/d H:mm", CultureInfo.InvariantCulture) ?? "无记录");
+    }
+
     private void DrawHoverBubble(WpfPlot plot, ElevationAnalysisResult? result,
         Canvas overlay, double chainage)
     {
@@ -827,8 +839,7 @@ public partial class ElevationAnalysisControl : UserControl
             Padding = new Thickness(6, 3, 6, 3),
             Child = new TextBlock
             {
-                Text = height is double value ? $"{value:F0} m\n坡度 {FormatSlope(point.SlopePercent)}" :
-                    "无海拔数据",
+                Text = BuildRecordedHoverText(result, point, chainage),
                 Foreground = Brushes.Black, FontSize = 12, TextAlignment = TextAlignment.Center
             }
         };
@@ -837,8 +848,8 @@ public partial class ElevationAnalysisControl : UserControl
         var heightDip = bubble.DesiredSize.Height;
         Canvas.SetLeft(bubble, Math.Clamp(pixel.X - width / 2, 0,
             Math.Max(0, overlay.ActualWidth - width)));
-        Canvas.SetTop(bubble, pixel.Y - heightDip - 12 < plotTop ? pixel.Y + 10 :
-            pixel.Y - heightDip - 12);
+        var preferredTop = pixel.Y - heightDip - 12 < plotTop ? pixel.Y + 10 : pixel.Y - heightDip - 12;
+        Canvas.SetTop(bubble, Math.Clamp(preferredTop, 0, Math.Max(0, overlay.ActualHeight - heightDip)));
         overlay.Children.Add(bubble);
         if (height.HasValue)
         {

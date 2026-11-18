@@ -4,9 +4,9 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>
     <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <Version>1.9.6</Version>
-    <AssemblyVersion>1.9.6.0</AssemblyVersion>
-    <FileVersion>1.9.6.0</FileVersion>
-    <InformationalVersion>V1.9.6</InformationalVersion>
+    <Version>1.9.8</Version>
+    <AssemblyVersion>1.9.8.0</AssemblyVersion>
+    <FileVersion>1.9.8.0</FileVersion>
+    <InformationalVersion>V1.9.8</InformationalVersion>
   </PropertyGroup>
 </Project>

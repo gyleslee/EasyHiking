@@ -63,6 +63,17 @@ public partial class MainWindow : Window
             new RoutedEventArgs());
         viewModel.AnalysisSelectionChanged += (_, _) => UpdateAnalysisSelection();
         viewModel.TrackColorChanged += (_, _) => ElevationAnalysis?.RefreshStyle();
+        var mapSettings = ((App)System.Windows.Application.Current).GlobalSettingsService;
+        var propertyDem = mapSettings.Current.Terrain3D?.TerrainDemDatabaseId;
+        EventHandler refreshProperties = (_, _) => Dispatcher.Invoke(() =>
+        {
+            var next = mapSettings.Current.Terrain3D?.TerrainDemDatabaseId;
+            if (next == propertyDem) return;
+            propertyDem = next; viewModel.RefreshSelectedTrackProperties();
+        });
+        mapSettings.MapSettingsChanged += refreshProperties;
+        Closed += (_, _) => mapSettings.MapSettingsChanged -= refreshProperties;
+
         ProjectTree.Loaded += OnProjectTreeLoaded;
         ProjectTree.AddHandler(FrameworkElement.RequestBringIntoViewEvent,
             new RequestBringIntoViewEventHandler(OnProjectTreeRequestBringIntoView), true);
@@ -98,6 +109,8 @@ public partial class MainWindow : Window
     private async void OnImportFavorites(object sender, RoutedEventArgs e) => await FavoriteAction(FavoritesContent.ImportAsync);
     private async void OnExportFavorites(object sender, RoutedEventArgs e) => await FavoriteAction(FavoritesContent.ExportAsync);
     private async void OnExportFavoritesKmz(object sender, RoutedEventArgs e) => await FavoriteAction(() => FavoritesContent.ExportKmzAsync());
+    private async void OnExportFavoritesGpx(object sender, RoutedEventArgs e) => await FavoriteAction(() => FavoritesContent.ExportGpxAsync());
+    private async void OnExportFavoritesKml(object sender, RoutedEventArgs e) => await FavoriteAction(() => FavoritesContent.ExportKmlAsync());
     private async void OnFavoriteVisibility(object sender, RoutedEventArgs e) => await FavoriteAction(async () =>
     { var app = (App)System.Windows.Application.Current; app.GlobalSettingsService.Current.ShowFavoritesOnMap = FavoritesVisibleMenu.IsChecked; await app.GlobalSettingsService.SaveAsync(); app.NotifyFavoritesChanged(); });
     private async void OnCopyFavorite(object sender, RoutedEventArgs e)
@@ -312,11 +325,26 @@ public partial class MainWindow : Window
     }
 
     private long _navigationSelectionVersion;
+    private bool _navigationKeyboardSelectionInProgress;
+    private NavigationNode? _navigationPointerSelection;
+    private void OnNavigationKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key is not (Key.Up or Key.Down or Key.Left or Key.Right or Key.Home or Key.End or Key.PageUp or Key.PageDown)) return;
+        _navigationKeyboardSelectionInProgress = true;
+        Dispatcher.BeginInvoke(() => _navigationKeyboardSelectionInProgress = false, DispatcherPriority.Input);
+    }
+
     private void OnNavigationSelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
     {
-        var version=++_navigationSelectionVersion;
+        ++_navigationSelectionVersion;
         if(DataContext is not MainViewModel viewModel||viewModel.IsProjectTreeRefreshActive||e.NewValue is not NavigationNode node)return;
-        var focus=!viewModel.IsMapSelectionInProgress;
+        var userSelection = _navigationKeyboardSelectionInProgress || ReferenceEquals(node, _navigationPointerSelection);
+        QueueNavigationSelection(viewModel, node, userSelection && !viewModel.IsMapSelectionInProgress);
+    }
+
+    private void QueueNavigationSelection(MainViewModel viewModel, NavigationNode node, bool focus)
+    {
+        var version=++_navigationSelectionVersion;
         // IsSelected can be applied while WPF is evaluating a recycled container's Style.
         // Never clear/rebuild ItemsSource inside that property-change stack.
         Dispatcher.BeginInvoke(()=>
@@ -409,7 +437,11 @@ public partial class MainWindow : Window
         var item = FindAncestor<TreeViewItem>(e.OriginalSource as DependencyObject);
         if (item?.DataContext is NavigationNode node)
         {
-            viewModel.UpdateProjectItemSelection(node, Keyboard.Modifiers);
+            _navigationPointerSelection = (Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift)) == 0 ? node : null;
+            Dispatcher.BeginInvoke(() => _navigationPointerSelection = null, DispatcherPriority.Input);
+            viewModel.UpdateProjectItemSelection(node, Keyboard.Modifiers, focusOnMap: false);
+            if ((Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift)) == 0)
+                QueueNavigationSelection(viewModel, node, true);
             if ((Keyboard.Modifiers & (ModifierKeys.Control | ModifierKeys.Shift)) != 0)
                 e.Handled = true;
         }
@@ -472,6 +504,9 @@ public partial class MainWindow : Window
             if (focus is TextBoxBase or PasswordBox or ComboBox) return;
         if (delete)
         {
+            if (e.IsRepeat) { e.Handled = true; return; }
+            if (viewModel.DeleteSelectionFromKeyboard(ProjectTree.IsKeyboardFocusWithin))
+            { e.Handled = true; return; }
             var marker = viewModel.SelectedMarker;
             if (marker is null || !viewModel.DeleteMarkerCommand.CanExecute(marker)) return;
             viewModel.DeleteMarkerCommand.Execute(marker);
@@ -500,6 +535,9 @@ public partial class MainWindow : Window
         }
     }
     internal void OpenMapManager()=>OnManageMapSources(this,new RoutedEventArgs());
+
+    private void OnTrackDisplaySettings(object sender,RoutedEventArgs e) =>
+        new TrackDisplaySettingsWindow(((App)System.Windows.Application.Current).GlobalSettingsService) {Owner=this}.ShowDialog();
 
     private void OnTerrain3DSettings(object sender,RoutedEventArgs e)
     {if(DataContext is MainViewModel vm)new Terrain3DWindow(vm.Map){Owner=this}.ShowDialog();}

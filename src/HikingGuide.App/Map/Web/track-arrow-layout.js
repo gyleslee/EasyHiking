@@ -1,8 +1,41 @@
-// Display-only geometry: keep every line point; suppress direction marks near tight bends.
+﻿// Display-only geometry: keep every line point; suppress direction marks near tight bends.
 export const trackArrowLayoutProfile = Object.freeze({
-  spacingPixels: 44, turnProbePixels: 6, turnClearancePixels: 8,
+  spacingPixels: 80, turnProbePixels: 6, turnClearancePixels: 18,
   sharpTurnDegrees: 45, worldPixelsAtZoomZero: 512
 });
+
+export const trackArrowSymbolProfile=Object.freeze({minimumHeightPixels:10,outsetPixels:2,chevronWidthRatio:.65,bandRatio:.32,gapRatio:.18,borderRatio:.075,maxBorderPixels:.9});
+export const trackArrowDensityStops=Object.freeze([[0,80],[10,80],[12,88],[14,96],[16,108],[18,128],[20,148],[22,168]]);
+export function trackArrowSpacingPixels(zoom,pitch=0) {
+ const z=Number.isFinite(zoom)?Math.max(0,Math.min(22,zoom)):14;
+ let spacing=trackArrowDensityStops.at(-1)[1];
+ for(let i=1;i<trackArrowDensityStops.length;i++){const [a,x]=trackArrowDensityStops[i-1],[b,y]=trackArrowDensityStops[i];if(z<=b){spacing=x+(y-x)*(z-a)/(b-a);break;}}
+ const angle=Math.max(0,Math.min(80,Number.isFinite(pitch)?pitch:0))*Math.PI/180;
+ return Math.round(spacing*(1+.45*Math.sin(angle))/4)*4;
+}
+function insetPolygon(points,amount) {
+ const result=[];
+ for(let i=0;i<points.length;i++){
+  const before=points[(i+points.length-1)%points.length],at=points[i],after=points[(i+1)%points.length];
+  const ux=at[0]-before[0],uy=at[1]-before[1],vx=after[0]-at[0],vy=after[1]-at[1];
+  const ul=Math.hypot(ux,uy),vl=Math.hypot(vx,vy),a=[at[0]-uy/ul*amount,at[1]+ux/ul*amount],b=[at[0]-vy/vl*amount,at[1]+vx/vl*amount];
+  const cross=ux*vy-uy*vx,t=Math.abs(cross)<1e-12?0:((b[0]-a[0])*vy-(b[1]-a[1])*vx)/cross;
+  result.push([a[0]+ux*t,a[1]+uy*t]);
+ }
+ return result;
+}
+export function trackChevronPolygons(lineWidth,pitch=0) {
+ const p=trackArrowSymbolProfile,width=Math.max(1,Math.min(20,Number.isFinite(lineWidth)?lineWidth:3));
+ const angle=Math.max(0,Math.min(80,Number.isFinite(pitch)?pitch:0))*Math.PI/180;
+ const height=Math.max(p.minimumHeightPixels,width+2*p.outsetPixels)*(1+.45*Math.sin(angle)),h=height/2,w=height*p.chevronWidthRatio,band=height*p.bandRatio,gap=height*p.gapRatio;
+ const border=Math.min(p.maxBorderPixels,height*p.borderRatio),symbols=[];
+ for(const center of [-(w+gap)/2,(w+gap)/2]){
+  const left=center-w/2,right=center+w/2;
+  const outer=[[left,-h],[left+band,-h],[right,0],[left+band,h],[left,h],[right-band,0]];
+  symbols.push({outer,inner:insetPolygon(outer,border)});
+ }
+ return {lineWidth:width,height,length:2*w+gap,edgeInsetPixels:(width-height)/2,symbols};
+}
 
 function interpolate(points, distances, distance) {
   if (distance <= 0) return points[0];
@@ -16,6 +49,7 @@ function interpolate(points, distances, distance) {
 }
 
 export function prepareTrackArrowRuns(feature, zoom, profile = trackArrowLayoutProfile) {
+  if(profile===trackArrowLayoutProfile)profile={...profile,spacingPixels:trackArrowSpacingPixels(zoom)};
   const result = [], world = profile.worldPixelsAtZoomZero * 2 ** zoom;
   const cosLimit = 85.05112878;
   for (const [lineIndex, points] of (feature.geometry?.coordinates || []).entries()) {

@@ -67,9 +67,6 @@
                                   Visibility="{Binding PlacementTarget.DataContext.IsProject, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                   Command="{Binding PlacementTarget.Tag.CloseProjectContextCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="删除轨迹"
-                                  Command="{Binding PlacementTarget.Tag.DeleteTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <MenuItem Header="显示公里数标识（所选轨迹）" Visibility="{Binding PlacementTarget.DataContext.CanKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.ShowKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <MenuItem Header="隐藏公里数标识（所选轨迹）" Visibility="{Binding PlacementTarget.DataContext.CanKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.HideKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <MenuItem Header="显示本项目轨迹公里数标识" Visibility="{Binding PlacementTarget.DataContext.CanProjectKilometerMarks, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}" Command="{Binding PlacementTarget.Tag.ShowProjectKilometersCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -89,24 +86,12 @@
                                   Visibility="{Binding PlacementTarget.DataContext.IsTrackSegment, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                   Command="{Binding PlacementTarget.Tag.FocusTrackSegmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="反转轨迹段"
-                                  Visibility="{Binding PlacementTarget.DataContext.IsTrackSegment, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.ReverseTrackSegmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="删除轨迹段"
-                                  Visibility="{Binding PlacementTarget.DataContext.IsTrackSegment, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.DeleteTrackSegmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="添加轨迹点"
+                        <MenuItem Header="删除轨迹"
+                                  Command="{Binding PlacementTarget.Tag.DeleteGeometryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                        <MenuItem Header="反转轨迹"
                                   Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.AddTrackPointCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="删除轨迹点"
-                                  Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.DeleteTrackPointCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="拆分轨迹段"
-                                  Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.SplitTrackSegmentCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="反转整条轨迹"
-                                  Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                  Command="{Binding PlacementTarget.Tag.ReverseTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                  Command="{Binding PlacementTarget.Tag.ReverseGeometryCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <MenuItem Header="合并轨迹"
                                   Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                   Command="{Binding PlacementTarget.Tag.CreateMergedTrackCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
@@ -134,9 +119,6 @@
                         <MenuItem Header="导出KMZ"
                                   Visibility="{Binding PlacementTarget.DataContext.IsTrackOrSplitSection, RelativeSource={RelativeSource AncestorType=ContextMenu}, Converter={StaticResource BooleanToVisibilityConverter}}"
                                   Command="{Binding PlacementTarget.Tag.ExportTrackKmzCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
-                        <MenuItem Header="查看属性"
-                                  Command="{Binding PlacementTarget.Tag.ViewTrackPropertiesCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding PlacementTarget.DataContext.Model, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
                         <Separator />
                         <MenuItem Header="编辑标注或攻略节点"
@@ -205,14 +187,14 @@
                 <MenuItem Header="退出轨迹编辑模式" Command="{Binding ExitTrackEditCommand}" />
                 <Separator />
                 <MenuItem Header="添加轨迹点" Command="{Binding AddTrackPointCommand}" />
-                <MenuItem Header="删除轨迹点" Command="{Binding DeleteTrackPointCommand}" />
+                <MenuItem Header="删除轨迹点" Command="{Binding DeleteTrackPointCommand}" InputGestureText="Delete" />
                 <Separator />
-                <MenuItem Header="拆分轨迹段" Command="{Binding SplitTrackSegmentCommand}" />
-                <MenuItem Header="删除轨迹段" Command="{Binding DeleteTrackSegmentCommand}" />
-                <MenuItem Header="反转轨迹段" Command="{Binding ReverseTrackSegmentCommand}" />
-                <Separator />
-                <MenuItem Header="反转整条轨迹" Command="{Binding ReverseTrackCommand}" />
-                <Separator />
+                <MenuItem Header="拆分轨迹" Command="{Binding SplitTrackSegmentCommand}" />
+                <MenuItem Header="删除轨迹" Command="{Binding DeleteGeometryCommand}" />
+                <MenuItem Header="反转轨迹" Command="{Binding ReverseGeometryCommand}" />
+                <MenuItem Header="区间裁剪" Command="{Binding CutJoinRangeCommand}" />
+                <MenuItem Header="删除此点前轨迹" Command="{Binding TrimBeforeCommand}" />
+                <MenuItem Header="删除此点后轨迹" Command="{Binding TrimAfterCommand}" />
                 <Separator />
                 <MenuItem Header="合并轨迹" Command="{Binding CreateMergedTrackCommand}" />
                 <MenuItem Header="连接轨迹" Command="{Binding CreateConnectedTrackCommand}" />
@@ -221,6 +203,7 @@
                 <MenuItem Header="BRouter路由规划模式" Command="{Binding StartBRouterPlanCommand}" />
                 <MenuItem Header="手绘规划模式" Command="{Binding StartManualPlanCommand}" />
                 <MenuItem Header="混合规划模式" Command="{Binding StartMixedPlanCommand}" />
+                <MenuItem Header="继续规划路线" Command="{Binding ContinueRoutePlanCommand}" />
                 <Separator />
                 <MenuItem Header="BRouter设置与路由数据…" Click="OnOpenBRouterSettings" />
             </MenuItem>
@@ -267,7 +250,6 @@
             <MenuItem Header="分析">
                 <MenuItem Header="打开数据分析面板" Click="OnOpenElevationAnalysis" />
             </MenuItem>
-            <MenuItem Header="导出" IsEnabled="False" />
             <MenuItem Header="收藏点">
                 <MenuItem Header="打开收藏点面板" Click="OnOpenFavorites" />
                 <MenuItem Header="新建收藏点…" Click="OnNewFavorite" />
@@ -280,10 +262,13 @@
                 <MenuItem Header="导入收藏点…" Click="OnImportFavorites" />
                 <MenuItem Header="导出收藏点…" Click="OnExportFavorites" />
                 <MenuItem Header="导出为KMZ…" Click="OnExportFavoritesKmz" />
+                <MenuItem Header="导出为GPX…" Click="OnExportFavoritesGpx" />
+                <MenuItem Header="导出为KML…" Click="OnExportFavoritesKml" />
                 <Separator />
                 <MenuItem x:Name="FavoritesVisibleMenu" Header="地图上显示收藏点" IsCheckable="True" Click="OnFavoriteVisibility" />
             </MenuItem>
             <MenuItem Header="设置">
+                <MenuItem Header="轨迹显示…" Click="OnTrackDisplaySettings" />
                 <MenuItem Header="轨迹公里数标识…" Command="{Binding KilometerSettingsCommand}" />
                 <MenuItem Header="DEM与路由数据设置向导…" Click="OnOpenFirstRunSetup" />
                 <MenuItem Header="DEM 高程数据库…" Click="OnOpenDemDatabases" />
@@ -336,6 +321,7 @@
                     <TreeView x:Name="ProjectTree" ItemsSource="{Binding NavigationNodes}" ItemContainerStyle="{StaticResource ProjectTreeItemStyle}"
                               ScrollViewer.HorizontalScrollBarVisibility="Auto"
                               PreviewMouseLeftButtonDown="OnNavigationLeftClick"
+                              PreviewKeyDown="OnNavigationKeyDown"
                               VirtualizingStackPanel.IsVirtualizing="True"
                               VirtualizingStackPanel.VirtualizationMode="Recycling"
                               SelectedItemChanged="OnNavigationSelectionChanged" />
@@ -375,9 +361,17 @@
                                                TextWrapping="Wrap" VerticalAlignment="Center"
                                                FontWeight="SemiBold"
                                                Margin="0,0,12,0" />
-                                    <TextBlock Grid.Column="1"
-                                               Text="{Binding Value}"
-                                               TextWrapping="Wrap" />
+                                    <DockPanel Grid.Column="1">
+                                        <Button Width="14" Height="14" Margin="0,0,5,0" VerticalAlignment="Center"
+                                                Background="{Binding Color}" ToolTip="点击修改轨迹颜色"
+                                                Command="{Binding DataContext.SetTrackColorCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                CommandParameter="{Binding Track}">
+                                            <Button.Style><Style TargetType="Button"><Setter Property="Visibility" Value="Visible" />
+                                                <Style.Triggers><DataTrigger Binding="{Binding Color}" Value="{x:Null}"><Setter Property="Visibility" Value="Collapsed" /></DataTrigger></Style.Triggers>
+                                            </Style></Button.Style>
+                                        </Button>
+                                        <TextBlock Text="{Binding Value}" ToolTip="{Binding Hint}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                    </DockPanel>
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
@@ -472,4 +466,6 @@
         </Border>
     </Grid>
 </Window>
+
+
 

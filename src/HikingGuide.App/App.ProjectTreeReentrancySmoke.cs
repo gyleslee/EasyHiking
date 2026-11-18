@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using HikingGuide.App.ViewModels;
 using HikingGuide.Core.Models;
+using HikingGuide.Core.Geometry;
 using HikingGuide.Infrastructure.Projects;
 namespace HikingGuide.App;
 public partial class App
@@ -56,6 +57,28 @@ public partial class App
             var rootNow=Root(current);rootNow.IsExpanded=true;await Flush();var tracks=rootNow.Children.Where(n=>n.Model is Track).Take(2).ToArray();main.UpdateProjectItemSelection(tracks[0],ModifierKeys.None,focusOnMap:false);main.UpdateProjectItemSelection(tracks[1],ModifierKeys.Control,focusOnMap:false);checks["Ctrl多选继续有效"]=main.SelectedProjectItemCount==2;main.RefreshProjectTreeForAutomation();await Flush();checks["重建保留多选和展开"]=main.SelectedProjectItemCount==2&&Root(current).IsExpanded;
             var style=window.ProjectTree.ItemContainerStyle;checks["项目树使用固定作用域样式"]=style is not null&&window.Resources[typeof(TreeViewItem)] is null;checks["保留虚拟化和回收模式"]=VirtualizingPanel.GetIsVirtualizing(window.ProjectTree)&&VirtualizingPanel.GetVirtualizationMode(window.ProjectTree)==VirtualizationMode.Recycling;
             checks["轨迹节点人工内容不变"]=baseline==Baseline();diagnostics.Add(new{resets,syncRebuild,maxRefreshDepth,projects=projects.Count,tracks=projects.Sum(p=>p.Tracks.Count)});main.NavigationNodes.CollectionChanged-=observe;
+            var focusBeforeSync=main.Map.FocusObjectRequestCount;
+            Root(current).Children.First(n=>n.Model is Track).IsSelected=true;await Flush();
+            checks["程序同步树选择不触发整轨定位"]=main.Map.FocusObjectRequestCount==focusBeforeSync;
+            var rootContainerNow=(TreeViewItem)window.ProjectTree.ItemContainerGenerator.ContainerFromItem(Root(current));
+            var editNode=Root(current).Children.Where(n=>n.Model is Track).Skip(1).First();
+            var editContainer=(TreeViewItem)rootContainerNow.ItemContainerGenerator.ContainerFromItem(editNode);
+            // WPF的专用左键预览事件是Direct事件，在TreeView上触发并保留命中项作为来源。
+            window.ProjectTree.RaiseEvent(new MouseButtonEventArgs(Mouse.PrimaryDevice,Environment.TickCount,MouseButton.Left){RoutedEvent=UIElement.PreviewMouseLeftButtonDownEvent,Source=editContainer});
+            editNode.IsSelected=true;
+            await Flush();await Task.Delay(150);
+            checks["项目树鼠标选择仍定位整条轨迹"]=main.Map.FocusObjectRequestCount>focusBeforeSync;
+            if(main.EnterTrackEditCommand.CanExecute(null))main.EnterTrackEditCommand.Execute(null);
+            await Task.Delay(350);await Flush();
+            var editTrack=(Track)editNode.Model!;var editPoint=editTrack.Segments[0].Points[0];
+            var originalCoordinate=editPoint.Coordinate;var editedCoordinate=new GeoCoordinate(originalCoordinate.Latitude+.0001,originalCoordinate.Longitude);
+            var editFocusCount=main.Map.FocusObjectRequestCount;var editRevision=editTrack.GeometryRevision;
+            main.AutoConfirmTrackEditForAutomation=true;
+            await main.Map.RunP6TrackEditSmokeAsync(editPoint.Id,originalCoordinate,editedCoordinate);
+            for(var i=0;i<100&&editTrack.GeometryRevision==editRevision;i++)await Task.Delay(100);
+            await Flush();
+            checks["GPS点点选及拖动提交后视野不适应整轨"]=editTrack.GeometryRevision>editRevision&&main.Map.FocusObjectRequestCount==editFocusCount;
+            if(main.ExitTrackEditCommand.CanExecute(null))main.ExitTrackEditCommand.Execute(null);
             await CaptureT10ClientAsync(window,Path.Combine(folder,"project-tree.png"));var about=new AboutWindow{Owner=window};about.Show();await Task.Delay(100);await CaptureT10ClientAsync(about,Path.Combine(folder,"29-about.png"));about.Close();
         }
         catch(Exception e){error=e.ToString();}

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using HikingGuide.Application.Routing;
@@ -79,7 +79,7 @@ public sealed partial class MainViewModel
         _nextManualLegCommand = new RelayCommand(() => SwitchNextLeg(RouteLegMode.Manual),
             () => IsMixedRoutePlanning && !_routePlanningBusy);
         _undoPlanningPointCommand = new RelayCommand(() => ChangeLastPoint(false),
-            () => _routePlan?.Plan.ControlPoints.Count > 0 && !_routePlanningBusy);
+            () => _routePlan?.Plan.ControlPoints.Count > (_continuationTrack is null ? 0 : 1) && !_routePlanningBusy);
         _redoPlanningPointCommand = new RelayCommand(() => ChangeLastPoint(true),
             () => _routePlan?.CanRedo == true && !_routePlanningBusy);
         _clearPlanningCommand = new RelayCommand(ClearRoutePlan,
@@ -95,6 +95,7 @@ public sealed partial class MainViewModel
         if (CurrentProject is not { } project || IsTrackEditActive) return;
         if (_routePlan?.Plan.ControlPoints.Count > 0 && !ConfirmDiscardRoutePlan()) return;
         _routeRequest?.Cancel();
+        _continuationTrack = null;
         _routePlan = new RoutePlanService(project.Id, mode, _routingProvider);
         RoutePlanningStatus = "请在地图上点击第一个规划点。";
         RefreshRoutePlanningDisplay();
@@ -137,9 +138,12 @@ public sealed partial class MainViewModel
         RaiseRoutingCommandStates();
         try
         {
-            await service.AddPointAsync(coordinate, _routeRequest.Token);
+            var addedLeg = await service.AddPointAsync(coordinate, _routeRequest.Token);
             if (!ReferenceEquals(_routePlan, service) || CurrentProject?.Id != service.Plan.ProjectId) return;
             RoutePlanningStatus = $"已选择 {service.Plan.ControlPoints.Count} 个规划点、{service.Plan.Legs.Count} 段。";
+            if (addedLeg?.Mode == RouteLegMode.BRouter && service.Plan.Legs.Count > 1 &&
+                service.Plan.Legs[^2].Mode == RouteLegMode.Manual)
+                RoutePlanningStatus += " 已将手绘交接点直接吸附到BRouter路网。";
             RefreshRoutePlanningDisplay();
             await Map.SetRoutePreviewAsync(service.Plan);
         }
@@ -180,6 +184,7 @@ public sealed partial class MainViewModel
     private void ChangeLastPoint(bool redo)
     {
         if (_routePlan is null) return;
+        if (!redo && _continuationTrack is not null && _routePlan.Plan.ControlPoints.Count <= 1) return;
         if (redo ? !_routePlan.RedoLastPoint() : !_routePlan.UndoLastPoint()) return;
         RoutePlanningStatus = redo ? "已恢复原规划分段，不重新请求BRouter。" : "已撤销最后一个规划点。";
         RefreshRoutePlanningDisplay();
@@ -190,6 +195,7 @@ public sealed partial class MainViewModel
     {
         if (_routePlan is null || !ConfirmDiscardRoutePlan()) return;
         _routePlan.Clear();
+        if (_continuationTrack?.EndPoint is {} end) { _ = AddRoutePointAsync(_routePlan,end.Coordinate); return; }
         RoutePlanningStatus = "规划已清空，请点击地图重新选点。";
         RefreshRoutePlanningDisplay();
         _ = Map.SetRoutePreviewAsync(_routePlan.Plan);
@@ -197,14 +203,37 @@ public sealed partial class MainViewModel
 
     private async Task CompleteRoutePlanAsync()
     {
+        try { await CompleteRoutePlanCoreAsync(); }
+        catch (Exception exception) { _log.Error(exception,"[RoutePlan] 完成规划失败"); _dialogs.ShowError("完成规划失败",exception.Message); }
+    }
+    private async Task CompleteRoutePlanCoreAsync()
+    {
         if (_routePlan is not { } service || CurrentProject?.Id != service.Plan.ProjectId) return;
+        if (_continuationTrack is {} original)
+        {
+            if (!CurrentProject.Tracks.Contains(original)||original.GeometryRevision!=_continuationRevision)
+            { _dialogs.ShowWarning("无法追加规划", "原轨迹在规划期间已经变化，请取消本次规划后重新开始。"); return; }
+            var extension=service.BuildTrack(original.Name??"继续规划路线",null);
+            var project=CurrentProject;
+            var plan=await Task.Run(()=>_trackEdits.PrepareAppend(project,original,extension));
+            var warning=string.Join("\n",plan.Warnings);
+            if (!AutoConfirmTrackEditForAutomation && MessageBox.Show($"将新增 {extension.GetTotalLength()/1000:F2} km 到“{original.Name}”末尾。\n{warning}\n是否追加？",
+                "完成继续规划",MessageBoxButton.YesNo,MessageBoxImage.Question)!=MessageBoxResult.Yes)return;
+            if(!ReferenceEquals(CurrentProject,project)||original.GeometryRevision!=_continuationRevision)return;
+            _history.Execute("继续规划路线",plan.Apply,plan.Undo);
+            _routePlan=null;_continuationTrack=null;
+            await Map.EndRoutePlanningAsync();RefreshRoutePlanningDisplay();RefreshProjectView();
+            RoutePlanningStatus="已追加到原轨迹，名称、颜色和已有标注保持不变，可撤销。";
+            return;
+        }
         var window = new RouteTrackInfoWindow(service.Plan.Name)
             { Owner = System.Windows.Application.Current.MainWindow };
-        if (window.ShowDialog() != true) return;
+        if (!AutoConfirmTrackEditForAutomation && window.ShowDialog() != true) return;
         try
         {
             var track = service.BuildTrack(window.TrackName, window.TrackDescription);
             var project = CurrentProject!;
+            track.DisplayColor = HikingGuide.Application.Maps.TrackDisplayColor.NextUnique(project.Tracks);
             _history.Execute("完成路线规划", () => project.AddTrack(track, false),
                 () => project.RemoveTrack(track.Id));
             _routePlan = null;
@@ -229,6 +258,7 @@ public sealed partial class MainViewModel
         if (confirm && _routePlan.Plan.ControlPoints.Count > 0 && !ConfirmDiscardRoutePlan()) return;
         _routeRequest?.Cancel();
         _routePlan = null;
+        _continuationTrack = null;
         RoutePlanningStatus = "已取消规划，项目轨迹未改变。";
         RefreshRoutePlanningDisplay();
         _ = Map.EndRoutePlanningAsync();
@@ -274,6 +304,7 @@ public sealed partial class MainViewModel
 
     private void RaiseRoutingCommandStates()
     {
+        _continueRoute?.RaiseCanExecuteChanged();
         _startBRouterPlanCommand?.RaiseCanExecuteChanged();
         _startManualPlanCommand?.RaiseCanExecuteChanged();
         _startMixedPlanCommand?.RaiseCanExecuteChanged();

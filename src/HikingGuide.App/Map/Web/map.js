@@ -1,3 +1,4 @@
+﻿import { TrackDisplay } from "./track-display.js";
 import { KilometerMarks } from "./kilometer-marks.js";
 import { MarkerDisplay } from "./marker-display.js";
 import { TrackScene, trackArrowImages } from "./track-scene.js";
@@ -52,6 +53,10 @@ const markerStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 0.75, 10, 1, 
 const selectedStrokeWidth = ["interpolate", ["linear"], ["zoom"], 5, 1, 10, 1.5, 14, 2, 19, 3];
 
 let trackScene;
+let trackDisplay;
+window.hikingGuideTrackDisplayTest={inspect:()=>({...trackDisplay?.inspect(),
+ lines:Object.fromEntries([['ordinary','tracks-normal'],['mainGuide','tracks-active'],['selected','tracks-selected']].map(([k,id])=>[k,{width:map.getPaintProperty(id,'line-width'),opacity:map.getPaintProperty(id,'line-opacity'),color:map.getPaintProperty(id,'line-color'),dash:map.getPaintProperty(id,'line-dasharray'),filter:map.getFilter(id),endpointMinZoom:map.getLayer('track-endpoints-'+k)?.minzoom,endpointRendered:map.getLayer('track-endpoints-'+k)?map.queryRenderedFeatures({layers:['track-endpoints-'+k]}).length:0}])),
+ arrowFilter:map.getFilter('track-direction-arrows'),arrowPattern:map.getPaintProperty('track-direction-arrows','line-pattern'),guideOverlay:map.getLayoutProperty('guide-segments','visibility')})};
 let kilometerMarks;
 function loadFavoriteSymbol(style) { return loadFavoriteSymbols(map, style); }
 let terrain3D;
@@ -312,6 +317,11 @@ map.getContainer().addEventListener("pointerdown",event=>{if(event.target===mapC
 document.addEventListener("focusin",event=>post("MapKeyboardFocus",{active:map.getContainer().contains(event.target)&&!editable(event.target)}),true);
 window.hikingGuidePanKey=key=>{if(editable(document.activeElement)||draggingTrackHandle||draggingMarker)return false;const offset=mapPanKey({code:key,key});if(!offset)return false;map.panBy(offset,{duration:0});return true;};
 map.getContainer().addEventListener("keydown", event => {
+  if(event.key === "Delete" && !editable(event.target) && !event.ctrlKey && !event.shiftKey && !event.altKey){
+    event.preventDefault();event.stopPropagation();
+    if(!event.repeat&&!draggingTrackHandle&&!draggingMarker)post("DeleteSelectionRequested",{projectId,revision});
+    return;
+  }
   const offset=mapPanKey(event);
   if(offset&&!draggingTrackHandle&&!draggingMarker){event.preventDefault();event.stopPropagation();map.panBy(offset,{duration:0});return;}
   if (event.key === "Escape") {
@@ -332,11 +342,13 @@ map.getContainer().addEventListener("keydown", event => {
 }, true);
 map.on("click", event => {
   if(offlineSelection.active)return;
+  if (!lineHit(event.point) && performance.now()-dragEndedAt>=180) post("TrackSelectionCleared", {projectId,revision});
   if (event.originalEvent?.target?.closest?.(".favorite-map-popup")) return;
   if (map.getLayer("favorites-symbol-layer")) {
     const favorite = favoriteInteraction.hit(event.point);
     if (favorite) {
       event.originalEvent.favoriteHit = true;
+      post("TrackSelectionCleared", {projectId,revision});
       favoriteInteraction.clicked(favorite);
       return;
     }
@@ -353,8 +365,14 @@ map.on("click", event => {
     map.getCanvas().style.cursor = "";
     return;
   }
+  if(trackEdit && event.originalEvent?.ctrlKey && performance.now()-dragEndedAt>=180){
+    const handle=map.queryRenderedFeatures(event.point,{layers:["track-edit-handles-hit"]})[0];
+    if(handle?.properties?.pointId){post("TrackEditPointClicked",{projectId,revision,...trackEdit,
+      trackPointId:handle.properties.pointId,ctrlKey:true,zoom:map.getZoom()});return;}
+  }
   const markerHit = map.queryRenderedFeatures(event.point, { layers: ["guide-nodes", "waypoints"] }).length > 0;
-  if (markerHit || performance.now() - dragEndedAt < 180) return;
+  if (markerHit) return;
+  if (performance.now() - dragEndedAt < 180) return;
   const track = lineHit(event.point);
   if (!track?.properties?.trackId) return;
   if (event.originalEvent) event.originalEvent.__hgTrackHit = true;
@@ -458,6 +476,7 @@ map.on("mousedown", "track-edit-handles-hit", event => {
   if(map.getTerrain()){post("TerrainEditBlocked");return;}
   if (!trackEdit) return;
   if (favoriteInteraction.hit(event.point)) return;
+  if (event.originalEvent?.ctrlKey) { event.preventDefault(); return; }
   if (event.originalEvent?.button !== 0) return;
   const pointId = event.features?.[0]?.properties?.pointId;
   if (!pointId) return;
@@ -473,7 +492,12 @@ map.on("mouseup", event => {
     draggingTrackHandle = null; map.dragPan.enable();
     if (!trackEdit || trackEdit.editSessionId !== context.editSessionId) return;
     if (Math.abs(start[0] - event.lngLat.lng) < 1e-10 &&
-        Math.abs(start[1] - event.lngLat.lat) < 1e-10) return;
+        Math.abs(start[1] - event.lngLat.lat) < 1e-10) {
+      dragEndedAt = performance.now();
+      post("TrackEditPointClicked",{projectId,revision,...context,trackPointId:pointId,
+        latitude:start[1],longitude:start[0],zoom:map.getZoom(),ctrlKey:event.originalEvent?.ctrlKey===true});
+      return;
+    }
     dragEndedAt = performance.now();
     post("TrackPointDragEnded", { projectId, revision, ...context, trackPointId: pointId,
       latitude: event.lngLat.lat, longitude: event.lngLat.lng });
@@ -591,14 +615,14 @@ map.on("error", event => {
 });
 
 function accepts(command) {
-  if (["Initialize","ClearProject","SetMapSource","SetMapLayerStack","BeginOfflineRegion","CancelOfflineRegion","ClearOfflineRegion","SetOfflineTerrain","SetOsmRoads","SetTerrainState","SetTerrainCamera","TerrainHealthResult","PauseTerrain","ClearGpuContours","SetMarkerDisplay"].includes(command.type)) return true;
+  if (["Initialize","ClearProject","SetMapSource","SetMapLayerStack","BeginOfflineRegion","CancelOfflineRegion","ClearOfflineRegion","SetOfflineTerrain","SetOsmRoads","SetTerrainState","SetTerrainCamera","TerrainHealthResult","PauseTerrain","ClearGpuContours","SetMarkerDisplay","SetTrackDisplay"].includes(command.type)) return true;
   return command.projectId === projectId && Number(command.revision || 0) >= revision;
 }
 
 function setGeoJson(sourceId, geoJson, command) {
   if (!accepts(command)) return;
   const started = performance.now();
-  if(sourceId === "tracks") { trackScene ??= new TrackScene(map); trackScene.set(geoJson || emptyCollection); }
+  if(sourceId === "tracks") { trackScene ??= new TrackScene(map); if(trackDisplay)trackScene.setDisplayStyles(trackDisplay.styles); trackScene.set(geoJson || emptyCollection); }
   else if(sourceId==="waypoints"||sourceId==="guideNodes"){markerDisplay??=new MarkerDisplay(map,f=>{const p=f.properties;post("MediaThumbnailRequested",{projectId,revision,...(p.guideNodeId?{guideNodeId:p.guideNodeId}:{waypointId:p.waypointId})});});markerDisplay.set(sourceId,geoJson||emptyCollection);}
   else map.getSource(sourceId)?.setData(geoJson || emptyCollection);
   if (sourceId === "tracks") lastTracks = geoJson || emptyCollection;
@@ -624,7 +648,7 @@ window.hikingGuideTrackSceneTest={
     totalChunks:trackScene?.features.length||0,visibleChunks:map.getStyle().sources.tracks?.data?.features?.length||0,
     vertices:(trackScene?.features||[]).reduce((n,f)=>n+f.geometry.coordinates.reduce((a,s)=>a+s.length,0),0),
     sources:["tracks-active","guide-segments","guide-segments-selected","split-sections-selected","track-direction-arrows"].map(id=>map.getLayer(id)?.source),
-    arrowType:map.getLayer("track-direction-arrows")?.type,arrowImage:trackArrowImages.every(id=>map.hasImage(id)),arrowPattern:map.getPaintProperty("track-direction-arrows","line-pattern"),arrowTones:[...new Set((trackScene?.features||[]).map(f=>f.properties.arrowTone))],tolerance:map.getStyle().sources.tracks?.tolerance,
+    arrowLayout:trackScene?.arrowMetrics,arrowType:map.getLayer("track-direction-arrows")?.type,arrowImage:trackArrowImages.every(id=>map.hasImage(id)),arrowPattern:map.getPaintProperty("track-direction-arrows","line-pattern"),arrowTones:[...new Set((trackScene?.features||[]).map(f=>f.properties.arrowTone))],tolerance:map.getStyle().sources.tracks?.tolerance,
     loaded:map.isStyleLoaded()})
 };
 
@@ -647,6 +671,7 @@ function ensureRasterLayerOrder() {
   for (const id of ["dem-hillshade", "dem-contours-low", "dem-contours-high", "dem-gpu-contours", "dem-contour-labels"]) if (map.getLayer(id)) map.moveLayer(id, business);
   for (const id of ["guide-segments", "guide-segments-selected"]) if (map.getLayer(id) && map.getLayer("waypoints")) map.moveLayer(id, "waypoints");
   osmRoads.reorder();
+  trackDisplay?.reorder();
   if (map.getLayer("elevation-hover")) map.moveLayer("elevation-hover");
 }
 let terrainSignature = "";
@@ -750,6 +775,7 @@ function setSelection(payload) {
   map.setFilter("waypoints-selected", ["==", ["get", "waypointId"], selected.kind === "waypoint" ? id : "__none__"]);
   map.setFilter("guide-nodes-selected", ["==", ["get", "guideNodeId"], selected.kind === "guidenode" ? id : "__none__"]);
   map.setFilter("guide-segments-selected", ["==", ["get", "guideSegmentId"], selected.kind === "guidesegment" ? id : "__none__"]);
+  trackDisplay?.select({trackIds:selectedTrackIds.length?selectedTrackIds:selected.kind==="track"?[id]:[],sectionIds:selectedSplitSectionIds,guideSegmentId:selected.kind==="guidesegment"?id:null});
   trackScene?.setArrowSelection({trackIds:selectedTrackIds.length?selectedTrackIds:selected.kind==="track"?[id]:[],sectionIds:selectedSplitSectionIds,guideSegmentId:selected.kind==="guidesegment"?id:null});
 }
 
@@ -797,7 +823,12 @@ listen(async command => {
           sourceFavoriteCount: new Set(map.querySourceFeatures("favorites").map(f => f.properties.favoriteId)).size,
           latitude: map.getCenter().lat, longitude: map.getCenter().lng, zoom: map.getZoom() }) });
         break;
+      case "SetTrackDisplay":
+        trackDisplay??=new TrackDisplay(map);trackDisplay.configure(payload);
+        trackScene??=new TrackScene(map);trackScene.setDisplayStyles(trackDisplay.styles);setSelection(selected);break;
+      case "SetTrackEndpoints": if(accepts(command)){trackDisplay??=new TrackDisplay(map);trackDisplay.setEndpoints(payload.geoJson||emptyCollection);}break;
       case "Initialize":
+        trackDisplay?.setEndpoints(emptyCollection);
         if(projectId!==command.projectId)markerDisplay?.reset();else markerDisplay?.requested.clear();
         clearTrackEdit();
         projectId = command.projectId;
@@ -813,7 +844,7 @@ listen(async command => {
         selectedTrackIds = []; selectedSplitSectionIds = [];
         activeMediaPopup?.popup.remove(); activeMediaPopup = null;
         map.getSource("tracks")?.setData(emptyCollection);
-        markerDisplay?.reset();markerHover?.remove();trackScene?.set(emptyCollection); lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
+        markerDisplay?.reset();markerHover?.remove();trackDisplay?.setEndpoints(emptyCollection);trackScene?.set(emptyCollection); lastTracks = emptyCollection; lastWaypoints = emptyCollection; lastGuideNodes = emptyCollection; lastGuideSegments = emptyCollection;
         map.getSource("splitSections")?.setData(emptyCollection);
         lastSplitSections = emptyCollection;
         map.getSource("directionArrows")?.setData(emptyCollection);

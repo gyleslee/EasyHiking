@@ -4,13 +4,28 @@ using HikingGuide.Core.Services;
 
 namespace HikingGuide.Application.Routing;
 
-/// <summary>项目外的增量规划会话。旧 Leg 几何不可因新点或模式切换而重算。</summary>
+/// <summary>项目外的增量规划会话。不重算已有路由；手绘交接点的吸附随新增段一并撤销。</summary>
 public sealed class RoutePlanService
 {
     private readonly IRoutingProvider _provider;
     private readonly IGeoDistanceService _distance;
     private readonly SemaphoreSlim _gate = new(1, 1);
-    private readonly Stack<(RouteControlPoint Point, RouteLeg? Leg)> _redo = new();
+    private readonly Stack<(RouteControlPoint Point, RouteLeg? Leg, JunctionEdit? Junction)> _redo = new();
+    private readonly Dictionary<Guid, JunctionEdit> _junctionEdits = [];
+    private sealed record JunctionEdit(RouteLeg? ManualLeg, RouteControlPoint Point,
+        GeoCoordinate OldEnd, GeoCoordinate OldPoint, double OldDistance,
+        GeoCoordinate NewEnd, double NewDistance)
+    {
+        public void Apply(bool forward)
+        {
+            if (ManualLeg is not null)
+            {
+                ManualLeg.Geometry[^1] = forward ? NewEnd : OldEnd;
+                ManualLeg.DistanceMeters = forward ? NewDistance : OldDistance;
+            }
+            Point.Coordinate = forward ? NewEnd : OldPoint;
+        }
+    }
 
     public RoutePlan Plan { get; }
     public bool CanRedo => _redo.Count > 0;
@@ -48,23 +63,34 @@ public sealed class RoutePlanService
             var point = new RouteControlPoint { Coordinate = coordinate, Order = Plan.ControlPoints.Count,
                 Type = previous is null ? RouteControlPointType.Start : RouteControlPointType.End };
             RouteLeg? leg = null;
+            JunctionEdit? junctionEdit = null;
             if (previous is not null)
             {
                 var mode = Plan.CurrentLegMode;
+                // 控制点是用户点击位置，BRouter端点则可能已吸附到路网。
+                // 手绘从路由实际终点继续；切回路由时，将手绘终点直接吸附到路网。
+                var start = Plan.PlanningMode == RoutePlanningMode.Mixed && Plan.Legs.Count > 0
+                    ? Plan.Legs[^1].Geometry[^1] : previous.Coordinate;
                 IReadOnlyList<GeoCoordinate> geometry;
                 RouteRequestMetadata? metadata = null;
                 if (mode == RouteLegMode.Manual)
-                    geometry = [previous.Coordinate, coordinate];
+                {
+                    geometry = [start, coordinate];
+                    if (start != previous.Coordinate)
+                        junctionEdit = new(null, previous, previous.Coordinate, previous.Coordinate, 0, start, 0);
+                }
                 else
                 {
                     var requestedAt = DateTimeOffset.UtcNow;
-                    var routed = await _provider.RouteFootShortestAsync(previous.Coordinate, coordinate,
+                    var requestStart = Plan.Legs.LastOrDefault()?.Mode == RouteLegMode.BRouter
+                        ? previous.Coordinate : start;
+                    var routed = await _provider.RouteFootShortestAsync(requestStart, coordinate,
                         cancellationToken);
                     geometry = routed.Geometry;
                     metadata = new RouteRequestMetadata
                     {
                         Profile = routed.Profile, DatasetId = routed.DatasetId,
-                        RequestedStart = previous.Coordinate, RequestedEnd = coordinate,
+                        RequestedStart = requestStart, RequestedEnd = coordinate,
                         RequestTime = requestedAt
                     };
                 }
@@ -72,13 +98,30 @@ public sealed class RoutePlanService
                     throw new InvalidOperationException("路由没有返回可用的轨迹几何，规划点未添加。");
                 var checkedGeometry = geometry.ToList();
                 foreach (var item in checkedGeometry) item.Validate();
+                GeoCoordinate? alignedStart = null;
+                if (Plan.PlanningMode == RoutePlanningMode.Mixed && Plan.Legs.Count > 0 &&
+                    start != checkedGeometry[0])
+                {
+                    var last = Plan.Legs[^1];
+                    if (last.Mode == RouteLegMode.Manual)
+                    {
+                        var end = checkedGeometry[0];
+                        var changed = last.Geometry.ToArray(); changed[^1] = end;
+                        junctionEdit = new(last, previous, last.Geometry[^1], previous.Coordinate,
+                            last.DistanceMeters, end, Measure(changed));
+                    }
+                    else alignedStart = start;
+                }
                 var distance = 0d;
                 for (var index = 1; index < checkedGeometry.Count; index++)
-                    distance += _distance.CalculateDistance(checkedGeometry[index - 1], checkedGeometry[index]);
+                    distance += _distance.CalculateDistance(index == 1 ? alignedStart ?? checkedGeometry[0] : checkedGeometry[index - 1], checkedGeometry[index]);
                 leg = new RouteLeg { StartControlPointId = previous.Id, EndControlPointId = point.Id,
-                    Mode = mode, Geometry = checkedGeometry, DistanceMeters = distance,
+                    Mode = mode, Geometry = checkedGeometry, AlignedStartCoordinate = alignedStart,
+                    DistanceMeters = distance,
                     BRouterRequestMetadata = metadata };
             }
+            cancellationToken.ThrowIfCancellationRequested();
+            if (junctionEdit is not null) { junctionEdit.Apply(true); _junctionEdits.Add(leg!.Id, junctionEdit); }
             if (previous is not null && previous.Type == RouteControlPointType.End)
                 previous.Type = RouteControlPointType.Via;
             Plan.ControlPoints.Add(point);
@@ -98,10 +141,12 @@ public sealed class RoutePlanService
             if (Plan.ControlPoints.Count == 0) return false;
             var point = Plan.ControlPoints[^1];
             var leg = Plan.Legs.Count == 0 ? null : Plan.Legs[^1];
+            JunctionEdit? junction = null;
+            if (leg is not null && _junctionEdits.Remove(leg.Id, out junction)) junction.Apply(false);
             Plan.ControlPoints.RemoveAt(Plan.ControlPoints.Count - 1);
             if (leg is not null) Plan.Legs.RemoveAt(Plan.Legs.Count - 1);
             if (Plan.ControlPoints.Count > 1) Plan.ControlPoints[^1].Type = RouteControlPointType.End;
-            _redo.Push((point, leg));
+            _redo.Push((point, leg, junction));
             Plan.ModifiedAt = DateTimeOffset.UtcNow;
             return true;
         }
@@ -114,6 +159,7 @@ public sealed class RoutePlanService
         try
         {
             if (!_redo.TryPop(out var item)) return false;
+            if (item.Junction is { } junction) { junction.Apply(true); _junctionEdits.Add(item.Leg!.Id, junction); }
             if (Plan.ControlPoints.Count > 1) Plan.ControlPoints[^1].Type = RouteControlPointType.Via;
             Plan.ControlPoints.Add(item.Point);
             if (item.Leg is not null) Plan.Legs.Add(item.Leg);
@@ -131,6 +177,7 @@ public sealed class RoutePlanService
             Plan.ControlPoints.Clear();
             Plan.Legs.Clear();
             _redo.Clear();
+            _junctionEdits.Clear();
             Plan.ModifiedAt = DateTimeOffset.UtcNow;
         }
         finally { _gate.Release(); }
@@ -157,6 +204,8 @@ public sealed class RoutePlanService
                     RouteLegId = leg.Id, StartControlPointId = leg.StartControlPointId,
                     EndControlPointId = leg.EndControlPointId, Mode = leg.Mode,
                     OriginalDistanceMeters = leg.DistanceMeters,
+                    OriginalRoutingStart = leg.AlignedStartCoordinate is null ? null : leg.Geometry[0],
+                    AlignedStartCoordinate = leg.AlignedStartCoordinate,
                     BRouterRequestMetadata = CopyRequestMetadata(leg.BRouterRequestMetadata)
                 }).ToList()
             };
@@ -165,9 +214,10 @@ public sealed class RoutePlanService
             foreach (var leg in Plan.Legs)
             {
                 if (leg.Geometry.Count < 2) throw new InvalidOperationException("规划分段几何不完整。");
+                var geometry = GetPlannedGeometry(leg).ToList();
                 // 规划控制点不是人工拆分边界。连续 Leg 共用一个物理段，仅去掉交界处
                 // 完全重复的端点；不简化、不删除各 Leg 内原有的轨迹点。
-                var continuous = segment?.EndPoint?.Coordinate == leg.Geometry[0];
+                var continuous = segment?.EndPoint?.Coordinate == geometry[0];
                 if (!continuous)
                 {
                     // BRouter 可能返回真实不连续的端点，保留物理断点以免虚构连接距离。
@@ -179,18 +229,32 @@ public sealed class RoutePlanService
                     };
                     track.Segments.Add(segment);
                 }
-                foreach (var value in leg.Geometry.Skip(continuous ? 1 : 0))
-                    segment!.Points.Add(new TrackPoint
+                foreach (var value in geometry.Skip(continuous ? 1 : 0))
+                {
+                    var point = new TrackPoint
                     {
                         Latitude = value.Latitude, Longitude = value.Longitude,
                         SourceElevation = null, DemElevation = null, Timestamp = null,
                         IsInsertedByEditor = true
-                    });
+                    };
+                    segment!.Points.Add(point);
+                }
             }
             track.RecalculateDistances(_distance);
             return track;
         }
         finally { _gate.Release(); }
+    }
+
+    public static IEnumerable<GeoCoordinate> GetPlannedGeometry(RouteLeg leg) =>
+        leg.AlignedStartCoordinate is { } start
+            ? new[] { start }.Concat(leg.Geometry.Skip(1)) : leg.Geometry;
+
+    private double Measure(IReadOnlyList<GeoCoordinate> points)
+    {
+        var result = 0d;
+        for (var i = 1; i < points.Count; i++) result += _distance.CalculateDistance(points[i - 1], points[i]);
+        return result;
     }
 
     private static RouteRequestMetadata? CopyRequestMetadata(RouteRequestMetadata? source) =>

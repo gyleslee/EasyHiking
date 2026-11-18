@@ -1,4 +1,4 @@
-using HikingGuide.Core.Models;
+﻿using HikingGuide.Core.Models;
 
 namespace HikingGuide.Application.Projects;
 
@@ -44,9 +44,20 @@ public sealed class ProjectService(
         }
         var project = await Task.Run(() => fileService.LoadAsync(fullPath, progress, cancellationToken),
             cancellationToken);
+        var converted=await Task.Run(()=>
+        {
+            var count=0;
+            foreach(var track in project.Tracks.ToArray())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if(track.Id==project.MainGuideTrackId||track.GetSplitSections().Count<2)continue;
+                new HikingGuide.Application.TrackEditing.IndependentTracks(project,track).Apply();count++;
+            }
+            return count;
+        },cancellationToken);
         _active = new OpenProjectContext(project, fullPath);
         _openProjects.Add(_active);
-        project.MarkSaved();
+        if(converted==0)project.MarkSaved();
         if (recentProjectService is not null)
             await recentProjectService.AddAsync(fullPath, project.Name, cancellationToken);
         CurrentProjectChanged?.Invoke(this, EventArgs.Empty);

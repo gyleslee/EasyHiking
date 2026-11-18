@@ -97,6 +97,15 @@ public sealed class ElevationPersistenceTests
         Assert.NotEqual(first.Id, forced.Id);
         Assert.Equal(first.Summary.AscentMeters, forced.Summary.AscentMeters);
         Assert.Equal(100, track.Segments[0].Points[0].SourceElevation);
+        track.Segments[0].Points[0].SourceElevation = 150;
+        var gpsChanged = await coordinator.AnalyzeGpsAsync(project, target, profile);
+        Assert.NotEqual(forced.Id, gpsChanged.Id);
+        track.Segments[0].Points[1].Latitude += .001;
+        var geometryChanged = await coordinator.AnalyzeGpsAsync(project, target, profile);
+        Assert.NotEqual(gpsChanged.Id, geometryChanged.Id);
+        var profileChanged = await coordinator.AnalyzeGpsAsync(project, target, profile with { SmoothingWindowMeters = 40 });
+        Assert.NotEqual(geometryChanged.Id, profileChanged.Id);
+        Assert.Same(profileChanged, await coordinator.AnalyzeGpsAsync(project, target, profile with { SmoothingWindowMeters = 40 }));
     }
 
     [Fact]

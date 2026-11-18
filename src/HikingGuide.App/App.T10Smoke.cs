@@ -32,6 +32,12 @@ public partial class App
                 !Favorites.Paths.FavoritesRoot.StartsWith(@"F:\Codex\Temp\", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("T1.0验收与截图必须隔离正式数据。");
             Directory.CreateDirectory(folder);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_RECORDED_TIME_TEST")=="1")return await RunRecordedTimeSmokeAsync(window,main,output);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_TRACK_DISPLAY_TEST")=="1")return await RunTrackDisplaySmokeAsync(window,main,output);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_INDEPENDENT_TRACK_TEST")=="1")return await RunIndependentTrackSmokeAsync(window,main,output);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_UNIFIED_EDIT_TEST")=="1"||Environment.GetEnvironmentVariable("HIKINGGUIDE_CONTEXT_ACTION_TEST")=="1")return await RunUnifiedTrackEditSmokeAsync(window,main,output);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_FAVORITE_MAP_TEST")=="1")return await RunFavoriteMapFilesSmokeAsync(window,output);
+            if(Environment.GetEnvironmentVariable("HIKINGGUIDE_MIXED_JUNCTION_TEST")=="1")return await RunMixedJunctionSmokeAsync(window,main,output);
             if(Environment.GetEnvironmentVariable("HIKINGGUIDE_TREE_REENTRANCY_TEST")=="1")return await RunProjectTreeReentrancySmokeAsync(window,main,output);
             if(Environment.GetEnvironmentVariable("HIKINGGUIDE_KILOMETER_TEST")=="1")return await RunKilometerSmokeAsync(window,main,output);
             if(Environment.GetEnvironmentVariable("HIKINGGUIDE_MARKER_DISPLAY_TEST")=="1")return await RunMarkerDisplaySmokeAsync(window,main,output);
@@ -116,7 +122,7 @@ public partial class App
             { var p = await Script($"window.hikingGuideT10Test.location('{id:D}')"); var x = p.GetProperty("x").GetDouble(); var y = p.GetProperty("y").GetDouble() + offset; await Input("mouseMoved", x, y, modifiers: modifiers); await Input("mousePressed", x, y, right ? "right" : "left", right ? 2 : 1, modifiers); await Input("mouseReleased", x, y, right ? "right" : "left", modifiers: modifiers); await Task.Delay(500); }
             string Camera(JsonElement s) => s.GetProperty("camera").GetRawText();
             await Wait(s => s.GetProperty("trackIds").GetArrayLength() == 2, "两条轨迹未显示");
-            checks["版本与窗口标题一致"] = SoftwareIdentity.DisplayVersion == "V1.9.6" && window.Title.Contains(SoftwareIdentity.DisplayVersion);
+            checks["版本与窗口标题一致"] = SoftwareIdentity.DisplayVersion == "V1.9.8" && window.Title.Contains(SoftwareIdentity.DisplayVersion);
             var mapMenu=FavoritesPanel.Descendants<Menu>(window).Single().Items.OfType<MenuItem>().Single(item=>item.Header?.ToString()=="地图");
             checks["地图菜单使用地图管理名称"]=mapMenu.Items.OfType<MenuItem>().Any(item=>item.Header?.ToString()=="地图管理")&&!mapMenu.Items.OfType<MenuItem>().Any(item=>item.Header?.ToString()=="图源管理");
             if (manual)

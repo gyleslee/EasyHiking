@@ -27,6 +27,8 @@ public sealed class RouteLeg
     public RouteLegMode Mode { get; set; }
     /// <summary>BRouter 原始返回的完整几何；不使用地图显示简化结果。</summary>
     public List<GeoCoordinate> Geometry { get; set; } = [];
+    /// <summary>连续路由的亚米级端点差异只统一交界坐标，不新增连接点；Geometry保留原返回值。</summary>
+    public GeoCoordinate? AlignedStartCoordinate { get; set; }
     public double DistanceMeters { get; set; }
     public RouteRequestMetadata? BRouterRequestMetadata { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;

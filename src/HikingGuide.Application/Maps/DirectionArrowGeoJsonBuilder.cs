@@ -15,6 +15,9 @@ public sealed class DirectionArrowGeoJsonBuilder(DirectionArrowCache cache)
             if (!MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id) &&
                 track.Id != temporarilyVisibleTrackId) continue;
             foreach (var arrow in cache.Get(track, cancellationToken))
+            {
+                var part = track.Segments.FirstOrDefault(p => p.Id == arrow.SegmentId);
+                if (part is not null && !MapLayerVisibility.IsSplitSectionVisible(project.Settings.Map, part.SplitSectionId ?? part.Id)) continue;
                 features.Add(new
                 {
                     type = "Feature",
@@ -23,6 +26,7 @@ public sealed class DirectionArrowGeoJsonBuilder(DirectionArrowCache cache)
                     geometry = new { type = "Point", coordinates = new[]
                     { arrow.Coordinate.Longitude, arrow.Coordinate.Latitude } }
                 });
+            }
         }
         return JsonSerializer.Serialize(new { type = "FeatureCollection", features });
     }

@@ -22,5 +22,7 @@ public sealed class RouteLegProvenance
     public Guid EndControlPointId { get; set; }
     public RouteLegMode Mode { get; set; }
     public double OriginalDistanceMeters { get; set; }
+    public HikingGuide.Core.Geometry.GeoCoordinate? OriginalRoutingStart { get; set; }
+    public HikingGuide.Core.Geometry.GeoCoordinate? AlignedStartCoordinate { get; set; }
     public RouteRequestMetadata? BRouterRequestMetadata { get; set; }
 }

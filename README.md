@@ -6,11 +6,11 @@
 
 [下载安装包](https://github.com/gyleslee/EasyHiking/releases) · [操作说明](docs/易行徒步规划制作器-操作说明.md) · [反馈问题](https://github.com/gyleslee/EasyHiking/issues) · [源码编译](BUILDING.md)
 
-## 当前版本：V1.9.6
+## 当前版本：V1.9.8
 
-[下载 V1.9.6](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.6) · [查看相对 V1.9.5 的全部更新](CHANGELOG.md)
+[下载 V1.9.8](https://github.com/gyleslee/EasyHiking/releases/tag/v1.9.8) · [查看相对 V1.9.6 的全部更新](CHANGELOG.md)
 
-新增GPU动态等高线与圆滑显示，完善近中远地形细节、标注缩略图及图片浏览，增加轨迹公里水滴标识与路线性质管理，修复项目树选择重入，更新操作说明。
+新增收藏点GPX/KML交换及多文件混合导入，完善轨迹拆分、裁剪、继续规划与全局显示设置，重做双尖角方向箭头，优化3D地形平滑和高程缓存，增加运动/休息时间及属性数据。
 
 安装包拆为普通Windows10/11 x64版与Windows11 ARM64专用兼容版。ARM版通过系统x64模拟运行，不是ARM原生构建，不支持Windows10 ARM；目标ARM虚拟机的实际运行仍待验证。
 

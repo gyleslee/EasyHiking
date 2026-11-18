@@ -20,7 +20,15 @@ public sealed class MapDisplayDataService(ITrackDisplaySimplifier simplifier)
             cancellationToken.ThrowIfCancellationRequested();
             if (!MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id) &&
                 track.Id != temporarilyVisibleTrackId) continue;
-            tracks.Add(_shared.Build(project, track, zoom, cancellationToken));
+            var feature = _shared.Build(project, track, zoom, cancellationToken);
+            if (feature.RenderPieces is { } pieces && pieces.Any(p => !MapLayerVisibility.IsSplitSectionVisible(project.Settings.Map, p.SplitSectionId)))
+            {
+                var visible = pieces.Where(p => MapLayerVisibility.IsSplitSectionVisible(project.Settings.Map, p.SplitSectionId)).ToArray();
+                var segments = feature.Segments.Select((line, index) => MapLayerVisibility.IsSplitSectionVisible(project.Settings.Map,
+                    track.Segments[index].SplitSectionId ?? track.Segments[index].Id) ? line : (IReadOnlyList<MapCoordinate>)Array.Empty<MapCoordinate>()).ToArray();
+                feature = feature with { RenderPieces = visible, Segments = segments, DisplayPointCount = segments.Sum(p => p.Count) };
+            }
+            tracks.Add(feature);
         }
         var waypoints = project.Waypoints.Where(waypoint => waypoint.AssociatedTrackId is not Guid owner ||
             MapLayerVisibility.IsTrackVisible(project.Settings.Map, owner)).Select(waypoint => new MapWaypointFeature(

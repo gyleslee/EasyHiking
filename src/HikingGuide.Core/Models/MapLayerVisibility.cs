@@ -5,6 +5,9 @@ public static class MapLayerVisibility
 {
     public static string TrackKey(Guid trackId) => $"track:{trackId:D}";
     public static string GuideSegmentKey(Guid segmentId) => $"guide-segment:{segmentId:D}";
+    public static string SplitSectionKey(Guid sectionId) => $"split-section:{sectionId:D}";
+    public static bool IsSplitSectionVisible(MapProjectSettings settings, Guid sectionId) => IsVisible(settings, SplitSectionKey(sectionId));
+    public static void SetSplitSectionVisible(MapProjectSettings settings, Guid sectionId, bool visible) => SetVisible(settings, SplitSectionKey(sectionId), visible);
 
     public static bool IsTrackVisible(MapProjectSettings settings, Guid trackId) =>
         IsVisible(settings, TrackKey(trackId));

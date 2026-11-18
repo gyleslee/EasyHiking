@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -462,8 +462,8 @@ public sealed partial class GuideWorkbenchControl : UserControl
             if (GuideDataReconciler.OrderedNodes(project).Count < 2 || project.MainGuideTrack is null) { RefreshRows(); return; }
             var fingerprint = await Task.Run(() => Coordinator.Fingerprint(project));
             if (_closeSuspended || !ReferenceEquals(_project, project)) return;
-            if (_inputFingerprint == fingerprint && project.GuideData.Derived is { IsStale: false })
-            { if (_presentation != Presentation(project)) RefreshRows(); return; }
+            if (project.GuideData.Derived is { IsStale: false } saved && saved.InputFingerprint == fingerprint)
+            { _inputFingerprint = fingerprint; if (_presentation != Presentation(project)) RefreshRows(); return; }
             _inputFingerprint = fingerprint;
             if (project.GuideData.Derived is { } old && old.InputFingerprint != fingerprint) project.UpdateGuideData(d => d.Derived = old with { IsStale = true });
             RefreshRows(); await CalculateAsync();

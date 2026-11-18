@@ -9,6 +9,32 @@ namespace HikingGuide.Application.Tests;
 
 public sealed class TrackEditServiceTests
 {
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void DeleteLastSegment_ExplainsAlternativeAndLeavesProjectUnchanged(bool mainGuide, bool splitSection)
+    {
+        var (project, track) = CreateProject();
+        project.MainGuideTrackId = mainGuide ? track.Id : null;
+        project.MarkSaved();
+        var before = new TrackSnapService().GetGeometryFingerprint(track);
+        var guides = project.GuideNodes.Select(n => n.Id).ToArray();
+        var error = Assert.Throws<LastTrackSegmentDeletionException>(() =>
+        {
+            var service = new TrackEditService();
+            if (splitSection) service.PrepareDeleteSplitSection(project, track.Id, track.GetSplitSections()[0].Id);
+            else service.PrepareDeleteSegment(project, track.Id, track.Segments[0].Id);
+        });
+        Assert.Contains("最后一个轨迹段", error.Message);
+        Assert.Contains("删除轨迹", error.Message);
+        Assert.Equal(before, new TrackSnapService().GetGeometryFingerprint(track));
+        Assert.Equal(guides, project.GuideNodes.Select(n => n.Id));
+        Assert.False(project.IsDirty);
+        Assert.Equal(0, track.GeometryRevision);
+    }
+
     [Fact]
     public void Prepare_DoesNotMutateProject_AndMoveUndoRedoRestoresGeometryAndGuide()
     {

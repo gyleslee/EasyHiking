@@ -111,6 +111,10 @@ public partial class MapView : UserControl
         ActiveTrackMenuForAutomation = menu;
         menu.Tag = value;
         AddFavoriteAt(menu, value);
+        Add("在此添加普通标注", main.AddWaypointOnTrackCommand, value);
+        Add("在此添加攻略节点", main.AddGuideOnTrackCommand, value);
+        Add("继续规划路线", main.ContinueRoutePlanCommand, track);
+        Add("隐藏轨迹", main.HideTrackContextCommand, value);
         if (main.IsTrackEditActive)
             Add("退出轨迹编辑模式", main.ExitTrackEditContextCommand, track);
         else
@@ -119,11 +123,13 @@ public partial class MapView : UserControl
         Add("添加轨迹点", main.AddTrackPointCommand);
         Add("删除轨迹点", main.DeleteTrackPointCommand);
         menu.Items.Add(new Separator());
-        Add("拆分轨迹段", main.SplitTrackSegmentCommand, value);
-        Add("删除轨迹段", main.DeleteTrackSegmentCommand);
-        Add("反转轨迹段", main.ReverseTrackSegmentCommand);
+        Add("拆分轨迹", main.SplitTrackSegmentCommand, value);
+        Add("删除轨迹", main.DeleteGeometryCommand);
+        Add("反转轨迹", main.ReverseGeometryCommand);
+        Add("区间裁剪", main.CutJoinFromContextCommand, value);
+        Add("删除此点前轨迹", main.TrimBeforeCommand, value);
+        Add("删除此点后轨迹", main.TrimAfterCommand, value);
         menu.Items.Add(new Separator());
-        Add("反转整条轨迹", main.ReverseTrackCommand);
         menu.Items.Add(new Separator());
         Add("合并轨迹", main.CreateMergedTrackCommand);
         Add("连接轨迹", main.CreateConnectedTrackCommand);
@@ -131,14 +137,20 @@ public partial class MapView : UserControl
         AddWeather(menu, value);
         OpenAtMapPosition(menu, value);
 
-        void Add(string header, ICommand command, object? parameter = null) => menu.Items.Add(new MenuItem
+        void Add(string header, ICommand command, object? parameter = null)
         {
+            var item = new MenuItem
+            {
             Header = header,
-            ToolTip=map.TerrainCoordinateEditingBlocked?MapViewModel.TerrainEditingWarning:null,
+            ToolTip=map.TerrainCoordinateEditingBlocked&&header is not ("隐藏轨迹" or "继续规划路线")?MapViewModel.TerrainEditingWarning:
+                header=="在此添加攻略节点"&&project.MainGuideTrackId!=track.Id?"攻略节点仅属于主攻略轨迹，请先将该轨迹设为主攻略轨迹。":null,
             Command = new ScopedMapCommand(command, () => ReferenceEquals(main.MapContextProject, project) &&
-                project.Tracks.Contains(track) && map.IsTrackMapContextCurrent(value)&&(!map.TerrainCoordinateEditingBlocked||header is "进入项目轨迹编辑模式" or "退出轨迹编辑模式")),
+                project.Tracks.Contains(track) && map.IsTrackMapContextCurrent(value)&&(!map.TerrainCoordinateEditingBlocked||header is "进入项目轨迹编辑模式" or "退出轨迹编辑模式" or "隐藏轨迹" or "继续规划路线")),
             CommandParameter = parameter
-        });
+            };
+            ToolTipService.SetShowOnDisabled(item, true);
+            menu.Items.Add(item);
+        }
     }
 
     /// <summary>保留原命令可执行状态，同时阻止旧菜单对后来选中的其他轨迹执行。</summary>

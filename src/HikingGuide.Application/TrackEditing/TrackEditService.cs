@@ -6,7 +6,7 @@ using HikingGuide.Core.Services;
 namespace HikingGuide.Application.TrackEditing;
 
 /// <summary>只在 Prepare 中构造候选几何；不会写原始文件或修改项目。</summary>
-public sealed class TrackEditService
+public sealed partial class TrackEditService
 {
     public double MergeToleranceMeters { get; init; } = 0.01;
     private static void RequireOrdinaryTrack(HikingProject project, Guid trackId)
@@ -136,7 +136,7 @@ public sealed class TrackEditService
         var sections = track.GetSplitSections();
         if (sectionIds.Count == 0 || sectionIds.Any(id => sections.All(section => section.Id != id)))
             throw new InvalidOperationException("所选拆分分段不存在。");
-        if (sectionIds.Count == sections.Count) throw new InvalidOperationException("该操作将删除整条轨迹，请使用“删除轨迹”。");
+        if (sectionIds.Count == sections.Count) throw new LastTrackSegmentDeletionException(project.MainGuideTrackId == trackId);
         var removed = sections.Where(section => sectionIds.Contains(section.Id))
             .SelectMany(section => section.GeometryParts).Select(part => part.Id).ToHashSet();
         var after = track.Segments.Where(part => !removed.Contains(part.Id)).ToArray();
@@ -231,7 +231,7 @@ public sealed class TrackEditService
     {
         var (track, _, index) = FindSegment(project, trackId, segmentId);
         if (track.Segments.Count == 1)
-            throw new InvalidOperationException("该操作将删除轨迹的全部几何。请使用“删除轨迹”。");
+            throw new LastTrackSegmentDeletionException(project.MainGuideTrackId == trackId);
         var after = track.Segments.Where((_, i) => i != index).ToArray();
         return BuildPlan(project, track, "删除轨迹段", after, NoMappings, new HashSet<Guid> { segmentId }, false, true, cancellationToken);
     }

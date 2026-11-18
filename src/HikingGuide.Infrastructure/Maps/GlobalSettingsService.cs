@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using HikingGuide.Application.Logging;
 using HikingGuide.Application.Maps;
@@ -113,6 +113,7 @@ public sealed class GlobalSettingsService(
 
     private void Normalize(GlobalSettings settings)
     {
+        settings.TrackDisplay=TrackDisplaySettings.Normalize(settings.TrackDisplay);
         settings.OsmRoads??=new();
         if(!settings.OsmRoads.IsValid)
         {

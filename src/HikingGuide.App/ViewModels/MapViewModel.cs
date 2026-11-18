@@ -285,7 +285,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
         return SetSplitSectionSelectionAsync(sectionIds);
     }
 
-    public async Task BeginTrackEditAsync(Track track, Guid editSessionId)
+    public async Task BeginTrackEditAsync(Track track, Guid editSessionId, bool revealHiddenTrack = true)
     {
         var project = _project;
         var bridge = _bridge;
@@ -297,7 +297,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
         _editingTrack = track;
         _editingSessionId = editSessionId;
         _editingGeometryRevision = geometryRevision;
-        _temporaryVisibleTrackId = track.Id;
+        _temporaryVisibleTrackId = revealHiddenTrack ? track.Id : null;
         NotifyTrackEditContext();
         // 可见轨迹间换目标无需重算或重发全部 GeoJSON，只有临时显隐真正改变时刷新。
         var requiresVisibilityRefresh = previousTemporaryTrackId != track.Id &&
@@ -368,12 +368,12 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
     public Task SetRoutePreviewAsync(RoutePlan? plan)
     {
         if (_bridge?.IsReady != true || _project is null) return Task.CompletedTask;
-        var legs = new { type = "FeatureCollection", features = plan?.Legs.Select(leg => new
+        var legs = new { type = "FeatureCollection", features = (plan?.Legs ?? []).Select(leg => new
         {
             type = "Feature", properties = new { mode = leg.Mode.ToString() },
             geometry = new { type = "LineString",
-                coordinates = leg.Geometry.Select(point => new[] { point.Longitude, point.Latitude }).ToArray() }
-        }).ToArray() ?? [] };
+                coordinates = HikingGuide.Application.Routing.RoutePlanService.GetPlannedGeometry(leg).Select(point => new[] { point.Longitude, point.Latitude }).ToArray() }
+        }).ToArray() };
         var points = new { type = "FeatureCollection", features = plan?.ControlPoints.Select((point, index) => new
         {
             type = "Feature", properties = new { role = point.Type.ToString(),
@@ -669,6 +669,7 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
             _lastDisplayData = data;
             _lastZoomBucket = _profile.GetCacheZoomBucket(zoom);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetTracks", new { geoJson = ParseJson(payload.TracksGeoJson) }, project.Id, expectedRevision), token);
+            await bridge.SendAsync(MapProtocol.SerializeCommand("SetTrackEndpoints",new {geoJson=TrackEndpointGeoJsonBuilder.Build(project,data.Tracks.Select(t=>t.TrackId).ToHashSet())},project.Id,expectedRevision),token);
             await bridge.SendAsync(MapProtocol.SerializeCommand("SetKilometerMarks", new { geoJson=kilometerMarks }, project.Id, expectedRevision), token);
             var overlays = await Task.Run(() => (
                 Sections: "{\"type\":\"FeatureCollection\",\"features\":[]}",
@@ -724,12 +725,23 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
     }
 
     private readonly SemaphoreSlim _mapLayerApplyGate=new(1,1);
+    private string? _trackDisplaySignature;
+    private async Task ApplyTrackDisplayAsync(bool force)
+    {
+        if(_bridge?.IsReady!=true)return;
+        var styles=TrackDisplaySettings.Normalize(_settings.Current.TrackDisplay);
+        var signature=System.Text.Json.JsonSerializer.Serialize(styles);
+        if(!force&&signature==_trackDisplaySignature)return;
+        await _bridge.SendAsync(MapProtocol.SerializeCommand("SetTrackDisplay",styles));
+        _trackDisplaySignature=signature;
+    }
     public async Task ApplyGlobalMapLayersAsync(bool force=false)
     {
         await _mapLayerApplyGate.WaitAsync();
         try
         {
         if(_bridge?.IsReady!=true) return;
+        await ApplyTrackDisplayAsync(force);
         var s=MapLayerStackService.Normalize(_settings.Current.MapLayerStack,_settings.Current.MapSources); _settings.Current.MapLayerStack=s;
         var slots=MapLayerStackService.Build(s,_settings.Current.MapSources);
         var signature=System.Text.Json.JsonSerializer.Serialize(new {slots,terrain=_settings.Current.OfflineTerrain,terrain3D=_settings.Current.Terrain3D,osmRoads=_settings.Current.OsmRoads,roadDataRevision=((App)System.Windows.Application.Current).OsmRoads.ConfigurationRevision});
@@ -891,6 +903,10 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
             case "MouseLeft":
                 MouseCoordinateText = "经纬度：—";
                 break;
+            case "TrackSelectionCleared":
+                SelectionRequested?.Invoke(this, MapSelection.None);
+                _ = SelectObjectAsync(null);
+                break;
             case "TrackClicked":
                 RequestSelection(MapSelectionKind.Track, value.TrackId, value.CtrlKey);
                 break;
@@ -916,6 +932,8 @@ public sealed partial class MapViewModel : ViewModelBase, IDisposable
                     RightClicked?.Invoke(this, value);
                 break;
             case "TrackEditLineClicked":
+            case "TrackEditPointClicked":
+            case "DeleteSelectionRequested":
             case "TrackPointDragEnded":
             case "TrackEditPreviewCancelled":
                 TrackEditRequested?.Invoke(this, value);

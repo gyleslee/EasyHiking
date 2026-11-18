@@ -1,8 +1,7 @@
 // One camera LOD and one GeoJSON source for track colour, guide colour and arrows.
-import { prepareTrackArrowRuns, trackArrowLayoutProfile } from "./track-arrow-layout.js";
+import { prepareTrackArrowRuns, trackArrowLayoutProfile, trackArrowSpacingPixels, trackChevronPolygons } from "./track-arrow-layout.js";
 export const trackArrowProfile = Object.freeze({
-  lengthPixels: 10,
-  imageWidth: 512, imageHeight: 128
+  imageWidth: 512, imageHeight: 256
 });
 export const trackArrowImages = ["dark", "light"].flatMap(tone =>
   ["narrow", "wide"].map(size => `track-chevron-${tone}-${size}`));
@@ -37,42 +36,52 @@ export class TrackScene {
     map.on("moveend",()=>{clearTimeout(this.timer);this.timer=setTimeout(()=>this.refresh(),80);});
     map.on("zoom",()=>this.updateArrows());map.on("moveend",()=>this.updateArrows());
   }
-  set(data){this.features=data?.features||[];this.generation++;for(const f of this.features){f.properties={...f.properties,arrowTone:trackArrowTone(f.properties||{})};let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;for(const line of f.geometry?.coordinates||[])for(const p of line){w=Math.min(w,p[0]);e=Math.max(e,p[0]);s=Math.min(s,p[1]);n=Math.max(n,p[1]);}f.__displayBounds=[w,s,e,n];}this.refresh();this.updateArrows();this.setArrowSelection(this.arrowSelection);}
+  setDisplayStyles(styles) {
+    const key=JSON.stringify(styles);if(this.displayStyleKey===key)return;
+    this.displayStyleKey=key;this.displayStyles=styles;this.arrowImageKey=null;
+    for(const f of this.features)f.properties.arrowTone=trackArrowTone({...f.properties,guideVisible:false});
+    this.arrowSelectionKey=null;this.updateArrows();this.setArrowSelection(this.arrowSelection);
+  }
+  set(data){this.features=data?.features||[];this.generation++;for(const f of this.features){f.properties={...f.properties,arrowTone:trackArrowTone(this.displayStyles?{...f.properties,guideVisible:false}:f.properties||{})};let w=Infinity,s=Infinity,e=-Infinity,n=-Infinity;for(const line of f.geometry?.coordinates||[])for(const p of line){w=Math.min(w,p[0]);e=Math.max(e,p[0]);s=Math.min(s,p[1]);n=Math.max(n,p[1]);}f.__displayBounds=[w,s,e,n];}this.refresh();this.updateArrows();this.setArrowSelection(this.arrowSelection);}
   setArrowSelection(selection={}) {
     this.arrowSelection=selection;
-    const expression=trackArrowPattern(selection),key=JSON.stringify(expression);
+    let expression=trackArrowPattern(selection);
+    if(this.displayStyles){const selected=["any",["in",["get","trackId"],["literal",selection.trackIds||[]]],["in",["get","splitSectionId"],["literal",selection.sectionIds||[]]],["==",["get","guideSegmentId"],selection.guideSegmentId||"__none__"]];
+      expression=["concat","track-display-chevron-",["case",selected,["case",["==",["get","isActive"],true],"selectedMainGuide","selectedOrdinary"],["==",["get","isActive"],true],"mainGuide","ordinary"],"-",["case",selected,trackArrowTone({color:this.displayStyles.selectedColor}),["get","arrowTone"]]];
+    }
+    const key=JSON.stringify(expression);
     if(this.arrowSelectionKey===key)return;
     this.arrowSelectionKey=key;
     this.map.setPaintProperty("track-direction-arrows","line-pattern",expression);
   }
   refresh(){let b;try{const v=this.map.getBounds();b={west:v.getWest(),east:v.getEast(),south:v.getSouth(),north:v.getNorth()};}catch{return;}
-    const shown=visibleTrackChunks(this.features,b),zoom=this.map.getZoom(),layoutKey=zoom.toFixed(3);
+    const shown=visibleTrackChunks(this.features,b),zoom=this.map.getZoom(),spacing=trackArrowSpacingPixels(zoom,this.map.getPitch()),layoutKey=zoom.toFixed(3)+":"+spacing;
     const key=this.generation+":"+layoutKey+":"+shown.map(f=>f.properties.chunkId).join("|");if(key===this.key)return;this.key=key;
-    const prepared=shown.flatMap(f=>{let saved=this.arrowRuns.get(f);if(saved?.key!==layoutKey){saved={key:layoutKey,runs:prepareTrackArrowRuns(f,zoom)};this.arrowRuns.set(f,saved);}return saved.runs;});
+    const prepared=shown.flatMap(f=>{let saved=this.arrowRuns.get(f);if(saved?.key!==layoutKey){saved={key:layoutKey,runs:prepareTrackArrowRuns(f,zoom,{...trackArrowLayoutProfile,spacingPixels:spacing})};this.arrowRuns.set(f,saved);}return saved.runs;});
     this.map.getSource("tracks")?.setData({type:"FeatureCollection",features:prepared});
   }
   updateArrows(){const map=this.map;if(!map.getLayer("track-direction-arrows"))return;
-    const profile=trackArrowProfile;
-    const width=trackArrowLayoutProfile.spacingPixels/(profile.imageWidth/profile.imageHeight);
-    const key=Math.round(width*128);
+    const profile=trackArrowProfile,spacing=trackArrowSpacingPixels(map.getZoom(),map.getPitch());
+    const width=spacing/(profile.imageWidth/profile.imageHeight),key=spacing+":"+Math.round(map.getPitch())+":"+(this.displayStyleKey||"");
     if(this.arrowImageKey===key&&trackArrowImages.every(id=>map.hasImage(id)))return;
     this.arrowImageKey=key;
-    const units=profile.imageHeight/width;
-    for(const tone of ["dark","light"])for(const size of ["narrow","wide"]){
-      const canvas=document.createElement("canvas");canvas.width=profile.imageWidth;canvas.height=profile.imageHeight;
-      const c=canvas.getContext("2d"),wide=size==="wide";
-      c.translate(profile.imageWidth/2,profile.imageHeight/2);c.scale(units,units);
-      c.lineCap="round";c.lineJoin="round";
-      const halfHeight=wide?1.1:.7;
-      for(const shift of [-profile.lengthPixels*.3,profile.lengthPixels*.3]){
-        c.beginPath();c.moveTo(shift-profile.lengthPixels*.24,-halfHeight);
-        c.lineTo(shift+profile.lengthPixels*.24,0);c.lineTo(shift-profile.lengthPixels*.24,halfHeight);
-        c.strokeStyle=tone==="dark"?"#ffffff":"#111111";c.lineWidth=wide?1.6:1.35;c.stroke();
-        c.strokeStyle=tone==="dark"?"#111111":"#ffffff";c.lineWidth=wide?1:.9;c.stroke();
-      }
-      const image=c.getImageData(0,0,profile.imageWidth,profile.imageHeight),id=`track-chevron-${tone}-${size}`;
+    const units=profile.imageHeight/width,metrics={spacingPixels:spacing,categories:{}};
+    const paint=(id,lineWidth,tone)=>{
+      const shape=trackChevronPolygons(lineWidth,map.getPitch()),canvas=document.createElement("canvas");canvas.width=profile.imageWidth;canvas.height=profile.imageHeight;
+      const c=canvas.getContext("2d");c.translate(profile.imageWidth/2,profile.imageHeight/2);c.scale(units,units);
+      const fill=(points,color)=>{c.beginPath();c.moveTo(...points[0]);for(const point of points.slice(1))c.lineTo(...point);c.closePath();c.fillStyle=color;c.fill();};
+      for(const symbol of shape.symbols){fill(symbol.outer,tone==="dark"?"#ffffff":"#111111");fill(symbol.inner,tone==="dark"?"#111111":"#ffffff");}
+      const image=c.getImageData(0,0,profile.imageWidth,profile.imageHeight);
       if(map.hasImage(id))map.updateImage(id,image);else map.addImage(id,image);
-    }
+      return {lineWidth:shape.lineWidth,height:shape.height,length:shape.length,edgeInsetPixels:shape.edgeInsetPixels};
+    };
+    for(const tone of ["dark","light"])for(const size of ["narrow","wide"])paint(`track-chevron-${tone}-${size}`,size==="wide"?4:3,tone);
+    if(this.displayStyles)for(const category of ["ordinary","mainGuide","selected"])for(const tone of ["dark","light"])
+      metrics.categories[category]=paint(`track-display-chevron-${category}-${tone}`,this.displayStyles[category].width,tone);
+    if(this.displayStyles)for(const [category,base] of [["selectedMainGuide","mainGuide"],["selectedOrdinary","ordinary"]])for(const tone of ["dark","light"])
+      metrics.categories[category]=paint(`track-display-chevron-${category}-${tone}`,Math.max(this.displayStyles.selected.width,this.displayStyles[base].width),tone);
+    this.arrowMetrics=metrics;
     map.setPaintProperty("track-direction-arrows","line-width",width);
   }
 }
+

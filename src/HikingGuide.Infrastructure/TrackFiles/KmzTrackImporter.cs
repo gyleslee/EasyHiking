@@ -9,7 +9,7 @@ public sealed class KmzSafetyProfile
 {
     public int MaximumEntries { get; init; } = 10000;
     public long MaximumSingleEntryBytes { get; init; } = 64L * 1024 * 1024;
-    public long MaximumTotalExpandedBytes { get; init; } = 256L * 1024 * 1024;
+    public long MaximumTotalExpandedBytes { get; init; } = 500L * 1024 * 1024;
     public long MaximumKmlBytes { get; init; } = 32L * 1024 * 1024;
     public double MaximumCompressionRatio { get; init; } = 1000;
     public int MaximumEntryPathLength { get; init; } = 512;
@@ -61,7 +61,7 @@ public sealed class KmzTrackImporter(KmzSafetyProfile? profile = null,
                 throw new InvalidDataException("KMZ包含过大的条目。");
             total = checked(total + entry.Length);
             if (total > _profile.MaximumTotalExpandedBytes)
-                throw new InvalidDataException("KMZ展开后的总大小超过安全限制。");
+                throw new InvalidDataException($"KMZ解压后总大小为{total / (1024d * 1024):F1} MB，超过允许的{_profile.MaximumTotalExpandedBytes / (1024d * 1024):F0} MB上限。");
             if (entry.Length > 0 &&
                 (entry.CompressedLength == 0 || entry.Length / (double)entry.CompressedLength > _profile.MaximumCompressionRatio))
                 throw new InvalidDataException("KMZ压缩比异常，已拒绝读取。");
@@ -116,3 +116,4 @@ public sealed class KmzTrackImporter(KmzSafetyProfile? profile = null,
         return output.ToArray();
     }
 }
+

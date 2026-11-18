@@ -46,7 +46,7 @@ Excel 模板随 Infrastructure 项目发布到 `Templates/攻略数据模板.xls
 Windows 10/11 的正式安装载荷还需生成中文无控制台启动器：
 
 ```powershell
-./packaging/Build-Launcher.ps1 -PayloadDirectory artifacts/modern -Version 1.9.6
+./packaging/Build-Launcher.ps1 -PayloadDirectory artifacts/modern -Version 1.9.8
 ```
 
 该入口调用系统 x64 dotnet.exe 加载原程序集，不增加 GPU 禁用参数。命令行直接运行程序集也使用同一标准机制：

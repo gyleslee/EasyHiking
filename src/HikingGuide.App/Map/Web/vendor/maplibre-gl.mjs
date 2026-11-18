@@ -52,12 +52,24 @@ vec4 rgb=(texelFetch(u_terrain,pos,0)*255.0)*u_terrain_unpack;return rgb.r+rgb.g
 #else
 return 0.0;
 #endif
-}float get_elevation(vec2 pos) {
+}float hg_slope(float a,float b){return a*b>0.0?2.0*a*b/(a+b):0.0;}
+float hg_cubic(vec4 h,float t){
+float u=t*t,v=u*t;
+return (2.0*v-3.0*u+1.0)*h.y+(v-2.0*u+t)*hg_slope(h.y-h.x,h.z-h.y)+(-2.0*v+3.0*u)*h.z+(v-u)*hg_slope(h.z-h.y,h.w-h.z);
+}
+float get_elevation(vec2 pos) {
 #ifdef TERRAIN3D
 #ifdef GLOBE
 if ((pos.y <-32767.5) || (pos.y > 32766.5)) {return 0.0;}
 #endif
-vec2 coord=(u_terrain_matrix*vec4(pos,0.0,1.0)).xy*u_terrain_dim+1.5;vec2 f=fract(coord);ivec2 c=ivec2(floor(coord));ivec2 hi=textureSize(u_terrain,0)-1;float tl=ele(clamp(c,ivec2(0),hi));float tr=ele(clamp(c+ivec2(1,0),ivec2(0),hi));float bl=ele(clamp(c+ivec2(0,1),ivec2(0),hi));float br=ele(clamp(c+ivec2(1,1),ivec2(0),hi));float elevation=mix(mix(tl,tr,f.x),mix(bl,br,f.x),f.y);return elevation*u_terrain_exaggeration;
+vec2 coord=(u_terrain_matrix*vec4(pos,0.0,1.0)).xy*u_terrain_dim+1.5;vec2 f=fract(coord);ivec2 c=ivec2(floor(coord));ivec2 hi=textureSize(u_terrain,0)-1;float tl=ele(clamp(c,ivec2(0),hi));float tr=ele(clamp(c+ivec2(1,0),ivec2(0),hi));float bl=ele(clamp(c+ivec2(0,1),ivec2(0),hi));float br=ele(clamp(c+ivec2(1,1),ivec2(0),hi));vec4 rows=vec4(0.0);
+for(int y=0;y<4;y++){
+vec4 h;
+for(int x=0;x<4;x++)h[x]=ele(clamp(c+ivec2(x-1,y-1),ivec2(0),hi));
+rows[y]=hg_cubic(h,f.x);
+}
+float elevation=clamp(hg_cubic(rows,f.y),min(min(tl,tr),min(bl,br)),max(max(tl,tr),max(bl,br)));
+return elevation*u_terrain_exaggeration;
 #else
 return 0.0;
 #endif

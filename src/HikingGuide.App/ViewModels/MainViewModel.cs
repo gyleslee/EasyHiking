@@ -275,7 +275,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _exitTrackEditContextCommand = new RelayCommand<Track>(track => _ = ExitTrackEditAsync(),
             track => !IsBusy && track is not null && ReferenceEquals(_trackEditTrack, track));
         _deleteTrackPointCommand = new AsyncRelayCommand(DeleteSelectedTrackPointAsync,
-            () => !IsBusy && !Map.TerrainCoordinateEditingBlocked&&_trackEditSessionId is not null && _trackEditPick is not null);
+            () => !IsBusy && !Map.TerrainCoordinateEditingBlocked&&_trackEditSessionId is not null && _selectedEditPoints.Count > 0);
         _addTrackPointCommand = new RelayCommand(() => BeginTrackClickMode(TrackClickMode.InsertPoint),
             () => !IsBusy && !Map.TerrainCoordinateEditingBlocked&&_trackEditSessionId is not null);
         _splitTrackSegmentCommand = new RelayCommand<MapEventMessage>(value =>
@@ -644,6 +644,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _selectedModel = node?.Model;
         SelectedProperties.Clear();
         _markerElevationQueryVersion++;
+        _trackPropertiesCancellation?.Cancel();
         switch (node?.Model)
         {
             case HikingProject project:
@@ -654,16 +655,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 SelectedProperties.Add(new("项目文件", _projects.OpenProjects.FirstOrDefault(item => ReferenceEquals(item.Project, project))?.FilePath ?? "尚未正式保存"));
                 break;
             case Track track:
-                SelectedProperties.Add(new("名称", track.Name ?? "未命名轨迹"));
-                SelectedProperties.Add(new("轨迹 ID", track.Id.ToString()));
-                SelectedProperties.Add(new("当前选中轨迹", track.Id == CurrentProject?.ActiveTrackId ? "是" : "否"));
-                SelectedProperties.Add(new("主攻略轨迹", track.Id == CurrentProject?.MainGuideTrackId ? "是" : "否"));
-                SelectedProperties.Add(new("显示颜色", track.DisplayColor ?? "默认蓝色"));
-                SelectedProperties.Add(new("轨迹段数量", track.Segments.Count.ToString(CultureInfo.CurrentCulture)));
-                SelectedProperties.Add(new("轨迹点数量", track.GetPointCount().ToString(CultureInfo.CurrentCulture)));
-                SelectedProperties.Add(new("总长度", $"{track.GetTotalLength() / 1000:F2} km"));
-                SelectedProperties.Add(new("说明", track.Description ?? "—"));
-                SelectedProperties.Add(new("原始来源", track.SourceFile ?? "无"));
+                ShowTrackProperties(track);
                 break;
             case TrackSegment segment:
                 SelectedProperties.Add(new("名称", segment.Name ?? "未命名轨迹段"));
@@ -678,6 +670,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 break;
             case Waypoint waypoint:
                 SelectedProperties.Add(new("名称", waypoint.Name ?? "未命名标注"));
+                SelectedProperties.Add(new("时间", FormatRecordedTime(waypoint.Timestamp)));
                 SelectedProperties.Add(new("类型", MarkerTypeNames.Get(waypoint.Type, waypoint.CustomTypeName)));
                 SelectedProperties.Add(new("自定义类型", waypoint.CustomTypeName ?? "—"));
                 SelectedProperties.Add(new("纬度", waypoint.Latitude.ToString("F8", CultureInfo.InvariantCulture)));
@@ -689,6 +682,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 break;
             case GuideNode guideNode:
                 SelectedProperties.Add(new("名称", guideNode.Name ?? "未命名攻略节点"));
+                SelectedProperties.Add(new("时间", FormatRecordedTime(guideNode.Timestamp)));
                 SelectedProperties.Add(new("所属轨迹", guideNode.TrackId?.ToString() ?? "尚未关联"));
                 SelectedProperties.Add(new("来源轨迹", guideNode.SourceTrackName ??
                     CurrentProject?.Tracks.FirstOrDefault(track => track.Id == guideNode.SourceTrackId)?.Name ?? "—"));
@@ -1550,6 +1544,11 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         var tracks = SelectedTracks();
         var waypoints = project.Waypoints.Where(_selectedProjectItems.Contains).ToArray();
         var nodes = project.GuideNodes.Where(_selectedProjectItems.Contains).ToArray();
+        if (GeometrySelection().Length > 0)
+        {
+            _ = EditGeometrySelectionAsync(true, waypoints.Select(w => w.Id).Concat(nodes.Select(n => n.Id)).ToHashSet());
+            return;
+        }
         if (tracks.Length + waypoints.Length + nodes.Length == 0) return;
         var message = $"确定从项目中删除所选的 {tracks.Length} 条轨迹、{waypoints.Length} 个普通标注和 {nodes.Length} 个攻略节点吗？\n\n" +
             "删除轨迹后，其未选中的标注仍会保留在“未关联标注”；原始 GPX/KML/KMZ 文件不会删除。此操作可撤销。";
@@ -1720,6 +1719,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private void RefreshProjectView(bool refreshMap = true)
     {
         if(_isRefreshingTree)return;
+        if (refreshMap) ClearUnifiedPointSelection();
         _isRefreshingTree=true;
         try
         {
@@ -1768,6 +1768,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 }
                 _guideStructure.ClearSnapCache();
             }
+            ConvertLegacySplitTracks();
             NavigationNodes.Clear();
             GuideRows.Clear();
             _selectedModel = null;
@@ -1806,13 +1807,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                         foreach (var marker in owned)
                             waypointGroup.Children.Add(new NavigationNode(marker.Name ?? "未命名标注", marker));
                         trackNode.Children.Add(waypointGroup);
-                        var splitSections = track.GetSplitSections();
-                        var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
-                        foreach (var section in splitSections)
-                        {
-                            geometryGroup.Children.Add(new NavigationNode(section.Name, section));
-                        }
-                        trackNode.Children.Add(geometryGroup);
                         root.Children.Add(trackNode);
                     }
                     var otherOrphans = itemProject.GuideNodes.Where(marker => marker.IsOrphaned || itemProject.MainGuideTrackId is null).ToArray();
@@ -1876,15 +1870,6 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                         waypointGroup.Children.Add(markerNode);
                     }
                     node.Children.Add(waypointGroup);
-                    var splitSections = track.GetSplitSections();
-                    var geometryGroup = new NavigationNode($"拆分分段（{splitSections.Count}）");
-                    foreach (var section in splitSections)
-                    {
-                        var segmentNode = new NavigationNode(section.Name, section);
-                        _mapNodes[section.Id] = segmentNode;
-                        geometryGroup.Children.Add(segmentNode);
-                    }
-                    node.Children.Add(geometryGroup);
                     root.Children.Add(node);
                 }
                 var orphaned = project.GuideNodes.Where(marker => marker.IsOrphaned || project.MainGuideTrackId is null).ToArray();
@@ -1976,7 +1961,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         await refresh;
         if (ReferenceEquals(CurrentProject, project) && _trackEditSessionId == session &&
             ReferenceEquals(_trackEditTrack, track))
-            await Map.BeginTrackEditAsync(track, session);
+            await Map.BeginTrackEditAsync(track, session, revealHiddenTrack: MapLayerVisibility.IsTrackVisible(project.Settings.Map, track.Id));
     }
 
     private HashSet<string> CaptureExpandedNodes()
@@ -2027,7 +2012,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     private void OnMapSelectionRequested(object? sender, HikingGuide.Application.Maps.MapSelection selection)
     {
-        if (!selection.ObjectId.HasValue || !_mapNodes.TryGetValue(selection.ObjectId.Value, out var node)) return;
+        if (!selection.ObjectId.HasValue) { ClearMapTrackSelection(); return; }
+        if (!_mapNodes.TryGetValue(selection.ObjectId.Value, out var node)) return;
         MapSelectionSyncCount++;
         _isMapSelectionInProgress = true;
         try
@@ -2447,6 +2433,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private async Task ActivateTrackEditTargetAsync(HikingProject project, Track track)
     {
         if (!_trackEditState.SelectTarget(project, track)) return;
+        ClearUnifiedPointSelection();
         var session = _trackEditSessionId!.Value;
         // 不提交旧目标的点拖动或区间预览，也不调用 EndTrackEdit 退出项目模式。
         _trackEditPick = null;
@@ -2490,6 +2477,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     private async Task ExitTrackEditAsync()
     {
+        ClearUnifiedPointSelection();
         _trackEditState.End();
         _trackEditContextChangeTask = Task.CompletedTask;
         _trackEditPick = null;
@@ -2506,6 +2494,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private void BeginTrackClickMode(TrackClickMode mode)
     {
         if (_trackEditSessionId is null) return;
+        ClearUnifiedPointSelection();
         _trackClickMode = mode;
         if (mode == TrackClickMode.SelectRange)
         {
@@ -2524,6 +2513,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     public async Task CancelPendingTrackEditAsync()
     {
+        ClearUnifiedPointSelection();
         if (_trackEditSessionId is not Guid session || _trackEditTrack is not { } track) return;
         _operationCancellation?.Cancel();
         _trackEditPick = null;
@@ -2736,7 +2726,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         var edgeIndex = position.Fraction == 0 && position.StartPointIndex > 0
             ? position.StartPointIndex - 1 : position.StartPointIndex;
         var fraction = edgeIndex == position.StartPointIndex ? position.Fraction : 1;
-        await ApplyTrackEditAsync("拆分轨迹段", token =>
+        await ApplyTrackEditAsync("拆分轨迹", token =>
             _trackEdits.PrepareSplitSegment(_trackEditProject!, track.Id,
                 position.TrackSegmentId, edgeIndex, fraction, token), true);
         _trackClickMode = TrackClickMode.SelectPoint;
@@ -2746,6 +2736,31 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     {
         try
         {
+            if (value.Type == "DeleteSelectionRequested")
+            {
+                DeleteSelectionFromKeyboard(false);
+                return;
+            }
+            if (value.Type == "TrackEditPointClicked")
+            {
+                if (!IsCurrentTrackEdit(value) || IsBusy || _trackEditTrack is not { } target ||
+                    value.TrackPointId is not Guid pointId) return;
+                var handle = target.Segments.SelectMany((s, si) => s.Points.Select((p, pi) => new TrackEditHandle(p.Id, s.Id, si, pi, p.Coordinate, false)))
+                    .FirstOrDefault(h => h.PointId == pointId);
+                if (handle is null) return;
+                if (!value.CtrlKey && _trackClickMode != TrackClickMode.SelectPoint)
+                {
+                    OnMapTrackEditRequested(sender, value with { Type = "TrackEditLineClicked", Latitude = handle.Coordinate.Latitude,
+                        Longitude = handle.Coordinate.Longitude, SplitSectionId = _rangeScopeSectionId });
+                    return;
+                }
+                var pick = PickTrackEditPoint(target, handle.Coordinate, value.Zoom ?? 15, value.SplitSectionId);
+                if (pick is null) return;
+                // 重合位置按实际点身份选择，不能退回到最近的另一趟轨迹点。
+                pick = pick with { SelectedPoint = handle, LinePosition = PositionForEditHandle(target, handle) };
+                await SelectEditPointAsync(target, _trackEditSessionId!.Value, pick, value.CtrlKey);
+                return;
+            }
             if (value.Type == "TrackEditPreviewCancelled")
             {
                 if (IsCurrentTrackEdit(value)) await CancelPendingTrackEditAsync();
@@ -2778,7 +2793,7 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                 if (oldSession != _trackEditSessionId)
                     value = value with { EditSessionId = _trackEditSessionId };
                 // Ctrl 多选只改变选择，不能误触发当前插点、拆分或区间编辑工具。
-                if (value.CtrlKey) return;
+                if (value.CtrlKey) { ClearUnifiedPointSelection(); return; }
             }
             if (!IsCurrentTrackEdit(value) || IsBusy || _trackEditTrack is not { } track ||
                 value.Latitude is not double latitude || value.Longitude is not double longitude) return;
@@ -2794,15 +2809,18 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                     // 交叉处分段点选只在其原始连续 Part 中拾取，不误编辑同轨迹的其他分段。
                     var pick = await Task.Run(() => PickTrackEditPoint(track, coordinate, zoom,
                         value.SplitSectionId), token);
+                    if (pick is not null && value.TrackPointId is Guid exactId)
+                    {
+                        var exact = track.Segments.SelectMany((s, si) => s.Points.Select((p, pi) => new TrackEditHandle(p.Id, s.Id, si, pi, p.Coordinate, false)))
+                            .FirstOrDefault(h => h.PointId == exactId);
+                        if (exact is not null) pick = pick with { SelectedPoint = exact, LinePosition = PositionForEditHandle(track, exact) };
+                    }
                     if (!IsCurrentTrackEdit(value) || session != _trackEditSessionId) return;
                     picked = pick;
                     if (pick is null) StatusText = "请在要编辑的轨迹附近点击。";
                     else if (mode == TrackClickMode.SelectPoint)
                     {
-                        _trackEditPick = pick;
-                        OnPropertyChanged(nameof(SelectedTrackEditPointId));
-                        await Map.SetTrackEditHandlesAsync(track, session!.Value, pick.VisibleHandles);
-                        StatusText = $"已选择轨迹点 {pick.SelectedPoint.PointIndex + 1}；可拖动，或使用“轨迹 → 删除轨迹点”。";
+                        await SelectEditPointAsync(track, session!.Value, pick, false);
                     }
                     RaiseCommandStates();
                 });
@@ -2827,22 +2845,31 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
                     var edgeIndex = position.Fraction == 0 && position.StartPointIndex > 0
                         ? position.StartPointIndex - 1 : position.StartPointIndex;
                     var fraction = edgeIndex == position.StartPointIndex ? position.Fraction : 1;
-                    await ApplyTrackEditAsync("拆分轨迹段", token =>
+                    await ApplyTrackEditAsync("拆分轨迹", token =>
                         _trackEdits.PrepareSplitSegment(_trackEditProject!, track.Id,
                             position.TrackSegmentId, edgeIndex, fraction, token), true);
                     _trackClickMode = TrackClickMode.SelectPoint;
                 }
                 else if (mode == TrackClickMode.SelectRange)
                 {
+                    var boundaryPosition = PositionForEditHandle(track, picked.SelectedPoint);
                     if (_trackRangeStart is null)
                     {
-                        _trackRangeStart = picked.LinePosition;
+                        _trackRangeStart = boundaryPosition;
                         StatusText = $"区间起点：{picked.LinePosition.DistanceFromTrackStart / 1000:F2} km。请点击终点。";
                     }
                     else
                     {
-                        _trackRangeEnd = picked.LinePosition;
+                        _trackRangeEnd = boundaryPosition;
                         _trackClickMode = TrackClickMode.SelectPoint;
+                        if (_cutJoinPending)
+                        {
+                            var cutRange = new TrackRange(track.Id, _trackRangeStart, _trackRangeEnd);
+                            var scope = _rangeScopeSectionId;
+                            _cutJoinPending = false;
+                            await ApplyTrackEditAsync("区间裁剪", token => _trackEdits.PrepareCutAndJoin(_trackEditProject!, cutRange, scope, token), true);
+                            return;
+                        }
                         var from = Math.Min(_trackRangeStart.DistanceFromTrackStart,
                             _trackRangeEnd.DistanceFromTrackStart);
                         var to = Math.Max(_trackRangeStart.DistanceFromTrackStart,
@@ -2876,20 +2903,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
 
     private async Task DeleteSelectedTrackPointAsync()
     {
-        if (_trackEditProject is not { } project || _trackEditTrack is not { } track ||
-            _trackEditPick is not { } pick) return;
-        var segment = track.Segments[pick.SelectedPoint.SegmentIndex];
-        if (segment.Points.Count == 2)
-        {
-            if (MessageBox.Show(System.Windows.Application.Current.MainWindow,
-                    "删除该点会使轨迹段失效。是否改为删除整个轨迹段？",
-                    "确认删除轨迹段", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
-            await ApplyTrackEditAsync("删除轨迹段", token =>
-                _trackEdits.PrepareDeleteSegment(project, track.Id, segment.Id, token), true);
-            return;
-        }
+        if (_trackEditProject is not { } project || _trackEditTrack is not { } track || _selectedEditPoints.Count == 0) return;
+        var ids = _selectedEditPoints.Keys.ToHashSet();
         await ApplyTrackEditAsync("删除轨迹点", token =>
-            _trackEdits.PrepareDeletePoint(project, track.Id, pick.SelectedPoint.PointId, token), true);
+            _trackEdits.PrepareDeletePoints(project, track.Id, ids, token), true);
     }
 
     private TrackPointEditPick? PickTrackEditPoint(Track track, GeoCoordinate coordinate,
@@ -2928,7 +2945,20 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         if (project is null || track is null || session is null) return;
         await RunOperationAsync($"正在准备{operation}……", async token =>
         {
-            var plan = await Task.Run(() => prepare(token), token);
+            TrackEditPlan plan;
+            try { plan = await Task.Run(() => prepare(token), token); }
+            catch (LastTrackSegmentDeletionException exception)
+            {
+                _dialogs.ShowWarning("无法删除最后一个轨迹段", exception.Message);
+                StatusText = "未删除：该轨迹只剩最后一个轨迹段。删除整条轨迹请在项目面板使用“删除轨迹”。";
+                return;
+            }
+            catch (InvalidOperationException exception)
+            {
+                _dialogs.ShowWarning($"无法{operation}", exception.Message);
+                StatusText = $"{operation}未执行；轨迹未修改。";
+                return;
+            }
             token.ThrowIfCancellationRequested();
             if (!ReferenceEquals(CurrentProject, project) ||
                 !ReferenceEquals(_trackEditTrack, track) || _trackEditSessionId != session) return;
@@ -2949,13 +2979,31 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
             token.ThrowIfCancellationRequested();
             if (!ReferenceEquals(CurrentProject, project) || !project.Tracks.Contains(track) ||
                 !ReferenceEquals(_trackEditTrack, track) || _trackEditSessionId != session) return;
-            _history.Execute(operation, plan.Apply, plan.Undo);
+            var removesGeometry = plan.Operation.Contains("删除") || plan.Operation.Contains("裁剪") || plan.Operation == "保留所选区间";
+            var relatedMarkers = removesGeometry ? await Task.Run(() => TrackRelatedMarkers.Find(project, track, plan.ChangeSet), token)
+                : new HashSet<Guid>();
+            if (!ReferenceEquals(CurrentProject, project) || !ReferenceEquals(_trackEditTrack, track) || _trackEditSessionId != session) return;
+            var removeMarkers = ChooseRelatedMarkerDeletion(project, relatedMarkers);
+            if (removeMarkers is null) return;
+            if (operation == "拆分轨迹")
+            {
+                IndependentTracks? conversion = null;
+                ExecuteGeometryHistory(operation, project, () =>
+                {
+                    plan.Apply();
+                    try { conversion ??= new IndependentTracks(project, track); conversion.Apply(); }
+                    catch { plan.Undo(); throw; }
+                }, () => { conversion?.Undo(); plan.Undo(); }, relatedMarkers, false);
+            }
+            else ExecuteGeometryHistory(operation, project, plan.Apply, plan.Undo, relatedMarkers, removeMarkers.Value);
+            ClearUnifiedPointSelection();
             _trackEditIndex.Invalidate(track.Id);
             _trackEditPick = null;
             _trackRangeStart = null;
             _trackRangeEnd = null;
             _trackEditState.SelectTarget(project, track, renewSession: true);
             session = _trackEditSessionId;
+            if (operation == "拆分轨迹") { RefreshProjectView(); await _mapRefreshTask; StatusText="已拆分为两条独立轨迹，可撤销。"; return; }
             RefreshProjectView(false);
             await Map.RefreshEditedTrackAsync(track);
             if (_trackEditSessionId == session && ReferenceEquals(CurrentProject, project))
@@ -3370,6 +3418,8 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
     private bool CanExport() => !IsBusy && CurrentProject is { Tracks.Count: > 0 };
     private void RaiseCommandStates()
     {
+        RaiseUnifiedTrackCommands();
+        RaiseTrackContextActions();
         RaiseKilometerCommands();
         RaiseRoutingCommandStates();
         _enterTrackEditCommand.RaiseCanExecuteChanged();
@@ -3433,8 +3483,10 @@ public sealed partial class MainViewModel : ViewModelBase, IDisposable
         _autoSaveTimer?.Dispose();
         _operationCancellation?.Cancel();
         _operationCancellation?.Dispose();
+        _trackPropertiesCancellation?.Cancel();
         Map.Dispose();
     }
 
     private enum TrackClickMode { SelectPoint, InsertPoint, SplitSegment, SelectRange }
 }
+

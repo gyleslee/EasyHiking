@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -25,13 +25,14 @@ public partial class TrackMergeWindow : Window
         : this(connect, false, focusGeometry, focusPoint)
     {
         Title = connect ? "连接轨迹" : "合并轨迹";
-        IntroText.Text = "可混选普通轨迹与拆分分段，调整顺序和方向。主攻略轨迹及其分段不可参与，请先转为普通轨迹（节点同步转换）。同一整轨与其分段不可重复选择。";
+        DeleteExplanation.Text="默认删除所选来源轨迹，所属普通标注转到新轨迹。取消勾选则保留来源轨迹及其标注归属。图片和人工内容保留，磁盘原始文件不删除；整次操作可撤销。";
+        IntroText.Text = "请选择普通轨迹，调整顺序和方向。主攻略轨迹不可参与，请先转为普通轨迹（节点同步转换）。";
         CreateButton.Content = connect ? "创建连接轨迹" : "创建合并轨迹";
         NameBox.Text = connect ? "新连接轨迹" : "新合并轨迹";
         var selectedKeys=geometrySelection?.Select(s=>(s.TrackId,s.SectionId)).ToHashSet()
             ??preselected?.Select(id=>(id,(Guid?)null)).ToHashSet()??[];
         var selectedOnly=restrictToSelection&&selectedKeys.Count>=2;
-        IntroText.Text+=(selectedOnly?" 当前仅列出已多选的轨迹或分段。":"")+
+        IntroText.Text+=(selectedOnly?" 当前仅列出已多选的轨迹。":"")+
             (connect?" 请手动填写全部勾选项的连接顺序；编号须从1开始连续且不重复。":"");
         foreach (var track in project.Tracks.Where(t => t.Id != project.MainGuideTrackId))
         {
@@ -40,11 +41,6 @@ public partial class TrackMergeWindow : Window
                 track.StartPoint, track.EndPoint,
                 geometrySelection is not null ? geometrySelection.Any(item => item.TrackId == track.Id && item.SectionId is null) :
                 preselected is null || preselected.Count == 0 || preselected.Contains(track.Id)));
-            foreach (var section in track.GetSplitSections())
-                if(!selectedOnly||selectedKeys.Contains((track.Id,section.Id)))
-                    AddRow(new GeometrySelectionRow(section, section.Id,
-                        $"    {track.Name ?? "未命名轨迹"} / {section.Name}", section.StartPoint, section.EndPoint,
-                        geometrySelection?.Any(item => item.TrackId == track.Id && item.SectionId == section.Id) == true));
         }
         TrackList.ItemsSource = _rows;
         RefreshPreview();

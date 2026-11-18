@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -90,7 +90,7 @@ public sealed partial class FavoritesPanel : UserControl
         if (manager)
         {
             var libraryActions = new WrapPanel(); libraryActions.Children.Add(FavoriteEditorWindow.Button("新建收藏夹", CreateCollectionAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("重命名收藏夹", RenameCollectionAsync));
-            libraryActions.Children.Add(FavoriteEditorWindow.Button("删除收藏夹", DeleteCollectionAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导入…", ImportAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出收藏库…", ExportAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出为KMZ…", () => ExportKmzAsync())); header.Children.Add(libraryActions);
+            libraryActions.Children.Add(FavoriteEditorWindow.Button("删除收藏夹", DeleteCollectionAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导入…", ImportAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出收藏库…", ExportAsync)); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出为KMZ…", () => ExportKmzAsync())); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出为GPX…", () => ExportGpxAsync())); libraryActions.Children.Add(FavoriteEditorWindow.Button("导出为KML…", () => ExportKmlAsync())); header.Children.Add(libraryActions);
         }
         DockPanel.SetDock(_status, Dock.Bottom); root.Children.Add(_status);
         if (manager)
@@ -122,7 +122,9 @@ public sealed partial class FavoritesPanel : UserControl
         };
         _show.Click += async (_, _) => await Guard(async () => { Host.GlobalSettingsService.Current.ShowFavoritesOnMap = _show.IsChecked == true; await Host.GlobalSettingsService.SaveAsync(); Host.NotifyFavoritesChanged(); });
         var menu = new ContextMenu(); Add(menu, "编辑收藏点…", EditSelectedAsync); Add(menu, "移动到收藏夹…", MoveSelectedAsync); Add(menu, "删除收藏点", DeleteSelectedAsync); Add(menu, "导出所选收藏点…", () => ExportSelectedAsync(Selected().Select(p => p.Id).ToArray()));
-        Add(menu, "导出所选收藏点为KMZ…", () => ExportKmzAsync(Selected().Select(p => p.Id).ToArray())); _list.ContextMenu = menu; _grid.ContextMenu = menu;
+        Add(menu, "导出所选收藏点为KMZ…", () => ExportKmzAsync(Selected().Select(p => p.Id).ToArray()));
+        Add(menu, "导出所选收藏点为GPX…", () => ExportGpxAsync(Selected().Select(p => p.Id).ToArray()));
+        Add(menu, "导出所选收藏点为KML…", () => ExportKmlAsync(Selected().Select(p => p.Id).ToArray())); _list.ContextMenu = menu; _grid.ContextMenu = menu;
         Add(menu, "取消收藏点选中", () => { Host.FavoriteSelection.ClearSelection(); return Task.CompletedTask; });
         _list.PreviewMouseRightButtonDown += (_, e) => { var item = ItemsControl.ContainerFromElement(_list, e.OriginalSource as DependencyObject) as ListBoxItem; if (item is { IsSelected: false }) { _list.SelectedItems.Clear(); item.IsSelected = true; } };
         _list.AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler((_, _) => CloseHover()));
@@ -241,14 +243,52 @@ public sealed partial class FavoritesPanel : UserControl
     }
     public async Task DeleteIdsAsync(IReadOnlyList<Guid> ids)
     { if (MessageBox.Show(OwnerWindow, "确定删除此收藏点？", "删除收藏点", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) == MessageBoxResult.Yes) { await Repository.DeleteAsync(ids); Host.NotifyFavoritesChanged(); } }
+    internal static OpenFileDialog CreateImportFileDialog()=>new()
+    {
+        Title="导入收藏点（可多选文件）",Multiselect=true,
+        Filter="支持的收藏文件|*.hgfav;*.kmz;*.gpx;*.kml|收藏点交换包|*.hgfav|KMZ兴趣点|*.kmz|GPX航点|*.gpx|KML兴趣点|*.kml"
+    };
     public async Task ImportAsync()
     {
-        var dialog = new OpenFileDialog { Title = "导入收藏点", Filter = "支持的收藏文件|*.hgfav;*.kmz|收藏点交换包|*.hgfav|KMZ兴趣点|*.kmz" }; if (dialog.ShowDialog(OwnerWindow) != true) return;
+        var dialog=CreateImportFileDialog();if(dialog.ShowDialog(OwnerWindow)!=true)return;
         var window = new Window { Owner = OwnerWindow, Title = "导入冲突处理", SizeToContent = SizeToContent.WidthAndHeight, WindowStartupLocation = WindowStartupLocation.CenterOwner };
-        var panel = new StackPanel { Margin = new Thickness(12) }; panel.Children.Add(new TextBlock { Text = "身份相同的收藏点如何处理？（应用到本次所有冲突）" }); FavoriteConflictPolicy policy = FavoriteConflictPolicy.Skip;
+        var panel = new StackPanel { Margin = new Thickness(12) }; panel.Children.Add(new TextBlock { Text = $"已选择{dialog.FileNames.Length}个文件。身份相同的收藏点如何处理？\n此选择应用于本次所有文件，包括文件之间的重复收藏点。",TextWrapping=TextWrapping.Wrap }); FavoriteConflictPolicy policy = FavoriteConflictPolicy.Skip;
         foreach (var (name, value) in new[] { ("跳过", FavoriteConflictPolicy.Skip), ("覆盖", FavoriteConflictPolicy.Overwrite), ("保留两份", FavoriteConflictPolicy.KeepBoth) }) panel.Children.Add(FavoriteEditorWindow.Button(name, () => { policy = value; window.DialogResult = true; return Task.CompletedTask; })); window.Content = panel;
-        if (window.ShowDialog() != true) return; _status.Text = "正在验证并导入收藏点及图片…";
-        var result = Path.GetExtension(dialog.FileName).Equals(".kmz",StringComparison.OrdinalIgnoreCase)?await new FavoriteKmzImporter().ImportAsync(Repository,dialog.FileName,policy,new WpfImageDecodeValidator()):await Repository.ImportAsync(dialog.FileName, policy); Host.NotifyFavoritesChanged(); MessageBox.Show(OwnerWindow, $"已导入{result.Imported}个，跳过{result.Skipped}个。", "收藏点导入完成");
+        if(window.ShowDialog()!=true)return;
+        await ImportFilesAsync(dialog.FileNames,policy);
+    }
+    internal FavoriteBatchImportResult? LastImportForAutomation { get; private set; }
+    internal Task ImportFilesForAutomationAsync(IReadOnlyList<string> files,FavoriteConflictPolicy policy)=>ImportFilesAsync(files,policy,false);
+    private async Task ImportFilesAsync(IReadOnlyList<string> files,FavoriteConflictPolicy policy,bool showSummary=true)
+    {
+        using var cancellation=new CancellationTokenSource();var completed=false;
+        FavoriteBatchImportResult? result=null;Exception? error=null;
+        var progressWindow=new Window{Owner=OwnerWindow,Title="正在导入收藏点",Width=460,SizeToContent=SizeToContent.Height,ResizeMode=ResizeMode.NoResize,WindowStartupLocation=WindowStartupLocation.CenterOwner};
+        var body=new StackPanel{Margin=new Thickness(16)};var text=new TextBlock{Text="正在准备所选文件…",TextWrapping=TextWrapping.Wrap};body.Children.Add(text);
+        var bar=new ProgressBar{Minimum=0,Maximum=files.Count,Height=8,Margin=new Thickness(0,12,0,12)};body.Children.Add(bar);
+        body.Children.Add(FavoriteEditorWindow.Button("取消",()=>{cancellation.Cancel();text.Text="正在取消；已完成文件的导入结果会保留。";return Task.CompletedTask;}));progressWindow.Content=body;
+        progressWindow.Closing+=(_,e)=>{if(!completed){e.Cancel=true;cancellation.Cancel();text.Text="正在取消；已完成文件的导入结果会保留。";}};
+        progressWindow.Loaded+=async(_,_)=>
+        {
+            try
+            {
+                var progress=new Progress<FavoriteBatchImportProgress>(p=>{bar.Maximum=p.FilesTotal;bar.Value=p.FilesProcessed;text.Text=cancellation.IsCancellationRequested?"正在取消；已完成文件的导入结果会保留。":$"已处理文件：{p.FilesProcessed} / {p.FilesTotal}\n当前文件：{p.FileName}";});
+                result=await FavoriteBatchImporter.ImportAsync(Repository,files,policy,new WpfImageDecodeValidator(),progress,cancellation.Token);
+            }
+            catch(Exception e){error=e;}
+            finally{completed=true;progressWindow.Close();}
+        };
+        _status.Text="正在逐个导入所选收藏点文件…";progressWindow.ShowDialog();
+        if(error is not null)throw new InvalidOperationException("收藏点批量导入失败。"+error.Message,error);
+        if(result is null)return;
+        LastImportForAutomation=result;
+        Host.NotifyFavoritesChanged();await RefreshAsync();
+        _status.Text=$"已导入{result.Imported}个收藏点，跳过{result.Skipped}个；文件成功{result.SucceededFiles}个、失败{result.FailedFiles}个。";
+        var details=result.Files.Where(f=>!f.Succeeded).Select(f=>Path.GetFileName(f.FilePath)+"："+f.Error)
+            .Concat(result.Files.SelectMany(f=>f.Warnings.Select(w=>Path.GetFileName(f.FilePath)+"："+w))).ToArray();
+        var summary=_status.Text+(result.Cancelled?"\n已取消后续导入，已完成文件的结果保留。":"")+
+            (details.Length>0?"\n\n文件处理提示：\n"+string.Join("\n",details.Take(10))+(details.Length>10?$"\n另有{details.Length-10}条提示。":""):"");
+        if(showSummary)MessageBox.Show(OwnerWindow,summary,result.Cancelled?"收藏点导入已取消":"收藏点导入完成");
     }
     private async Task<(FavoriteExportSelection Selection,IReadOnlyList<FavoriteCollection> Collections,IReadOnlyList<FavoritePoint> Points)?> ChooseExportAsync(IReadOnlyList<Guid>? explicitIds=null)
     {
@@ -268,15 +308,19 @@ public sealed partial class FavoritesPanel : UserControl
         await Repository.ExportAsync(dialog.FileName,selection.Scope==FavoriteExportScope.Points?selection.PointIds:null,collectionIds:selection.Scope==FavoriteExportScope.Collections?selection.CollectionIds:null);
         _status.Text="收藏点和原图导出完成。";
     }
-    public async Task ExportKmzAsync(IReadOnlyList<Guid>? explicitSelection=null)
+    public Task ExportKmzAsync(IReadOnlyList<Guid>? explicitSelection=null)=>ExportMapAsync("KMZ",explicitSelection);
+    public Task ExportGpxAsync(IReadOnlyList<Guid>? explicitSelection=null)=>ExportMapAsync("GPX",explicitSelection);
+    public Task ExportKmlAsync(IReadOnlyList<Guid>? explicitSelection=null)=>ExportMapAsync("KML",explicitSelection);
+    private async Task ExportMapAsync(string format,IReadOnlyList<Guid>? explicitSelection)
     {
         CloseHover();var choice=await ChooseExportAsync(explicitSelection);if(choice is null)return;var(selection,collections,points)=choice.Value;
         var selected=selection.Scope==FavoriteExportScope.Points?selection.PointIds:null;
         var collectionIds=selection.Scope==FavoriteExportScope.Collections?selection.CollectionIds:null;
-        var save=new SaveFileDialog{Title="导出收藏点为KMZ",Filter="KMZ地图文件|*.kmz",DefaultExt=".kmz",FileName=selection.DefaultFileName(collections,points)+".kmz",OverwritePrompt=true};
+        var extension="."+format.ToLowerInvariant();
+        var save=new SaveFileDialog{Title="导出收藏点为"+format,Filter=format+"地图文件|*"+extension,DefaultExt=extension,FileName=selection.DefaultFileName(collections,points)+extension,OverwritePrompt=true};
         if (save.ShowDialog(OwnerWindow) != true) return;
         using var cancellation = new CancellationTokenSource(); bool completed = false;
-        var progressWindow = new Window { Owner = OwnerWindow, Title = "正在导出收藏点KMZ", Width = 420, SizeToContent = SizeToContent.Height, WindowStartupLocation = WindowStartupLocation.CenterOwner, ResizeMode = ResizeMode.NoResize };
+        var progressWindow = new Window { Owner = OwnerWindow, Title = "正在导出收藏点"+format, Width = 420, SizeToContent = SizeToContent.Height, WindowStartupLocation = WindowStartupLocation.CenterOwner, ResizeMode = ResizeMode.NoResize };
         var body = new StackPanel { Margin = new Thickness(16) }; var text = new TextBlock { Text = "正在准备收藏点与原图…", TextWrapping = TextWrapping.Wrap }; body.Children.Add(text);
         body.Children.Add(new ProgressBar { IsIndeterminate = true, Height = 6, Margin = new Thickness(0, 12, 0, 12) });
         body.Children.Add(FavoriteEditorWindow.Button("取消", () => { cancellation.Cancel(); text.Text = "正在取消导出…"; return Task.CompletedTask; })); progressWindow.Content = body;
@@ -284,12 +328,13 @@ public sealed partial class FavoritesPanel : UserControl
         FavoriteKmzResult? result = null;
         try
         {
-            var progress = new Progress<FavoriteKmzProgress>(p => text.Text = $"正在导出收藏点KMZ\n收藏点：{p.PointsCompleted} / {p.PointsTotal}\n图片：{p.ImagesCompleted} / {p.ImagesTotal}");
-            result = await Repository.ExportKmzAsync(save.FileName, selected, null, true, progress, cancellation.Token,collectionIds);
+            var progress = new Progress<FavoriteKmzProgress>(p => text.Text = $"正在导出收藏点{format}\n收藏点：{p.PointsCompleted} / {p.PointsTotal}\n图片：{p.ImagesCompleted} / {p.ImagesTotal}");
+            result = format=="KMZ"?await Repository.ExportKmzAsync(save.FileName, selected, null, true, progress, cancellation.Token,collectionIds):
+                await FavoriteMapFileTransfer.ExportAsync(Repository,save.FileName,format=="GPX"?FavoriteMapFileFormat.Gpx:FavoriteMapFileFormat.Kml,selected,collectionIds,true,progress,cancellation.Token);
         }
-        catch (OperationCanceledException) { _status.Text = "已取消KMZ导出，未生成半成品文件。"; }
+        catch (OperationCanceledException) { _status.Text = "已取消"+format+"导出，未生成半成品文件。"; }
         finally { completed = true; progressWindow.Close(); }
-        if (result is not null) MessageBox.Show(OwnerWindow, $"收藏点KMZ导出完成\n收藏点：{result.PointCount}\n收藏夹：{result.CollectionCount}\n图片：{result.ImageCount}\n文件：{result.FileBytes / 1048576d:F2} MB\n保存位置：{result.FilePath}", "收藏点KMZ导出完成");
+        if (result is not null) MessageBox.Show(OwnerWindow, $"收藏点{format}导出完成\n收藏点：{result.PointCount}\n收藏夹：{result.CollectionCount}\n图片：{result.ImageCount}\n总大小：{result.FileBytes / 1048576d:F2} MB\n保存位置：{result.FilePath}"+(format!="KMZ"&&result.ImageCount>0?"\n\n本地图片在同目录配套文件夹内，移动或分享时请一并保留。":""), "收藏点"+format+"导出完成");
     }
     private async void OnHover(object sender, MouseEventArgs e)
     {

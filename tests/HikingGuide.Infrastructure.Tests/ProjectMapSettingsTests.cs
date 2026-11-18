@@ -7,6 +7,19 @@ namespace HikingGuide.Infrastructure.Tests;
 public sealed class ProjectMapSettingsTests
 {
     [Fact]
+    public async Task SplitVisibility_RoundTripsWithoutChangingTrackOrStatistics()
+    {
+        var folder=Path.Combine(Path.GetTempPath(),"HikingGuide.SplitVisibility",Guid.NewGuid().ToString("N"));Directory.CreateDirectory(folder);
+        try
+        {
+            var track=new Track{Segments=Enumerable.Range(0,2).Select(i=>new TrackSegment{SplitSectionId=Guid.NewGuid(),Points=[new(){Latitude=23,Longitude=113+i*.01},new(){Latitude=23,Longitude=113.005+i*.01}]}).ToList()};track.RecalculateDistances();var project=new HikingProject();project.AddTrack(track,false);
+            var id=track.GetSplitSections()[0].Id;MapLayerVisibility.SetSplitSectionVisible(project.Settings.Map,id,false);var length=track.GetTotalLength();
+            var path=Path.Combine(folder,"显隐.hikeproj");var files=new ProjectFileService();await files.SaveAsync(project,path,false);var restored=await files.LoadAsync(path);
+            Assert.False(MapLayerVisibility.IsSplitSectionVisible(restored.Settings.Map,id));Assert.True(MapLayerVisibility.IsTrackVisible(restored.Settings.Map,track.Id));Assert.Equal(length,restored.Tracks[0].GetTotalLength(),6);Assert.Equal(4,restored.Tracks[0].GetPointCount());
+        }
+        finally{Directory.Delete(folder,true);}
+    }
+    [Fact]
     public async Task ProjectFile_RoundTripsOnlySelectedMapSourceIdAndViewState()
     {
         var directory = Path.Combine(Path.GetTempPath(), "HikingGuide.P4.ProjectTests", Guid.NewGuid().ToString("N"));

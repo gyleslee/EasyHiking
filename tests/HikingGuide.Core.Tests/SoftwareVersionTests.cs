@@ -9,9 +9,9 @@ public sealed class SoftwareVersionTests
     public void DisplayAndWindowsVersionsAreConsistent()
     {
         var assembly=typeof(SoftwareIdentity).Assembly;
-        Assert.Equal("V1.9.6",SoftwareIdentity.DisplayVersion);
-        Assert.Equal("易行徒步规划制作器 V1.9.6",SoftwareIdentity.DisplayTitle);
-        Assert.Equal(new Version(1,9,6,0),assembly.GetName().Version);
-        Assert.Equal("1.9.6.0",assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+        Assert.Equal("V1.9.8",SoftwareIdentity.DisplayVersion);
+        Assert.Equal("易行徒步规划制作器 V1.9.8",SoftwareIdentity.DisplayTitle);
+        Assert.Equal(new Version(1,9,8,0),assembly.GetName().Version);
+        Assert.Equal("1.9.8.0",assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
     }
 }
